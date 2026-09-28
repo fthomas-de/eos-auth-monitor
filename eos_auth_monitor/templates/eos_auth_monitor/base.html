@@ -1,0 +1,44 @@
+{% extends "allianceauth/base-bs5.html" %}
+{% load i18n %}
+{% load aa_i18n %}
+{% load sri %}
+
+{% block page_title %}{% translate "Auth Monitor" %}{% endblock %}
+
+{% block header_nav_collapse_left %}
+    {% if perms.eos_auth_monitor.view_all %}
+        {% url "eos_auth_monitor:index" as overview_url %}
+        {% translate "Overview" as overview_title %}
+        {% include "eos_auth_monitor/partials/nav-item.html" with nav_url=overview_url nav_title=overview_title nav_view="eos_auth_monitor:index eos_auth_monitor:service" %}
+    {% endif %}
+
+    {% if perms.eos_auth_monitor.manage_settings %}
+        {% url "eos_auth_monitor:settings" as settings_url %}
+        {% translate "Settings" as settings_title %}
+        {% include "eos_auth_monitor/partials/nav-item.html" with nav_url=settings_url nav_title=settings_title nav_view="eos_auth_monitor:settings" %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% get_current_language as current_language %}
+    {% get_datatables_language_static current_language as datatables_language %}
+    {# tables.js hands this to DataTables, the way Alliance Auth's own pages do #}
+    <div class="eos_auth_monitor" data-eos-auth-monitor-datatables-language="{{ datatables_language }}">
+        {% translate "Auth Monitor" as page_title %}
+        {% include "framework/header/page-header.html" with title=page_title subtitle=version %}
+
+        {% include "eos_auth_monitor/partials/state.html" %}
+
+        {% block details %}{% endblock %}
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    {% include "bundles/datatables-2-css-bs5.html" %}
+{% endblock %}
+
+{% block extra_javascript %}
+    {% include "bundles/datatables-2-js-bs5.html" %}
+    {% sri_static "eos_auth_monitor/js/tables.js" %}
+    {% sri_static "eos_auth_monitor/js/progress.js" %}
+{% endblock %}

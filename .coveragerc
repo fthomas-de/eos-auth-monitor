@@ -1,0 +1,9 @@
+[run]
+source = eos_auth_monitor
+omit =
+    eos_auth_monitor/migrations/*
+    eos_auth_monitor/tests/*
+
+[report]
+show_missing = True
+skip_covered = True

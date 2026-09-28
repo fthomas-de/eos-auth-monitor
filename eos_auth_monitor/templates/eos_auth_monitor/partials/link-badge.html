@@ -1,0 +1,7 @@
+{% load i18n %}
+{% load eos_auth_monitor %}
+{% if account|is_linked:service.key %}
+    <span class="badge text-bg-success">{% translate "linked" %}</span>
+{% else %}
+    <span class="badge text-bg-warning">{% translate "not linked" %}</span>
+{% endif %}

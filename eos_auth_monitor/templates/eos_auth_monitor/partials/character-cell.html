@@ -1,0 +1,13 @@
+{% load i18n %}
+{% load evelinks %}
+{# Mark, portrait, name and Main badge; a flex row that wraps inside its cell instead of spilling over the next column. #}
+<div class="d-flex flex-wrap align-items-center gap-2">
+    {% include "eos_auth_monitor/partials/problem-marker.html" %}
+    <img src="{{ character.id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+    {% if link_account %}
+        <a href="{% url 'eos_auth_monitor:account' link_account.user_id %}" class="text-break">{{ character.name }}</a>
+    {% else %}
+        <span class="text-break">{{ character.name }}</span>
+    {% endif %}
+    {% if character.is_main %}<span class="badge text-bg-primary">{% translate "Main" %}</span>{% endif %}
+</div>

@@ -1,0 +1,50 @@
+{% load i18n %}
+{% load evelinks %}
+{% load eos_auth_monitor %}
+{# Name, Corporation problems, completeness per app and service lists - on every page about one Corporation. #}
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="d-flex align-items-start gap-3">
+            <img src="{{ corporation.id|corporation_logo_url:64 }}" width="64" height="64" class="rounded flex-shrink-0" alt="">
+            <div class="flex-grow-1 overflow-hidden">
+                <h5 class="mb-1 text-break">
+                    <a href="{% url 'eos_auth_monitor:corporation' corporation.id %}" class="text-reset text-decoration-none">{{ corporation.name }}</a>
+                    <span class="text-body-secondary small">[{{ corporation.ticker }}]</span>
+                </h5>
+                <div class="small mb-2">
+                    {% translate "Mains" %}: {{ corporation.mains }} ·
+                    {% translate "Accounts with problems" %}: {{ corporation.problem_accounts|length }}
+                    {% if corporation.member_count is not None %}
+                        · {% translate "Members" %}: {{ corporation.member_count }}
+                    {% endif %}
+                </div>
+                {% for problem in corporation.problems %}
+                    <div class="small mb-1">
+                        <span class="badge text-bg-warning text-wrap">{{ problem.check.label }}</span>
+                        <span class="text-body-secondary">{{ problem.check.description }}</span>
+                        {% if problem.detail %}<span class="text-break">({{ problem.detail }})</span>{% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if corporation.rows %}
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-2 mt-2">
+                {% for row in corporation.rows %}
+                    <div class="col">
+                        {% if row.service %}
+                            <a href="{% url 'eos_auth_monitor:corporation_service' corporation.id row.service.key %}" class="btn btn-sm btn-outline-secondary w-100 d-flex justify-content-between gap-2">
+                                <span class="text-truncate"><i class="{{ row.icon }} fa-fw"></i> {{ row.label }}</span>
+                                <span class="text-nowrap">{{ row.part }}/{{ row.total }}{% if row.percent is not None %} · {{ row.percent }}&nbsp;%{% endif %}</span>
+                            </a>
+                        {% else %}
+                            <ul class="list-unstyled small mb-0 border rounded px-2 py-1">
+                                {% include "eos_auth_monitor/partials/tile-row.html" %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,106 @@
+{% extends "eos_auth_monitor/base.html" %}
+{% load i18n %}
+{% load evelinks %}
+
+{% block details %}
+    {% if report %}
+        {% if not corporation %}
+            <div class="alert alert-info">{% translate "This Corporation is not part of the overview." %}</div>
+        {% else %}
+            {% include "eos_auth_monitor/partials/corporation-header.html" %}
+
+            <h6>{% translate "Mains of this Corporation" %} <span class="badge text-bg-secondary">{{ corporation.mains }}</span></h6>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3 mb-4">
+                {% for account in corporation.accounts_by_problems %}
+                    <div class="col">
+                        <div class="card h-100 {% if account.has_problems %}border-danger{% endif %}">
+                            <div class="card-body position-relative d-flex align-items-start gap-3">
+                                <img src="{{ account.main_id|character_portrait_url:64 }}" width="48" height="48" class="rounded flex-shrink-0" alt="">
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <h6 class="mb-1 text-truncate">
+                                        <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="stretched-link text-reset text-decoration-none">{{ account.main_name }}</a>
+                                    </h6>
+                                    <div class="small text-body-secondary mb-1">
+                                        {% blocktranslate count counter=account.characters|length %}{{ counter }} character{% plural %}{{ counter }} characters{% endblocktranslate %}
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% for check in account.keywords %}
+                                            <span class="badge text-bg-danger text-wrap">{{ check.label }}</span>
+                                        {% empty %}
+                                            <span class="badge text-bg-success">{% translate "No problems" %}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% if account.services %}
+                                        <div class="mt-2">
+                                            {% for link in account.services %}
+                                                <i class="{{ link.service.icon }} me-1 {% if link.linked %}text-success{% else %}text-body-tertiary{% endif %}"
+                                                   title="{{ link.service.label }}: {% if link.linked %}{% translate 'linked' %}{% else %}{% translate 'not linked' %}{% endif %}"></i>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col"><div class="alert alert-info mb-0">{% translate "No main of this Corporation is registered in Auth." %}</div></div>
+                {% endfor %}
+            </div>
+
+            {% if corporation.other_mains %}
+                <h6>{% translate "Members whose main is in another Corporation" %} <span class="badge text-bg-secondary">{{ corporation.other_mains|length }}</span></h6>
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3 mb-4">
+                    {% for other in corporation.other_mains %}
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-start gap-3">
+                                    <img src="{{ other.main_id|character_portrait_url:64 }}" width="48" height="48" class="rounded flex-shrink-0" alt="">
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <h6 class="mb-1 text-truncate">{{ other.main_name }}</h6>
+                                        <div class="small text-body-secondary mb-1 text-truncate">{{ other.main_corporation_name }}</div>
+                                        <div class="small text-break">
+                                            {% for character in other.characters %}{{ character.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if corporation.member_count is None %}
+                {% if report.members_fetched %}
+                    <div class="alert alert-secondary small">
+                        {% translate "The member list of this Corporation could not be read: no member has a token with the membership scope." %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <h6>{% translate "Not registered in Auth" %} <span class="badge {% if corporation.unregistered %}text-bg-danger{% else %}text-bg-success{% endif %}">{{ corporation.unregistered|length }}</span></h6>
+                {% if corporation.unregistered %}
+                    <div class="card">
+                        <div class="card-body">
+                            <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
+                                <thead>
+                                    <tr><th>{% translate "Character" %}</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for character in corporation.unregistered %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <img src="{{ character.id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+                                                    <span class="text-break">{{ character.name }}</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endblock %}

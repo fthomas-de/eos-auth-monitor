@@ -1,0 +1,3 @@
+{% load i18n %}
+{# Marks a problem character in a list; a whole red row drowns the text on dark themes. #}
+{% if character.problems %}<i class="fas fa-triangle-exclamation text-danger flex-shrink-0 eos-auth-monitor-problem" title="{% translate 'Problems' %}"></i>{% endif %}

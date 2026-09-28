@@ -1,0 +1,84 @@
+{% extends "eos_auth_monitor/base.html" %}
+{% load i18n %}
+{% load evelinks %}
+{% load eos_auth_monitor %}
+
+{% block details %}
+    {% if report %}
+        {% if cockpit or connections %}
+            <h5>{% translate "Cockpit" %}</h5>
+            <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 row-cols-xxl-6 g-3 mb-4">
+                {% if connections %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="text-center mb-2"><i class="fas fa-plug fa-lg"></i></div>
+                                <div class="small text-center mb-2">{% translate "Connections" %}</div>
+                                <ul class="list-unstyled small mb-0">
+                                    {% for service, linked in connections %}
+                                        <li class="d-flex justify-content-between gap-2">
+                                            <a href="{% url 'eos_auth_monitor:service' service.key %}" class="text-reset text-decoration-none text-truncate">
+                                                <i class="{{ service.icon }} fa-fw"></i> {{ service.label }}
+                                            </a>
+                                            <span class="fw-bold">{{ linked }}</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                {% for gauge in cockpit %}
+                    <div class="col">
+                        <div class="card h-100 text-center">
+                            <div class="card-body position-relative">
+                                <i class="{{ gauge.icon }} fa-lg mb-2"></i>
+                                <div class="fs-3 fw-bold {{ gauge.percent|percent_class }}">
+                                    {% if gauge.percent is None %}-{% else %}{{ gauge.percent }}&nbsp;%{% endif %}
+                                </div>
+                                <div class="small">{{ gauge.label }}</div>
+                                <div class="small text-body-secondary">
+                                    {% blocktranslate with part=gauge.part total=gauge.total %}{{ part }} of {{ total }}{% endblocktranslate %}
+                                </div>
+                                {% if gauge.service %}
+                                    <a href="{% url 'eos_auth_monitor:service' gauge.service.key %}" class="stretched-link" aria-label="{{ gauge.label }}"></a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <h5>{% translate "Corporations" %}</h5>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3">
+            {% for corporation in report.corporations %}
+                <div class="col">
+                    <div class="card h-100 {% if corporation.has_problems %}border-danger{% else %}border-success{% endif %}">
+                        <div class="card-body position-relative">
+                            {# align-items-start: a flex row would otherwise stretch the logo to the text's height #}
+                            <div class="d-flex align-items-start gap-3 mb-2">
+                                <img src="{{ corporation.id|corporation_logo_url:64 }}" width="48" height="48" class="rounded flex-shrink-0" alt="">
+                                <h6 class="mb-0 align-self-center text-break">
+                                    <a href="{% url 'eos_auth_monitor:corporation' corporation.id %}" class="stretched-link text-reset text-decoration-none">{{ corporation.name }}</a>
+                                    <span class="text-body-secondary small">[{{ corporation.ticker }}]</span>
+                                </h6>
+                            </div>
+                            <ul class="list-unstyled small mb-0">
+                                <li class="d-flex justify-content-between gap-2">
+                                    <span><i class="fas fa-user fa-fw"></i> {% translate "Mains" %}</span>
+                                    <span>{{ corporation.mains }}</span>
+                                </li>
+                                {% for row in corporation.rows %}
+                                    {% include "eos_auth_monitor/partials/tile-row.html" %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col"><div class="alert alert-info">{% translate "No Corporation of the Alliance is known to Auth." %}</div></div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

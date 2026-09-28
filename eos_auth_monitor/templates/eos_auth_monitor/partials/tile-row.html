@@ -1,0 +1,10 @@
+{% load i18n %}
+{% load eos_auth_monitor %}
+{# One app on a Corporation tile: its share of complete entries; the counts or the failed checks as tooltip. #}
+<li class="d-flex justify-content-between gap-2"
+    title="{% if row.problems %}{% for problem in row.problems %}{{ problem.check.label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% elif row.total is not None %}{% blocktranslate with part=row.part total=row.total %}{{ part }} of {{ total }}{% endblocktranslate %}{% endif %}">
+    <span class="text-truncate"><i class="{{ row.icon }} fa-fw"></i> {{ row.label }}</span>
+    <span class="text-nowrap fw-semibold {{ row.percent|percent_class }}">
+        {% if row.percent is None %}-{% else %}{{ row.percent }}&nbsp;%{% endif %}
+    </span>
+</li>

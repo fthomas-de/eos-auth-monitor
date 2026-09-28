@@ -1,0 +1,5 @@
+{% load navactive %}
+{# One entry of the app navbar, written the way Alliance Auth's own apps do (groupmanagement): the theme styles the active link. #}
+<li class="nav-item">
+    <a class="nav-link {% navactive request nav_view %}" href="{{ nav_url }}">{{ nav_title }}</a>
+</li>

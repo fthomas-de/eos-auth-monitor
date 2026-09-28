@@ -1,0 +1,42 @@
+{% extends "eos_auth_monitor/base.html" %}
+{% load i18n %}
+{% load evelinks %}
+{% load eos_auth_monitor %}
+
+{% block details %}
+    <div class="card">
+        <div class="card-header d-flex flex-wrap align-items-center gap-2">
+            <div class="card-title mb-0 me-auto"><i class="{{ service.icon }}"></i> {{ service.label }}</div>
+            <span class="small">
+                {% blocktranslate with part=linked total=rows|length %}{{ part }} of {{ total }} mains linked{% endblocktranslate %}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
+                    <thead>
+                        <tr>
+                            <th>{% translate "Main" %}</th>
+                            <th>{% translate "Corporation" %}</th>
+                            <th>{{ service.label }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for corporation, account in rows %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <img src="{{ account.main_id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+                                        <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="text-break">{{ account.main_name }}</a>
+                                    </div>
+                                </td>
+                                <td class="text-break"><a href="{% url 'eos_auth_monitor:corporation' corporation.id %}">{{ corporation.name }}</a></td>
+                                <td data-order="{% if account|is_linked:service.key %}1{% else %}0{% endif %}">{% include "eos_auth_monitor/partials/link-badge.html" %}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "eos_auth_monitor/base.html" %}
+{% load django_bootstrap5 %}
+{% load i18n %}
+
+{% block details %}
+    <form method="post" action="">
+        {% csrf_token %}
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <div class="card-title mb-0">{% translate "Alliance" %}</div>
+            </div>
+            <div class="card-body">
+                {% bootstrap_field form.alliance %}
+                {% if form.stale_after_days %}
+                    {% bootstrap_field form.stale_after_days %}
+                {% endif %}
+                {% bootstrap_field form.fetch_members %}
+            </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-lg-2 g-3 mb-3">
+            {% for group, fields in form.check_groups %}
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <div class="card-title mb-0">{{ group.title }}</div>
+                        </div>
+                        <div class="card-body">
+                            {% for field in fields %}
+                                {% bootstrap_field field %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            {% if form.service_fields %}
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <div class="card-title mb-0">{% translate "Services" %}</div>
+                        </div>
+                        <div class="card-body">
+                            {% for field in form.service_fields %}
+                                {% bootstrap_field field %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if form.corptools_option_fields %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <div class="card-title mb-0">{% translate "corptools: what the checks count" %}</div>
+                </div>
+                <div class="card-body">
+                    <p class="small text-body-secondary">
+                        {% translate "Untick what the Alliance does not use, e.g. Moon Observations and the mining scope for an Alliance without moons. A section and its scope are separate entries." %}
+                    </p>
+                    <div class="row row-cols-1 row-cols-md-2 g-3">
+                        {% for field in form.corptools_option_fields %}
+                            <div class="col">
+                                <details class="border rounded p-2">
+                                    <summary class="fw-semibold">{{ field.label }}</summary>
+                                    <div class="mt-2">{% bootstrap_field field show_label=False %}</div>
+                                </details>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if not form.check_groups and not form.service_fields %}
+            <div class="alert alert-info">
+                {% translate "None of the apps the checks and services read from is installed." %}
+            </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary">{% translate "Save" %}</button>
+    </form>
+{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    {% include "eos_auth_monitor/bundles/tom-select-css.html" %}
+{% endblock %}
+
+{% block extra_javascript %}
+    {{ block.super }}
+    {% include "eos_auth_monitor/bundles/tom-select-js.html" %}
+{% endblock %}

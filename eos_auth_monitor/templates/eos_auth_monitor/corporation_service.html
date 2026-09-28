@@ -1,0 +1,47 @@
+{% extends "eos_auth_monitor/base.html" %}
+{% load i18n %}
+{% load eos_auth_monitor %}
+
+{% block details %}
+    {% include "eos_auth_monitor/partials/corporation-header.html" %}
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title mb-0"><i class="{{ service.icon }}"></i> {{ service.label }}</div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
+                    <thead>
+                        <tr>
+                            <th>{% translate "Character" %}</th>
+                            <th class="d-none d-sm-table-cell">{% translate "Main" %}</th>
+                            <th>{{ service.label }}</th>
+                            <th>{% translate "Problems" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for account in corporation.accounts %}
+                            {% for character in account.characters %}
+                                <tr>
+                                    <td data-order="{% if character.problems %}0{% else %}1{% endif %}{{ character.name }}">
+                                        {% include "eos_auth_monitor/partials/character-cell.html" with link_account=account %}
+                                    </td>
+                                    <td class="d-none d-sm-table-cell text-break">{{ account.main_name }}</td>
+                                    <td data-order="{% if account|is_linked:service.key %}1{% else %}0{% endif %}">{% include "eos_auth_monitor/partials/link-badge.html" %}</td>
+                                    <td data-order="{{ character.problems|length }}">
+                                        <div class="d-flex flex-wrap gap-1">
+                                            {% for problem in character.problems %}
+                                                <span class="badge text-bg-danger text-wrap" title="{{ problem.detail }}">{{ problem.check.label }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

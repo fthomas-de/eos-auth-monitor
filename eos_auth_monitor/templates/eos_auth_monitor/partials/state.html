@@ -1,0 +1,49 @@
+{% load i18n %}
+{# Where the data stands - shown above every page of the app. #}
+{% if not config.alliance %}
+    <div class="alert alert-warning">
+        {% translate "No Alliance is chosen yet, so there is nothing to monitor." %}
+        {% if perms.eos_auth_monitor.manage_settings %}
+            <a href="{% url 'eos_auth_monitor:settings' %}" class="alert-link">{% translate "Choose one in the settings." %}</a>
+        {% endif %}
+    </div>
+{% elif not report %}
+    <div class="alert alert-info">
+        {% translate "The overview has not been built yet. It is built by a periodic task; the first run can take a few minutes." %}
+    </div>
+{% elif outdated %}
+    <div class="alert alert-info">
+        {% translate "The Alliance was changed. This is still the overview of the previous one until the rebuild has finished." %}
+    </div>
+{% endif %}
+
+{% if config.alliance %}
+    <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
+        {% if report %}
+            <span class="small text-body-secondary me-auto">
+                {{ report.alliance_name }} ·
+                {% blocktranslate with since=report.built_at|timesince %}Data as of {{ since }} ago{% endblocktranslate %}
+            </span>
+        {% endif %}
+        {% if perms.eos_auth_monitor.view_all or perms.eos_auth_monitor.manage_settings %}
+            <form method="post" action="{% url 'eos_auth_monitor:rebuild' %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn btn-primary btn-sm eos-auth-monitor-rebuild">
+                    <i class="fas fa-rotate"></i> {% translate "Rebuild now" %}
+                </button>
+            </form>
+        {% endif %}
+    </div>
+
+    {# filled by progress.js while the task is queued or running; reloads the page once it is done #}
+    <div class="mb-3 d-none"
+         data-eos-auth-monitor-progress="{% url 'eos_auth_monitor:rebuild_progress' %}"
+         data-eos-auth-monitor-queued="{% translate 'Waiting for a worker to start the rebuild ...' %}"
+         data-eos-auth-monitor-failed="{% translate 'The rebuild failed. The overview shows the last good result.' %}">
+        <div class="small mb-1 eos-auth-monitor-progress-label"></div>
+        <div class="progress" role="progressbar" aria-label="{% translate 'Rebuild progress' %}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
+        </div>
+    </div>
+{% endif %}
