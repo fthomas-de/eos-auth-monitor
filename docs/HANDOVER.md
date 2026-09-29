@@ -18,10 +18,14 @@ Last updated 2026-09-29.
 - Migrations **0001-0005** applied in `aa_dev` (0005 dropped the empty smart
   filter table - no filter rows, no securegroups bindings - and added
   `view_own`).
-- 214 tests without the translation tests, 3 translation tests, all green.
+- 245 tests without the translation tests, 3 translation tests, all green.
   Every check, access rule and feature was counter-checked against broken
   code (a sabotage that stays green means the test is too weak - it happened
-  five times and each was fixed; the 0.0.2 features went 34 for 34).
+  six times and each was fixed; the 0.0.2 features went 34 for 34, the navbar
+  tabs, dashboard widgets and CSV export after 0.0.2 31 for 31 once the
+  view_own test of the own widget was sharpened).
+- Not released yet since 0.0.2 (committed, see `[Unreleased]`): navbar tabs,
+  dashboard widgets, CSV export, service links on *My account*.
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -31,11 +35,13 @@ Last updated 2026-09-29.
 | Page | Permission | What |
 |---|---|---|
 | Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares), then the Corporations, most problems first, as tiles or as a table (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
-| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Service tiles, a to-do list (per failed character check the mains concerned with the check's hint, plus the unregistered members; each with a copy button for an EVE mail), mains with problems as cards, the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
+| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Service tiles, a to-do list (per failed character check the mains concerned with the check's hint, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems as cards, the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
+| Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to the app), the others folded away in a `<details>` |
 | Corporation service | as Corporation | One row per main of the Corporation, linked yes/no, no problems |
 | Service | `view_all` | Every main of the Alliance, linked yes/no |
-| My account (`own_account`) | `view_own` | The viewer's own account on `account.html` with `own=True`: service tiles without links, no Corporation header, the problems with hints; a notice when the account is not in the snapshot. `view_own` alone is sent here from the index |
+| My account (`own_account`) | `view_own` | The viewer's own account on `account.html` with `own=True`: service tiles linking to Alliance Auth's `services:services`, no Corporation header, the problems with hints; a notice when the account is not in the snapshot. `view_own` alone is sent here from the index |
+| Dashboard widgets (`views.dashboard_own`, `views.dashboard_corporation`) | `view_own` / `basic_access` | On Alliance Auth's dashboard, order 4 like eos-invoices, own before Corporation (registration order). Own: failed checks with the number of characters (`Account.keyword_counts`), service icons, link to My account. Corporation: its own problems, each to-do group with the number of mains, the unregistered count, link to the Corporation page. `""` without the permission or when the snapshot has nothing about the viewer |
 | Settings | `manage_settings` | Alliance (Tom Select), stale limit, ESI member lists on/off (also switches the roles call), check and service switches, corptools sections and scopes |
 | Rebuild (POST) / progress (JSON) | `view_all` or `manage_settings` / any app permission | Start the task / state for the progress bar |
 
@@ -43,6 +49,14 @@ Every page has a footer with the cost of the last rebuild (`view_all` or
 `manage_settings` only). The header reads "Auth Monitor (version)" with the
 page's name below it (`views.LOCATIONS`, by template; the service lists
 show the service's label instead).
+
+The app navbar (`base.html`) has the tabs *My account* (`view_own`), *My
+Corporation* (`nav_corporation_id`: the own main's Corporation, for
+`basic_access` or `view_all`), *Alliance overview* (`view_all`, the index),
+*Settings*. The active tab comes from the view (`_render(..., nav)`), not from
+the URL name: the pages about one Corporation ask `_corporation_nav`, which
+gives *My Corporation* for the own Corporation and *Alliance overview* for
+any other. The sidebar keeps its one *Auth Monitor* entry.
 
 Code layout: `checks.py` (registry of checks, groups, services),
 `sources/` (one reader per foreign app, read only; `members.py` holds the two
@@ -55,7 +69,7 @@ ESI calls: member list and roles), `snapshot.py` (builds the JSON, run by
 the overview), `view.js` (tiles or table), `copy.js` (copy buttons, with an
 `execCommand` fallback for plain HTTP). Partials: `gauge.html` (a statistic
 tile), `corporation-rows.html`, `metrics.html`, `problem-count.html`,
-`no-director.html`, `problem-hint.html`, `copy-button.html`,
+`no-director.html`, `problem-hint.html`, `copy-button.html`, `csv-button.html`,
 `service-icons.html`, `row-title.html` (tooltip of a tile row or table cell).
 The hint of each check is `Check.hint` with `Check.fix_url` (a URL name,
 dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.py`, `tools/translate.py`.
@@ -129,6 +143,17 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
 - **Smart filter removed** ("erstmal streichen"): it failed every account
   without a snapshot. It may come back later, then without that failure.
 - **Members** get `view_own` and *My account* - their own account only.
+- **Navbar**: one tab each for the own main, the own Corporation and the
+  Alliance, in that order (main > Corporation > Alliance), then Settings.
+- **Dashboard widgets** at eos-invoices' order (4): the own account in short
+  with a link to *My account*, for members (`view_own`); the own Corporation
+  in short with a link to its page, for CEOs (`basic_access`). No new
+  permissions: the widgets follow the pages they link to.
+- *My account*'s service tiles link to Alliance Auth's services page.
+- **CSV export** on the Corporation page: per to-do group beside *Copy
+  names*, and one for the whole list (Problem, Name).
+- Claude may apply this app's migrations to `aa_dev` and restart the dev
+  Celery worker without asking.
 
 ## Pitfalls found
 
@@ -154,6 +179,11 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
 - A full test run occasionally hangs for minutes; run sabotage rounds as a
   script in the background and never start a second run meanwhile, or a
   half-sabotaged file is left behind. Restore from a `cp` made just before.
+- A sabotage round needs `--keepdb` on `eos-test`: without it every round
+  builds the test database and runs all migrations of the dev instance
+  again (about 24 s instead of 4 s for a small module).
+- The Edit tool writes `"\ufeff"` as the character itself, not as the
+  escape: a BOM in Python source goes in through a patch script.
 - `eos-test` takes one test label per call; run several modules one after
   the other. A full run takes about 15 s; only a sabotage round of many
   reruns is long - start it in the background.

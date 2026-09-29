@@ -7,6 +7,7 @@ app_name = "eos_auth_monitor"
 urlpatterns = [
     path("", views.index, name="index"),
     path("corporation/<int:corporation_id>/", views.corporation, name="corporation"),
+    path("corporation/<int:corporation_id>/export/", views.corporation_export, name="corporation_export"),
     path(
         "corporation/<int:corporation_id>/service/<str:service_key>/",
         views.corporation_service,

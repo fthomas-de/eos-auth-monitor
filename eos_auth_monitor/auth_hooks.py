@@ -5,6 +5,7 @@ from allianceauth.services.hooks import MenuItemHook, UrlHook
 
 from . import urls
 from .permissions import has_app_access
+from .views import dashboard_corporation, dashboard_own
 
 
 class AuthMonitorMenuItem(MenuItemHook):
@@ -32,4 +33,20 @@ def register_menu():
 @hooks.register("url_hook")
 def register_urls():
     return UrlHook(urls, "eos_auth_monitor", r"^eos_auth_monitor/")
+
+
+# The same place on the dashboard as eos-invoices' widget. Alliance Auth sorts
+# the widgets by this number and keeps the order of registration among equal
+# ones, so the own account comes before the Corporation.
+DASHBOARD_ORDER = 4
+
+
+@hooks.register("dashboard_hook")
+def register_dashboard_own():
+    return hooks.DashboardItemHook(dashboard_own, DASHBOARD_ORDER)
+
+
+@hooks.register("dashboard_hook")
+def register_dashboard_corporation():
+    return hooks.DashboardItemHook(dashboard_corporation, DASHBOARD_ORDER)
 

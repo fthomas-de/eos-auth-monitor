@@ -1,0 +1,7 @@
+{% load i18n %}
+{# Downloads names of the to-do list of `corporation` as CSV: the group `group` (a check key or "unregistered"), without it the whole list. #}
+<a class="btn btn-sm btn-outline-secondary text-nowrap"
+   href="{% url 'eos_auth_monitor:corporation_export' corporation.id %}{% if group %}?group={{ group|urlencode }}{% endif %}"
+   title="{% translate 'Download the names as a CSV file' %}" download>
+    <i class="fas fa-file-csv"></i> <span>CSV</span>
+</a>

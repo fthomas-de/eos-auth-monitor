@@ -96,7 +96,10 @@ is no binary log and there are no dumps.
 - Address rows by explicit id lists, and write the previous values out first.
 - corptools and other foreign apps: read their models, never change their
   schema or their rows beyond what a seed of our own created.
-- No migration is applied to `aa_dev` without the user's yes.
+- Migrations of this app may be applied to `aa_dev` without asking (the
+  user's yes of 2026-09-29), and the dev instance's Celery worker may be
+  restarted likewise. Read a migration before applying it: one that touches a
+  foreign app's tables or deletes rows still needs the user's yes.
 
 ## Code
 

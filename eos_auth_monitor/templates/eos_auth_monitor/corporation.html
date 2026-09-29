@@ -23,8 +23,10 @@
             {% if corporation.todos or corporation.unregistered %}
                 {# what the leadership can chase, grouped so that one EVE mail reaches everyone concerned #}
                 <div class="card border-danger mb-4 eos-auth-monitor-todos">
-                    <div class="card-header">
-                        <div class="card-title mb-0"><i class="fas fa-list-check"></i> {% translate "To do" %}</div>
+                    <div class="card-header d-flex flex-wrap align-items-center gap-2">
+                        <div class="card-title mb-0 me-auto"><i class="fas fa-list-check"></i> {% translate "To do" %}</div>
+                        {# the whole list, one line per name with its problem #}
+                        {% include "eos_auth_monitor/partials/csv-button.html" %}
                     </div>
                     <ul class="list-group list-group-flush">
                         {% for todo in corporation.todos %}
@@ -34,6 +36,7 @@
                                     <span class="badge text-bg-secondary">{{ todo.accounts|length }}</span>
                                     <span class="small text-body-secondary me-auto">{{ todo.check.hint }}</span>
                                     {% include "eos_auth_monitor/partials/copy-button.html" with names=todo.names %}
+                                    {% include "eos_auth_monitor/partials/csv-button.html" with group=todo.check.key %}
                                 </div>
                                 <div class="small text-break">
                                     {% for account in todo.accounts %}<a href="{% url 'eos_auth_monitor:account' account.user_id %}">{{ account.main_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
@@ -50,6 +53,7 @@
                                         <a href="#eos-auth-monitor-unregistered" class="text-nowrap">{% translate "List" %}</a>
                                     </span>
                                     {% include "eos_auth_monitor/partials/copy-button.html" with names=corporation.unregistered_names %}
+                                    {% include "eos_auth_monitor/partials/csv-button.html" with group="unregistered" %}
                                 </div>
                             </li>
                         {% endif %}
@@ -143,6 +147,7 @@
                     <h6 class="mb-0 me-auto">{% translate "Not registered in Auth" %} <span class="badge {% if corporation.unregistered %}text-bg-danger{% else %}text-bg-success{% endif %}">{{ corporation.unregistered|length }}</span></h6>
                     {% if corporation.unregistered %}
                         {% include "eos_auth_monitor/partials/copy-button.html" with names=corporation.unregistered_names %}
+                        {% include "eos_auth_monitor/partials/csv-button.html" with group="unregistered" %}
                     {% endif %}
                 </div>
                 {% if corporation.unregistered %}

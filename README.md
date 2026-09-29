@@ -39,7 +39,9 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   Structures, every service)
 - **Corporation detail**: a to-do list first - per failed check the mains it
   concerns and what they have to do, and the members not registered in Auth,
-  each group with a button that copies the names for an EVE mail. Then every
+  each group with a button that copies the names for an EVE mail and one that
+  downloads them as a CSV file; a further button downloads the whole list, a
+  line per name with its problem. Then every
   member of the Corporation, reduced to mains: the mains with problems as
   cards with keywords naming their problems, the others as a compact list,
   members whose main is in another Corporation under that main, and members
@@ -57,7 +59,17 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   duration, time per step, database queries, sizes of the Alliance and of the
   stored result
 - **My account** for members: their own characters, what is wrong and what
-  to do about it - nothing about other accounts
+  to do about it - nothing about other accounts; the service tiles open
+  Alliance Auth's services page
+- **Navbar tabs** from the narrowest view to the widest: *My account*, *My
+  Corporation* (the Corporation of the own main), *Alliance overview*, then
+  *Settings* - each only for those who may open it
+- **Dashboard widgets** on Alliance Auth's dashboard: the own account in short
+  (failed checks with the number of characters, linked services) for holders
+  of `view_own`, and the own main's Corporation in short (its problems, each
+  to-do group with the number of mains, the unregistered members) for holders
+  of `basic_access`; each links to its page in the app and is hidden while the
+  overview has nothing about the viewer
 - **Settings page**: the Alliance, chosen from a searchable dropdown; a
   switch for every check, grouped by app, and for every service; which
   corptools sections and scopes the checks count
@@ -244,10 +256,10 @@ by itself.
 
 | Permission | Who | What |
 |---|---|---|
-| `eos_auth_monitor.basic_access` | CEOs, directors | The Corporation of their own main: its members, accounts and service lists; the progress bar |
-| `eos_auth_monitor.view_all` | Leadership | Cockpit and every Corporation of the Alliance, the Alliance-wide service lists, *Rebuild now* |
+| `eos_auth_monitor.basic_access` | CEOs, directors | The Corporation of their own main: its members, accounts and service lists, the CSV export of its to-do list, its widget on the dashboard; the progress bar |
+| `eos_auth_monitor.view_all` | Leadership | Cockpit and every Corporation of the Alliance, the Alliance-wide service lists, the CSV export of every to-do list, *Rebuild now* |
 | `eos_auth_monitor.manage_settings` | Admins | The settings page: Alliance, checks, services, corptools sections and scopes; *Rebuild now* |
-| `eos_auth_monitor.view_own` | Members (a state is fine) | *My account*: their own account - characters, problems, what to do, which services are linked. Nothing about other accounts or the Corporation's figures |
+| `eos_auth_monitor.view_own` | Members (a state is fine) | *My account* and its widget on the dashboard: their own account - characters, problems, what to do, which services are linked. Nothing about other accounts or the Corporation's figures |
 
 The menu entry shows for anyone holding one of them. Only the **main
 character** counts for `basic_access`, and like every Alliance Auth app page,
@@ -263,7 +275,10 @@ removed from the group.
 
 A holder of `view_own` alone is sent from the menu entry to *My account*. An
 account whose main is not in the Alliance is not part of the overview, and
-the page says so.
+the page says so; its dashboard widget is not shown.
+
+The dashboard widget of the Corporation follows `basic_access` only:
+leadership with `view_all` alone sees no widget.
 
 ## Settings
 

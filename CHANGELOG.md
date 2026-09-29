@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The app navbar has a tab per view, from the narrowest to the widest:
+  *My account* (`view_own`), *My Corporation* (the Corporation of the own
+  main, for `basic_access` and `view_all`), *Alliance overview* (`view_all`),
+  then *Settings*. A Corporation page marks *My Corporation* only for the own
+  Corporation; any other one belongs to the Alliance overview.
+- Two widgets on Alliance Auth's dashboard, at the same place as eos-invoices'
+  (order 4): the own account in short - each failed check with the number of
+  characters, the linked services - with a link to *My account*
+  (`view_own`), and the own main's Corporation in short - its own problems,
+  each to-do group with the number of mains, the members not registered in
+  Auth - with a link to the Corporation page (`basic_access`). Both stay
+  hidden when the snapshot has nothing about the viewer.
+- CSV export of the to-do list on the Corporation page: a button beside each
+  *Copy names* for that group (one name per line) and one for the whole list
+  (problem and name per line). Excel opens the file as UTF-8, and a name that
+  a spreadsheet would run as a formula is written as text.
+
+### Changed
+
+- The service tiles of *My account* open Alliance Auth's services page, where
+  a member links the service.
+- The navbar tab *Overview* is called *Alliance overview* and comes after
+  *My account* and *My Corporation*.
+
 ## [0.0.2] - 2026-09-29
 
 ### Added

@@ -27,8 +27,10 @@
                             <div class="fw-bold {% if link.linked %}text-success{% else %}text-danger{% endif %}">
                                 {% if link.linked %}{% translate "linked" %}{% else %}{% translate "not linked" %}{% endif %}
                             </div>
-                            {# the list of this Corporation's mains for the service, not the Alliance-wide one; not for a member #}
-                            {% if not own %}
+                            {# a member goes to Alliance Auth's services page to link it; everyone else to this Corporation's list of it #}
+                            {% if own %}
+                                <a href="{% url 'services:services' %}" class="stretched-link" aria-label="{{ link.service.label }}"></a>
+                            {% else %}
                                 <a href="{% url 'eos_auth_monitor:corporation_service' corporation.id link.service.key %}" class="stretched-link" aria-label="{{ link.service.label }}"></a>
                             {% endif %}
                         </div>

@@ -227,7 +227,6 @@ TRANSLATIONS = {
     "Character": ("Character", "Character", "Character"),
     "Corporation": ("Corporation", "Corporation", "Corporation"),
     "Problems": ("Probleme", "Проблемы", "问题"),
-    "Overview": ("Übersicht", "Обзор", "概览"),
     "Settings": ("Einstellungen", "Настройки", "设置"),
     "This Corporation is not part of the overview.": (
         "Diese Corporation gehört nicht zur Übersicht.",
@@ -522,6 +521,17 @@ TRANSLATIONS = {
         'Не удалось запустить пересборку: очередь задач недоступна.',
         '无法启动重建：任务队列无法访问。',
     ),
+    "My Corporation": ("Meine Corporation", "Моя Corporation", "我的 Corporation"),
+    "Alliance overview": ("Alliance-Übersicht", "Обзор Alliance", "Alliance 概览"),
+    "View details": ("Details anzeigen", "Подробнее", "查看详情"),
+    "Nothing to do.": ("Nichts zu tun.", "Делать ничего не нужно.", "无需处理。"),
+    "Download the names as a CSV file": (
+        "Die Namen als CSV-Datei herunterladen",
+        "Скачать имена в виде файла CSV",
+        "将名称下载为 CSV 文件",
+    ),
+    "Name": ("Name", "Имя", "名称"),
+    "Problem": ("Problem", "Проблема", "问题"),
 }
 
 PLURALS = {

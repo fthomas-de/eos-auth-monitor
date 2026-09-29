@@ -1,0 +1,41 @@
+{% load i18n %}
+{% load evelinks %}
+{# The viewer's own account in short on Alliance Auth's dashboard, laid out like eos-invoices' widget; the details are on My account. #}
+<div id="eos-auth-monitor-dashboard-own" class="col-12 col-xl-4 mb-3">
+    <div class="card h-100 {% if account.has_problems %}border-danger{% endif %}">
+        <div class="card-body d-flex flex-column">
+            {% translate "Auth Monitor" as widget_title %}
+            {% include "framework/dashboard/widget-title.html" with title=widget_title %}
+
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <img src="{{ account.main_id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+                <span class="fw-bold text-truncate me-auto">{{ account.main_name }}</span>
+                <span class="text-nowrap">{% include "eos_auth_monitor/partials/service-icons.html" with inline=True %}</span>
+            </div>
+
+            {% if account.has_problems %}
+                <ul class="list-group list-group-flush mb-2">
+                    {% for check, count in account.keyword_counts %}
+                        <li class="list-group-item d-flex align-items-center gap-2 px-0">
+                            <span class="badge text-bg-danger text-wrap" title="{{ check.description }}">{{ check.label }}</span>
+                            <span class="small text-body-secondary ms-auto text-nowrap">
+                                {% blocktranslate count counter=count context "EVE jargon" %}{{ counter }} character{% plural %}{{ counter }} characters{% endblocktranslate %}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center text-success my-3">
+                    <i class="fas fa-circle-check fa-2x mb-2"></i>
+                    <p class="mb-0">{% translate "No character of this account has a problem." %}</p>
+                </div>
+            {% endif %}
+
+            <div class="text-center mt-auto">
+                <a href="{% url 'eos_auth_monitor:own_account' %}" class="btn btn-sm btn-primary">
+                    {% translate "View details" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

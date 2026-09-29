@@ -1,9 +1,14 @@
+import csv
+
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.text import get_valid_filename
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import pgettext_lazy
 from django.views.decorators.http import require_POST
 
 from kombu.exceptions import OperationalError
@@ -36,12 +41,35 @@ LOCATIONS = {
 }
 
 
-def _render(request, template, context=None):
+# the tab of the app navbar a page belongs to; the pages about one
+# Corporation choose theirs by whose Corporation it is (_corporation_nav)
+NAV_OWN = "own"
+NAV_CORPORATION = "corporation"
+NAV_ALLIANCE = "alliance"
+NAV_SETTINGS = "settings"
+
+
+def _render(request, template, context=None, nav=NAV_ALLIANCE):
+    user = request.user
     return render(
         request,
         template,
-        {"version": __version__, "location": LOCATIONS.get(template, ""), **(context or {})},
+        {
+            "version": __version__,
+            "location": LOCATIONS.get(template, ""),
+            "nav": nav,
+            # the My Corporation tab: whoever may see the own main's Corporation
+            "nav_corporation_id": (
+                own_corporation_id(user) if user.has_perm(BASIC_ACCESS) or user.has_perm(VIEW_ALL) else None
+            ),
+            **(context or {}),
+        },
     )
+
+
+def _corporation_nav(user, corporation_id) -> str:
+    # leadership looking at another Corporation came from the Alliance overview
+    return NAV_CORPORATION if corporation_id == own_corporation_id(user) else NAV_ALLIANCE
 
 
 def _report() -> Report | None:
@@ -103,7 +131,47 @@ def corporation(request, corporation_id):
     report = _report()
     context = _state(report)
     context["corporation"] = _visible_corporation(request, report, corporation_id)
-    return _render(request, "eos_auth_monitor/corporation.html", context)
+    return _render(
+        request, "eos_auth_monitor/corporation.html", context, _corporation_nav(request.user, corporation_id)
+    )
+
+
+@any_permission_required(BASIC_ACCESS, VIEW_ALL)
+def corporation_export(request, corporation_id):
+    """The names of the to-do list as a CSV file: one group (?group=) with a name per line, or all of it.
+
+    For a spreadsheet or a mail merge, where the copy button's comma list does
+    not fit. Only what the Corporation page shows, to the same viewers.
+    """
+    report = _report()
+    corporation = _visible_corporation(request, report, corporation_id)
+    if corporation is None:
+        raise Http404
+    group = request.GET.get("group")
+    rows = [row for row in corporation.todo_rows if not group or row.group == group]
+    if not rows:
+        raise Http404
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    filename = get_valid_filename(f"{corporation.ticker}-{group or 'todo'}.csv")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    # the byte order mark makes Excel read the file as UTF-8
+    response.write("\ufeff")
+    writer = csv.writer(response)
+    # Alliance Auth translates "Name" itself, and its catalogue would win
+    name = pgettext_lazy("eos-auth-monitor", "Name")
+    if group:
+        writer.writerow([name])
+        writer.writerows([_csv_cell(row.name)] for row in rows)
+    else:
+        writer.writerow([_("Problem"), name])
+        writer.writerows([_csv_cell(str(row.label)), _csv_cell(row.name)] for row in rows)
+    return response
+
+
+def _csv_cell(value: str) -> str:
+    # a spreadsheet runs a cell that starts like this as a formula
+    return f"'{value}" if value[:1] in ("=", "+", "-", "@", "\t", "\r") else value
 
 
 @any_permission_required(BASIC_ACCESS, VIEW_ALL)
@@ -120,6 +188,7 @@ def account(request, user_id):
         request,
         "eos_auth_monitor/account.html",
         {**_state(report), "corporation": corporation, "account": account},
+        _corporation_nav(request.user, corporation.id),
     )
 
 
@@ -132,6 +201,7 @@ def own_account(request):
         request,
         "eos_auth_monitor/account.html",
         {**_state(report), "corporation": corporation, "account": account, "own": True, "location": _("My account")},
+        NAV_OWN,
     )
 
 
@@ -146,6 +216,7 @@ def corporation_service(request, corporation_id, service_key):
         request,
         "eos_auth_monitor/corporation_service.html",
         {**_state(report), "corporation": corporation, "service": service, "location": service.label},
+        _corporation_nav(request.user, corporation_id),
     )
 
 
@@ -187,7 +258,7 @@ def settings(request):
             )
         return redirect("eos_auth_monitor:settings")
 
-    return _render(request, "eos_auth_monitor/settings.html", {**_state(_report()), "form": form})
+    return _render(request, "eos_auth_monitor/settings.html", {**_state(_report()), "form": form}, NAV_SETTINGS)
 
 
 def _start_rebuild() -> bool:
@@ -227,4 +298,37 @@ def rebuild_progress(request):
             "percent": state.get("percent", 0),
             "phase": str(PHASE_LABELS.get(state.get("phase"), "")),
         }
+    )
+
+
+# Widgets for Alliance Auth's own dashboard. Not URLs - its dashboard_hook
+# calls them directly and drops an empty string, as eos-invoices does. They
+# hide without the permission and wherever the snapshot has nothing about the
+# viewer (no snapshot yet, main outside the Alliance): the app's pages explain
+# those, a widget would only take room. Without problems they still show, so
+# a glance tells "all fine" from "not loaded".
+
+
+def dashboard_own(request):
+    """The viewer's own account in short: which checks fail, which services are linked."""
+    if not request.user.has_perm(VIEW_OWN):
+        return ""
+    report = _report()
+    _corporation, account = report.account(request.user.pk) if report else (None, None)
+    if account is None:
+        return ""
+    return render_to_string("eos_auth_monitor/dashboard.own.html", {"account": account}, request=request)
+
+
+def dashboard_corporation(request):
+    """The own main's Corporation in short, for its CEO: its problems and the to-do groups."""
+    if not request.user.has_perm(BASIC_ACCESS):
+        return ""
+    corporation_id = own_corporation_id(request.user)
+    report = _report()
+    corporation = report.corporation(corporation_id) if report and corporation_id else None
+    if corporation is None:
+        return ""
+    return render_to_string(
+        "eos_auth_monitor/dashboard.corporation.html", {"corporation": corporation}, request=request
     )

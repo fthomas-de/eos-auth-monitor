@@ -120,6 +120,20 @@ class Account:
         failed = {problem.check.key for character in self.characters for problem in character.problems}
         return [check for key, check in CHECKS_BY_KEY.items() if key in failed]
 
+    @property
+    def keyword_counts(self) -> list[tuple[Check, int]]:
+        """Each failed check with the number of characters failing it - the account in short."""
+        return [
+            (
+                check,
+                sum(
+                    any(problem.check.key == check.key for problem in character.problems)
+                    for character in self.characters
+                ),
+            )
+            for check in self.keywords
+        ]
+
     def is_linked(self, service_key: str) -> bool:
         return any(link.linked for link in self.services if link.service.key == service_key)
 
@@ -153,6 +167,19 @@ class Todo:
     @property
     def names(self) -> str:
         return ", ".join(account.main_name for account in self.accounts)
+
+
+# the to-do group of the members Auth does not know; the others are check keys
+UNREGISTERED = "unregistered"
+
+
+@dataclass
+class TodoRow:
+    """One name of the to-do list, as the CSV export writes it."""
+
+    group: str
+    label: str
+    name: str
 
 
 @dataclass
@@ -227,6 +254,19 @@ class Corporation:
     @property
     def unregistered_names(self) -> str:
         return ", ".join(character["name"] for character in self.unregistered)
+
+    @property
+    def todo_rows(self) -> list[TodoRow]:
+        """The to-do list name by name, in the order of the page: the checks, then the unregistered members."""
+        rows = [
+            TodoRow(todo.check.key, todo.check.label, account.main_name)
+            for todo in self.todos
+            for account in todo.accounts
+        ]
+        rows += [
+            TodoRow(UNREGISTERED, _("Not registered in Auth"), character["name"]) for character in self.unregistered
+        ]
+        return rows
 
     @property
     def problem_count(self) -> int:

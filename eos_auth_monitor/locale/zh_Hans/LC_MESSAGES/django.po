@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 14:11+0000\n"
-"PO-Revision-Date: 2026-09-29 14:11+0000\n"
+"POT-Creation-Date: 2026-09-29 18:12+0000\n"
+"PO-Revision-Date: 2026-09-29 18:12+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: zh_Hans\n"
 "Language: zh_Hans\n"
@@ -16,8 +16,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: auth_hooks.py:14 templates/eos_auth_monitor/base.html:6
-#: templates/eos_auth_monitor/base.html:33
+#: auth_hooks.py:15 templates/eos_auth_monitor/base.html:6
+#: templates/eos_auth_monitor/base.html:40
+#: templates/eos_auth_monitor/dashboard.corporation.html:7
+#: templates/eos_auth_monitor/dashboard.own.html:7
 msgid "Auth Monitor"
 msgstr "Auth Monitor"
 
@@ -241,7 +243,7 @@ msgstr "Corporation 审计：所需 Scope"
 msgid "One token of a Corporation member must carry all of these."
 msgstr "Corporation 成员的某一个令牌必须包含以下全部内容。"
 
-#: forms.py:57 models.py:33 templates/eos_auth_monitor/account.html:55
+#: forms.py:57 models.py:33 templates/eos_auth_monitor/account.html:57
 #: templates/eos_auth_monitor/settings.html:11
 msgctxt "EVE jargon"
 msgid "Alliance"
@@ -316,23 +318,29 @@ msgstr "正在保存"
 msgid "never updated"
 msgstr "从未更新"
 
-#: report.py:270
+#: report.py:267 templates/eos_auth_monitor/corporation.html:49
+#: templates/eos_auth_monitor/corporation.html:147
+#: templates/eos_auth_monitor/dashboard.corporation.html:32
+msgid "Not registered in Auth"
+msgstr "未在 Auth 注册"
+
+#: report.py:310
 msgid "Registered in Auth"
 msgstr "已在 Auth 注册"
 
-#: report.py:275
+#: report.py:315
 msgid "Character Audit"
 msgstr "Character 审计"
 
-#: report.py:437
+#: report.py:477
 msgid "Members registered"
 msgstr "已注册成员"
 
-#: report.py:448
+#: report.py:488
 msgid "Character Audit complete"
 msgstr "Character 审计完整"
 
-#: report.py:460
+#: report.py:500
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s 正常运行"
@@ -355,36 +363,37 @@ msgstr "已关联"
 msgid "not linked"
 msgstr "未关联"
 
-#: templates/eos_auth_monitor/account.html:53
+#: templates/eos_auth_monitor/account.html:55
 msgctxt "EVE jargon"
 msgid "Character"
 msgstr "Character"
 
-#: templates/eos_auth_monitor/account.html:54
+#: templates/eos_auth_monitor/account.html:56
 #: templates/eos_auth_monitor/index.html:113
 #: templates/eos_auth_monitor/service.html:20
 msgctxt "EVE jargon"
 msgid "Corporation"
 msgstr "Corporation"
 
-#: templates/eos_auth_monitor/account.html:56
+#: templates/eos_auth_monitor/account.html:58
 #: templates/eos_auth_monitor/index.html:114
 #: templates/eos_auth_monitor/partials/problem-marker.html:3
 msgid "Problems"
 msgstr "问题"
 
-#: templates/eos_auth_monitor/account.html:83
+#: templates/eos_auth_monitor/account.html:85
+#: templates/eos_auth_monitor/dashboard.own.html:30
 msgid "No character of this account has a problem."
 msgstr "此账号的所有 Character 都没有问题。"
 
-#: templates/eos_auth_monitor/account.html:91
+#: templates/eos_auth_monitor/account.html:93
 #, python-format
 msgctxt "EVE jargon"
 msgid "%(counter)s character without problems"
 msgid_plural "%(counter)s characters without problems"
 msgstr[0] "%(counter)s 个没有问题的 Character"
 
-#: templates/eos_auth_monitor/account.html:98
+#: templates/eos_auth_monitor/account.html:100
 #: templates/eos_auth_monitor/corporation_service.html:18
 #: templates/eos_auth_monitor/partials/character-cell.html:12
 #: templates/eos_auth_monitor/service.html:19
@@ -392,15 +401,19 @@ msgctxt "EVE jargon"
 msgid "Main"
 msgstr "Main"
 
-#: templates/eos_auth_monitor/base.html:11
-msgid "Overview"
-msgstr "概览"
-
-#: templates/eos_auth_monitor/base.html:17 views.py:134
+#: templates/eos_auth_monitor/base.html:12 views.py:203
 msgid "My account"
 msgstr "我的账号"
 
-#: templates/eos_auth_monitor/base.html:23 views.py:35
+#: templates/eos_auth_monitor/base.html:18
+msgid "My Corporation"
+msgstr "我的 Corporation"
+
+#: templates/eos_auth_monitor/base.html:24
+msgid "Alliance overview"
+msgstr "Alliance 概览"
+
+#: templates/eos_auth_monitor/base.html:30 views.py:40
 msgid "Settings"
 msgstr "设置"
 
@@ -412,49 +425,70 @@ msgstr "此 Corporation 不在概览中。"
 msgid "To do"
 msgstr "待办"
 
-#: templates/eos_auth_monitor/corporation.html:46
-#: templates/eos_auth_monitor/corporation.html:143
-msgid "Not registered in Auth"
-msgstr "未在 Auth 注册"
-
-#: templates/eos_auth_monitor/corporation.html:49
+#: templates/eos_auth_monitor/corporation.html:52
 msgid ""
 "These members have no account in Auth yet: they register and add their "
 "characters."
 msgstr "这些成员在 Auth 中还没有账号：他们需要注册并添加自己的 Character。"
 
-#: templates/eos_auth_monitor/corporation.html:50
+#: templates/eos_auth_monitor/corporation.html:53
 msgid "List"
 msgstr "列表"
 
-#: templates/eos_auth_monitor/corporation.html:60
+#: templates/eos_auth_monitor/corporation.html:64
 msgid "Mains of this Corporation"
 msgstr "此 Corporation 的 Main"
 
-#: templates/eos_auth_monitor/corporation.html:74
+#: templates/eos_auth_monitor/corporation.html:78
+#: templates/eos_auth_monitor/dashboard.own.html:22
 #, python-format
 msgctxt "EVE jargon"
 msgid "%(counter)s character"
 msgid_plural "%(counter)s characters"
 msgstr[0] "%(counter)s 个 Character"
 
-#: templates/eos_auth_monitor/corporation.html:94
+#: templates/eos_auth_monitor/corporation.html:98
 msgid "Without problems"
 msgstr "无问题"
 
-#: templates/eos_auth_monitor/corporation.html:110
+#: templates/eos_auth_monitor/corporation.html:114
 msgid "No main of this Corporation is registered in Auth."
 msgstr "此 Corporation 没有任何 Main 在 Auth 中注册。"
 
-#: templates/eos_auth_monitor/corporation.html:114
+#: templates/eos_auth_monitor/corporation.html:118
 msgid "Members whose main is in another Corporation"
 msgstr "其 Main 在另一个 Corporation 的成员"
 
-#: templates/eos_auth_monitor/corporation.html:138
+#: templates/eos_auth_monitor/corporation.html:142
 msgid ""
 "The member list of this Corporation could not be read: no member has a token"
 " with the membership scope."
 msgstr "无法读取此 Corporation 的成员列表：没有任何成员拥有带成员资格 Scope 的令牌。"
+
+#: templates/eos_auth_monitor/dashboard.corporation.html:27
+#: templates/eos_auth_monitor/index.html:84
+#: templates/eos_auth_monitor/index.html:115
+#: templates/eos_auth_monitor/partials/corporation-header.html:16
+msgctxt "EVE jargon"
+msgid "Mains"
+msgstr "Main"
+
+#: templates/eos_auth_monitor/dashboard.corporation.html:33
+#: templates/eos_auth_monitor/index.html:89
+#: templates/eos_auth_monitor/index.html:116
+#: templates/eos_auth_monitor/partials/corporation-header.html:19
+msgctxt "EVE jargon"
+msgid "Characters"
+msgstr "Character"
+
+#: templates/eos_auth_monitor/dashboard.corporation.html:40
+msgid "Nothing to do."
+msgstr "无需处理。"
+
+#: templates/eos_auth_monitor/dashboard.corporation.html:46
+#: templates/eos_auth_monitor/dashboard.own.html:36
+msgid "View details"
+msgstr "查看详情"
 
 #: templates/eos_auth_monitor/index.html:9
 msgid "Cockpit"
@@ -494,20 +528,6 @@ msgstr "卡片"
 msgid "Table"
 msgstr "表格"
 
-#: templates/eos_auth_monitor/index.html:84
-#: templates/eos_auth_monitor/index.html:115
-#: templates/eos_auth_monitor/partials/corporation-header.html:16
-msgctxt "EVE jargon"
-msgid "Mains"
-msgstr "Main"
-
-#: templates/eos_auth_monitor/index.html:89
-#: templates/eos_auth_monitor/index.html:116
-#: templates/eos_auth_monitor/partials/corporation-header.html:19
-msgctxt "EVE jargon"
-msgid "Characters"
-msgstr "Character"
-
 #: templates/eos_auth_monitor/index.html:101
 msgid "No Corporation of the Alliance is known to Auth."
 msgstr "Auth 中没有该 Alliance 的任何 Corporation。"
@@ -532,6 +552,10 @@ msgstr "复制名字用于 EVE 邮件"
 #: templates/eos_auth_monitor/partials/copy-button.html:6
 msgid "Copy names"
 msgstr "复制名字"
+
+#: templates/eos_auth_monitor/partials/csv-button.html:5
+msgid "Download the names as a CSV file"
+msgstr "将名称下载为 CSV 文件"
 
 #: templates/eos_auth_monitor/partials/gauge.html:12
 #: templates/eos_auth_monitor/partials/row-title.html:1
@@ -661,32 +685,41 @@ msgctxt "eos-auth-monitor"
 msgid "Save"
 msgstr "保存"
 
-#: views.py:32
+#: views.py:37
 msgid "Corporation overview"
 msgstr "Corporation 概览"
 
-#: views.py:33
+#: views.py:38
 msgid "Corporation details"
 msgstr "Corporation 详情"
 
-#: views.py:34
+#: views.py:39
 msgid "Main details"
 msgstr "Main 详情"
 
-#: views.py:182
+#: views.py:162
+msgctxt "eos-auth-monitor"
+msgid "Name"
+msgstr "名称"
+
+#: views.py:167
+msgid "Problem"
+msgstr "问题"
+
+#: views.py:253
 msgid "Settings saved. The overview is being rebuilt."
 msgstr "设置已保存。概览正在重建。"
 
-#: views.py:186
+#: views.py:257
 msgid ""
 "Settings saved, but the task queue is not reachable: the overview is rebuilt"
 " once it is back."
 msgstr "设置已保存，但任务队列无法访问：待其恢复后将重建概览。"
 
-#: views.py:210
+#: views.py:281
 msgid "The overview is being rebuilt."
 msgstr "概览正在重建。"
 
-#: views.py:212
+#: views.py:283
 msgid "The rebuild could not be started: the task queue is not reachable."
 msgstr "无法启动重建：任务队列无法访问。"

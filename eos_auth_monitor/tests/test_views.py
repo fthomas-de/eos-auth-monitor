@@ -1,3 +1,6 @@
+import csv
+import io
+import re
 from unittest.mock import patch
 
 from kombu.exceptions import OperationalError
@@ -837,3 +840,177 @@ class TestRebuild(ViewTestCase):
         self.client.force_login(self.leader)
 
         self.assertEqual(self.client.get(reverse("eos_auth_monitor:rebuild")).status_code, 405)
+
+
+NAV_LINK = re.compile(r'<a class="nav-link ?(active)?" href="([^"]+)"')
+
+
+class TestNavigation(ViewTestCase):
+    def tabs(self, response):
+        """(href, active) of each tab of the app navbar, in order."""
+        return [
+            (href, bool(active))
+            for active, href in NAV_LINK.findall(response.content.decode())
+            if href.startswith("/eos_auth_monitor/")
+        ]
+
+    def test_should_order_the_tabs_from_the_own_main_to_the_alliance(self):
+        everyone = make_user("everyone", VIEW_OWN, BASIC_ACCESS, VIEW_ALL, MANAGE_SETTINGS, corporation_id=2001)
+
+        hrefs = [href for href, _ in self.tabs(self.get(everyone, "settings"))]
+
+        self.assertEqual(
+            hrefs,
+            [
+                reverse("eos_auth_monitor:own_account"),
+                reverse("eos_auth_monitor:corporation", args=[2001]),
+                reverse("eos_auth_monitor:index"),
+                reverse("eos_auth_monitor:settings"),
+            ],
+        )
+
+    def test_should_give_each_permission_its_tab(self):
+        member = make_user("member", VIEW_OWN, corporation_id=2002)
+        cases = [
+            (member, "own_account", [reverse("eos_auth_monitor:own_account")]),
+            (self.ceo, "corporation", [reverse("eos_auth_monitor:corporation", args=[2001])]),
+            (self.admin, "settings", [reverse("eos_auth_monitor:settings")]),
+        ]
+        for user, page, expected in cases:
+            with self.subTest(user.username):
+                args = [2001] if page == "corporation" else []
+                self.assertEqual([href for href, _ in self.tabs(self.get(user, page, *args))], expected)
+
+    def test_should_offer_leadership_the_own_corporation_as_well(self):
+        hrefs = [href for href, _ in self.tabs(self.get(self.leader, "index"))]
+
+        self.assertEqual(
+            hrefs, [reverse("eos_auth_monitor:corporation", args=[2001]), reverse("eos_auth_monitor:index")]
+        )
+
+    def test_should_mark_the_tab_of_the_page(self):
+        own_corporation = reverse("eos_auth_monitor:corporation", args=[2001])
+        overview = reverse("eos_auth_monitor:index")
+        cases = [
+            (("index",), overview),
+            (("service", "discord"), overview),
+            (("corporation", 2001), own_corporation),
+            (("account", 11), own_corporation),
+            (("corporation_service", 2001, "discord"), own_corporation),
+            # another Corporation is reached from the Alliance overview
+            (("corporation", 2002), overview),
+            (("account", 22), overview),
+        ]
+        for (name, *args), expected in cases:
+            with self.subTest(name=name, args=args):
+                active = [href for href, is_active in self.tabs(self.get(self.leader, name, *args)) if is_active]
+                self.assertEqual(active, [expected])
+
+    def test_should_mark_the_own_account_and_the_settings(self):
+        member = make_user("member", VIEW_OWN, corporation_id=2002)
+
+        own = [href for href, is_active in self.tabs(self.get(member, "own_account")) if is_active]
+        settings = [href for href, is_active in self.tabs(self.get(self.admin, "settings")) if is_active]
+
+        self.assertEqual(own, [reverse("eos_auth_monitor:own_account")])
+        self.assertEqual(settings, [reverse("eos_auth_monitor:settings")])
+
+
+class TestOwnAccountServices(ViewTestCase):
+    def test_should_link_the_own_services_to_alliance_auths_services_page(self):
+        member = make_user("member", VIEW_OWN, corporation_id=2001)
+        snapshot = Snapshot.objects.get()
+        main_id = member.profile.main_character.character_id
+        snapshot.data["corporations"][0]["accounts"].append(account_row(member.pk, main_id, services={}))
+        snapshot.save()
+
+        response = self.get(member, "own_account")
+
+        self.assertContains(response, f'<a href="{reverse("services:services")}" class="stretched-link"', count=1)
+
+    def test_should_keep_the_corporation_list_on_someone_elses_account(self):
+        response = self.get(self.ceo, "account", 11)
+
+        self.assertNotContains(response, f'<a href="{reverse("services:services")}" class="stretched-link"')
+        self.assertContains(
+            response, f'<a href="{reverse("eos_auth_monitor:corporation_service", args=[2001, "discord"])}"'
+        )
+
+
+class TestCorporationExport(ViewTestCase):
+    """The to-do list of 2002 as CSV: two mains without an audit, two members Auth does not know."""
+
+    def setUp(self):
+        super().setUp()
+        snapshot = Snapshot.objects.get()
+        row = snapshot.data["corporations"][1]
+        row["accounts"].append(account_row(33, 3301, [character_row(3301, [AUDIT_MISSING], corporation_id=2002)], {}))
+        row["member_count"] = 5
+        # a name a spreadsheet would run as a formula
+        row["unregistered"] = [{"id": 7001, "name": "Stranger A"}, {"id": 7002, "name": "=Stranger B"}]
+        snapshot.save()
+
+    def export(self, user, corporation_id=2002, group=None):
+        self.client.force_login(user)
+        url = reverse("eos_auth_monitor:corporation_export", args=[corporation_id])
+        return self.client.get(url, {"group": group} if group else {})
+
+    @staticmethod
+    def lines(response):
+        return list(csv.reader(io.StringIO(response.content.decode("utf-8-sig"))))
+
+    def test_should_export_one_group_as_a_name_per_line(self):
+        response = self.export(self.leader, group="char_audit_missing")
+
+        self.assertEqual(response["Content-Type"], "text/csv; charset=utf-8")
+        self.assertEqual(response["Content-Disposition"], 'attachment; filename="C2002-char_audit_missing.csv"')
+        self.assertEqual(self.lines(response), [["Name"], ["Char 2201"], ["Char 3301"]])
+
+    def test_should_export_the_unregistered_members(self):
+        response = self.export(self.leader, group="unregistered")
+
+        self.assertEqual(self.lines(response), [["Name"], ["Stranger A"], ["'=Stranger B"]])
+
+    def test_should_export_the_whole_list_with_the_problem_of_each_name(self):
+        response = self.export(self.leader)
+
+        self.assertEqual(response["Content-Disposition"], 'attachment; filename="C2002-todo.csv"')
+        self.assertEqual(
+            self.lines(response),
+            [
+                ["Problem", "Name"],
+                ["Audit missing", "Char 2201"],
+                ["Audit missing", "Char 3301"],
+                ["Not registered in Auth", "Stranger A"],
+                ["Not registered in Auth", "'=Stranger B"],
+            ],
+        )
+
+    def test_should_start_with_a_byte_order_mark_for_excel(self):
+        self.assertTrue(self.export(self.leader).content.startswith("\ufeff".encode()))
+
+    def test_should_export_only_what_the_viewer_may_see(self):
+        self.assertEqual(self.export(self.ceo).status_code, 403)
+        self.assertEqual(self.export(make_user("nobody")).status_code, 302)
+        self.assertEqual(self.export(make_user("member", VIEW_OWN, corporation_id=2002)).status_code, 302)
+
+    def test_should_let_the_ceo_export_the_own_corporation(self):
+        ceo = make_user("ceo2", BASIC_ACCESS, corporation_id=2002)
+
+        self.assertEqual(self.export(ceo).status_code, 200)
+
+    def test_should_not_find_an_empty_or_unknown_group(self):
+        self.assertEqual(self.export(self.leader, group="nonsense").status_code, 404)
+        self.assertEqual(self.export(self.leader, corporation_id=2001).status_code, 404)
+        self.assertEqual(self.export(self.leader, corporation_id=2999).status_code, 404)
+
+    def test_should_offer_a_csv_button_beside_each_copy_button_and_for_the_whole_list(self):
+        content = self.get(self.leader, "corporation", 2002).content.decode()
+        url = reverse("eos_auth_monitor:corporation_export", args=[2002])
+
+        todos = content[content.index("eos-auth-monitor-todos"):content.index("Mains of this Corporation")]
+        self.assertIn(f'href="{url}"', todos)
+        self.assertIn(f'href="{url}?group=char_audit_missing"', todos)
+        self.assertIn(f'href="{url}?group=unregistered"', todos)
+        # and once more beside the list of the unregistered members further down
+        self.assertEqual(content.count(f'href="{url}?group=unregistered"'), 2)

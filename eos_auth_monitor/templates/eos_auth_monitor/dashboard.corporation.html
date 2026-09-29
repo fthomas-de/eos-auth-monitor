@@ -1,0 +1,51 @@
+{% load i18n %}
+{% load evelinks %}
+{# The own main's Corporation in short on Alliance Auth's dashboard, for its CEO: the to-do groups of the Corporation page, counted. #}
+<div id="eos-auth-monitor-dashboard-corporation" class="col-12 col-xl-4 mb-3">
+    <div class="card h-100 {% if corporation.has_problems or corporation.unregistered %}border-danger{% endif %}">
+        <div class="card-body d-flex flex-column">
+            {% translate "Auth Monitor" as widget_title %}
+            {% include "framework/dashboard/widget-title.html" with title=widget_title %}
+
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <img src="{{ corporation.id|corporation_logo_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+                <span class="fw-bold text-truncate">{{ corporation.name }}</span>
+                <span class="text-body-secondary small">[{{ corporation.ticker }}]</span>
+                {% include "eos_auth_monitor/partials/no-director.html" %}
+            </div>
+
+            {% if corporation.problems or corporation.todos or corporation.unregistered %}
+                <ul class="list-group list-group-flush mb-2">
+                    {% for problem in corporation.problems %}
+                        <li class="list-group-item d-flex align-items-center gap-2 px-0">
+                            <span class="badge text-bg-warning text-wrap" title="{{ problem.check.description }}">{{ problem.check.label }}</span>
+                        </li>
+                    {% endfor %}
+                    {% for todo in corporation.todos %}
+                        <li class="list-group-item d-flex align-items-center gap-2 px-0">
+                            <span class="badge text-bg-danger text-wrap" title="{{ todo.check.description }}">{{ todo.check.label }}</span>
+                            <span class="small text-body-secondary ms-auto text-nowrap">{% translate "Mains" context "EVE jargon" %}: {{ todo.accounts|length }}</span>
+                        </li>
+                    {% endfor %}
+                    {% if corporation.unregistered %}
+                        <li class="list-group-item d-flex align-items-center gap-2 px-0">
+                            <span class="badge text-bg-danger text-wrap">{% translate "Not registered in Auth" %}</span>
+                            <span class="small text-body-secondary ms-auto text-nowrap">{% translate "Characters" context "EVE jargon" %}: {{ corporation.unregistered|length }}</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            {% else %}
+                <div class="text-center text-success my-3">
+                    <i class="fas fa-circle-check fa-2x mb-2"></i>
+                    <p class="mb-0">{% translate "Nothing to do." %}</p>
+                </div>
+            {% endif %}
+
+            <div class="text-center mt-auto">
+                <a href="{% url 'eos_auth_monitor:corporation' corporation.id %}" class="btn btn-sm btn-primary">
+                    {% translate "View details" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
