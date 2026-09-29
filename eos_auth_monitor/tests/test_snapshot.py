@@ -258,6 +258,45 @@ class TestDirectorsFromEsi(MonitorTestCase):
 
         self.assertEqual(sorted(call.args[0] for call in ask.call_args_list), [2001, 2002])
 
+    def marker(self, directors, **config):
+        with (
+            patch("eos_auth_monitor.snapshot.members_source.corporation_directors", return_value=directors),
+            patch("eos_auth_monitor.snapshot.members_source.corporation_members", return_value=None),
+            patch("eos_auth_monitor.snapshot.corptools_source.character_problems", return_value={}),
+        ):
+            data = build(fetch_members=True, **config)
+        return corporation(data, 2001)["no_director_token"]
+
+    def test_should_mark_a_corporation_whose_roles_no_director_token_could_read(self):
+        self.assertTrue(self.marker(None))
+
+    def test_should_not_mark_a_corporation_whose_roles_were_read(self):
+        self.assertFalse(self.marker({self.main_id}))
+        self.assertFalse(self.marker(set()))
+
+    def test_should_not_mark_anything_when_the_roles_were_never_asked_for(self):
+        self.assertFalse(self.marker(None, disabled_checks=["char_director_token_missing"]))
+
+    def test_should_not_mark_anything_when_esi_is_switched_off(self):
+        with patch("eos_auth_monitor.snapshot.members_source.corporation_directors", return_value=None) as ask:
+            data = build(fetch_members=False)
+
+        ask.assert_not_called()
+        self.assertFalse(corporation(data, 2001)["no_director_token"])
+
+    def test_should_mark_a_corporation_of_the_alliance_without_any_account(self):
+        make_corporation(2002)
+
+        with (
+            patch("eos_auth_monitor.snapshot.members_source.corporation_directors", return_value=None) as ask,
+            patch("eos_auth_monitor.snapshot.members_source.corporation_members", return_value=None),
+            patch("eos_auth_monitor.snapshot.corptools_source.character_problems", return_value={}),
+        ):
+            data = build(fetch_members=True)
+
+        self.assertTrue(corporation(data, 2002)["no_director_token"])
+        self.assertEqual(sorted(call.args[0] for call in ask.call_args_list), [2001, 2002])
+
     def test_should_survive_a_corporation_without_a_readable_roles_list(self):
         with (
             patch("eos_auth_monitor.snapshot.members_source.corporation_directors", return_value=None),

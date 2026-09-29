@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 10:28+0000\n"
-"PO-Revision-Date: 2026-09-29 10:28+0000\n"
+"POT-Creation-Date: 2026-09-29 11:19+0000\n"
+"PO-Revision-Date: 2026-09-29 11:19+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: de\n"
 "Language: de\n"
@@ -217,16 +217,18 @@ msgstr ""
 " gilt. Leer: dieselbe Frist, die corptools für Characters verwendet."
 
 #: models.py:58
-msgid "Fetch member lists from ESI"
-msgstr "Mitgliederlisten von ESI abrufen"
+msgid "Fetch data from ESI"
+msgstr "Daten von ESI abrufen"
 
 #: models.py:60
 msgid ""
-"Reads each Corporation's member list with a token corptools already has, to "
-"show members that are not registered in Auth."
+"Reads each Corporation's member list and Director roles with tokens "
+"corptools already has, to show members that are not registered in Auth and "
+"Directors without a token."
 msgstr ""
-"Liest die Mitgliederliste jeder Corporation mit einem Token, den corptools "
-"bereits hat, um Mitglieder zu zeigen, die nicht in Auth registriert sind."
+"Liest die Mitgliederliste und die Director-Rollen jeder Corporation mit "
+"Tokens, die corptools bereits hat, um Mitglieder zu zeigen, die nicht in "
+"Auth registriert sind, und Director ohne Token."
 
 #: models.py:67 models.py:70
 msgid "Configuration"
@@ -281,23 +283,23 @@ msgstr "Speichern"
 msgid "never updated"
 msgstr "nie aktualisiert"
 
-#: report.py:221
+#: report.py:223
 msgid "Registered in Auth"
 msgstr "In Auth registriert"
 
-#: report.py:226
+#: report.py:228
 msgid "Character Audit"
 msgstr "Character-Audit"
 
-#: report.py:367
+#: report.py:372
 msgid "Members registered"
 msgstr "Mitglieder registriert"
 
-#: report.py:378
+#: report.py:383
 msgid "Character Audit complete"
 msgstr "Character-Audit vollständig"
 
-#: report.py:389
+#: report.py:395
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s funktioniert"
@@ -414,29 +416,42 @@ msgstr "Corporations filtern ..."
 msgid "Filter Corporations"
 msgstr "Corporations filtern"
 
-#: templates/eos_auth_monitor/index.html:64
+#: templates/eos_auth_monitor/index.html:63
+#: templates/eos_auth_monitor/partials/corporation-header.html:31
+msgid "No Director token"
+msgstr "Kein Director-Token"
+
+#: templates/eos_auth_monitor/index.html:67
 #: templates/eos_auth_monitor/partials/corporation-header.html:15
 msgctxt "EVE jargon"
 msgid "Mains"
 msgstr "Mains"
 
-#: templates/eos_auth_monitor/index.html:69
+#: templates/eos_auth_monitor/index.html:72
 #: templates/eos_auth_monitor/partials/corporation-header.html:18
 msgctxt "EVE jargon"
 msgid "Characters"
 msgstr "Characters"
 
-#: templates/eos_auth_monitor/index.html:81
+#: templates/eos_auth_monitor/index.html:84
 msgid "No Corporation of the Alliance is known to Auth."
 msgstr "Auth kennt keine Corporation der Alliance."
 
-#: templates/eos_auth_monitor/index.html:84
+#: templates/eos_auth_monitor/index.html:87
 msgid "No Corporation matches the filter."
 msgstr "Keine Corporation passt zum Filter."
 
 #: templates/eos_auth_monitor/partials/corporation-header.html:16
 msgid "Accounts with problems"
 msgstr "Accounts mit Problemen"
+
+#: templates/eos_auth_monitor/partials/corporation-header.html:32
+msgid ""
+"No Director of this Corporation has a token that can read its roles, so "
+"Directors without a token go unseen here."
+msgstr ""
+"Kein Director dieser Corporation hat einen Token, der ihre Rollen lesen "
+"kann; Director ohne Token bleiben hier unsichtbar."
 
 #: templates/eos_auth_monitor/partials/gauge.html:12
 #: templates/eos_auth_monitor/partials/tile-row.html:5

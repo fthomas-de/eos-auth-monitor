@@ -11,7 +11,7 @@ Last updated 2026-09-29.
 - Version **0.0.1**, the first release (see `CHANGELOG.md`, which holds
   everything done so far under 0.0.1: it was never pushed before). The tag
   `v0.0.1` is set on the release commit and pushed with it.
-- Migrations **0001-0003** applied in `aa_dev`; no model changed since.
+- Migrations **0001-0004** applied in `aa_dev` (0004 only renames the ESI switch, a no-op in SQL).
 - 176 tests without the translation tests, 3 translation tests, all green.
   Every check, access rule and feature was counter-checked against broken
   code (a sabotage that stays green means the test is too weak - it happened
@@ -117,21 +117,21 @@ Partials: `gauge.html` (a statistic tile), `corporation-rows.html`,
   half-sabotaged file is left behind. Restore from a `cp` made just before.
 - `.git/CLAUDE_COMMIT_MSG` must be *read* before it is written again, or the
   Write tool refuses and `git commit -F` silently reuses the old message.
-- The ESI switch in the settings still says "member lists" although it also
-  covers the roles call: changing the model's help text needs a migration.
 
 ## Open points / next steps
 
-- **Unanswered wish**: "Char Audit, Corp Audit and Structures tiles should link
-  to the Telegram overview" - unclear what is meant (the cockpit tiles? which
-  page?). Ask before building anything.
+- **Unreleased, not yet in a commit**: the cockpit tiles Character Audit,
+  Corporation Audit and Structures link to Auth's `/services/` (the user's
+  answer to the old wish about a Telegram overview); the marker "No Director
+  token" (a badge, not a problem); the ESI switch is called "Fetch data from
+  ESI" (migration 0004). Translations of the new texts come with `/commit`.
 - Nothing was looked at in a browser: the pages need a login. `filter.js`, the
   tiles and the footer are covered by tests of the rendered HTML only.
 - The service lists behind a tile show the registered mains only, while the
   tile's total also counts unknown members.
 - A Director whose roles neither corptools nor ESI (no Director token in the
-  Corporation) could read is not found; Corporations without a token show
-  no Director problems at all.
+  Corporation) could read is not found; such Corporations now carry the
+  marker "No Director token" instead of showing nothing.
 - Performance with a large Alliance is untested; the footer with the build
   figures is there to measure it. The character check reads all tokens with
   their scopes in one query; the member lists and roles cost up to two ESI

@@ -143,6 +143,34 @@ class TestPages(ViewTestCase):
         for corporation_id in (2001, 2002):
             self.assertContains(response, reverse("eos_auth_monitor:corporation", args=[corporation_id]))
 
+    def test_should_link_the_audit_gauges_to_the_services_of_auth(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["checks"] = ["char_audit_missing", "corp_token_missing", "structures_no_owner"]
+        snapshot.save()
+
+        response = self.get(self.leader, "index")
+
+        url = reverse("services:services")
+        for label in ("Character Audit complete", "Corporation Audit working", "Structures working"):
+            with self.subTest(label):
+                self.assertContains(response, f'href="{url}" class="stretched-link" aria-label="{label}"')
+
+    def test_should_mark_a_corporation_without_a_director_token(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["no_director_token"] = True
+        snapshot.save()
+
+        overview = self.get(self.leader, "index")
+        page = self.get(self.leader, "corporation", 2001)
+        other = self.get(self.leader, "corporation", 2002)
+
+        self.assertContains(overview, 'badge text-bg-info text-wrap">No Director token', count=1)
+        self.assertContains(page, 'badge text-bg-info text-wrap">No Director token', count=1)
+        self.assertNotContains(other, "No Director token")
+
+    def test_should_not_mark_a_corporation_by_default(self):
+        self.assertNotContains(self.get(self.leader, "index"), "No Director token")
+
     def test_should_tag_a_main_whose_director_has_no_corporation_token(self):
         snapshot = Snapshot.objects.get()
         problem = {"check": "char_director_token_missing", "detail": ["esi-wallet.read_corporation_wallets.v1"]}

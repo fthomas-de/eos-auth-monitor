@@ -21,7 +21,9 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   registered in Auth, share of characters with a complete corptools
   Character Audit, share of Corporations with a working corptools
   Corporation Audit and aa-structures owner - and a tile with the number of
-  connections per service
+  connections per service. The service tiles open their list; the Character
+  Audit, Corporation Audit and Structures tiles open Alliance Auth's services
+  page
 - **Most problems first**: Corporation tiles, mains, characters and the service
   lists are ordered by the number of problems, then by name
 - **Filter** above the Corporation tiles of the overview (name or ticker)
@@ -84,6 +86,12 @@ settings.
 | Audit inactive | a section corptools counts has not updated for longer than `CT_CHAR_MAX_INACTIVE_DAYS`, minus the sections left out in the settings; the detail names them |
 | Director token missing | corptools has read the character's roles and it is a Director, but none of its tokens carries all scopes of the Corporation audit (`CORP_REQUIRED_SCOPES` plus the roles scope), minus the Corporation scopes left out in the settings; the detail names what the most complete token lacks. A Director whose roles corptools never read is not found |
 
+A Corporation where no Director's token could read the roles (the ESI call in
+[ESI](#esi) found no token, or none worked) carries the marker *No Director
+token* on its tile and its page: the check cannot see its Directors there. The
+marker is not a problem and does not count in the percentages; it only exists
+while *Fetch data from ESI* and the check are on.
+
 "Audit inactive" follows the conditions of corptools'
 `CharacterAudit.is_active()` - which sections count depends on corptools'
 `CT_CHAR_*_MODULE` settings and its own configuration - but is worked out by
@@ -133,11 +141,10 @@ Corporation:
 | `POST /universe/names/` | none | for members Auth has no name for |
 
 django-esi caches the responses and honours their expiry. The app asks for
-no scopes of its own and adds no login step. *Fetch member lists from ESI*
-in the settings switches all of these calls off (the label says member lists,
-the roles go with them); the Corporation page then shows the registered
-accounts only, and the check *Director token missing* knows only the Directors
-corptools read.
+no scopes of its own and adds no login step. *Fetch data from ESI*
+in the settings switches all of these calls off; the Corporation page then
+shows the registered accounts only, and the check *Director token missing*
+knows only the Directors corptools read.
 
 The character count of a Corporation on the overview is not read from ESI by
 this app: it is the member count Auth keeps on the Corporation
@@ -253,7 +260,7 @@ put in `local.py`.
 |---|---|
 | Alliance | The Alliance whose accounts and Corporations are monitored; a searchable dropdown of the Alliances Auth knows |
 | Stale after (days) | When a section of the corptools Corporation audit counts as stale. Empty (the default): the same limit corptools uses for characters, `CT_CHAR_MAX_INACTIVE_DAYS` |
-| Fetch member lists from ESI | See [ESI](#esi); on by default |
+| Fetch data from ESI | See [ESI](#esi); on by default |
 | Checks | One switch per check, grouped by app |
 | Services | One switch per service, to hide a service the Alliance does not use |
 | corptools: what the checks count | Four lists - Character Audit sections and scopes, Corporation Audit sections and scopes. Untick what the Alliance does not use, e.g. *Moon Observations* and `esi-industry.read_corporation_mining.v1` for an Alliance without moons; a section and its scope are separate entries |

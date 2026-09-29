@@ -30,7 +30,7 @@
                 {% endif %}
                 {% for gauge in cockpit %}
                     <div class="col">
-                        {% if gauge.service %}{% url 'eos_auth_monitor:service' gauge.service.key as gauge_link %}{% endif %}
+                        {% if gauge.service %}{% url 'eos_auth_monitor:service' gauge.service.key as gauge_link %}{% elif gauge.to_services %}{% url 'services:services' as gauge_link %}{% endif %}
                         {% include "eos_auth_monitor/partials/gauge.html" with link=gauge_link %}
                     </div>
                 {% endfor %}
@@ -59,6 +59,9 @@
                                     <span class="text-body-secondary small">[{{ corporation.ticker }}]</span>
                                 </h6>
                             </div>
+                            {% if corporation.no_director_token %}
+                                <div class="mb-2"><span class="badge text-bg-info text-wrap">{% translate "No Director token" %}</span></div>
+                            {% endif %}
                             <ul class="list-unstyled small mb-0">
                                 <li class="d-flex justify-content-between gap-2">
                                     <span><i class="fas fa-user fa-fw"></i> {% translate "Mains" context "EVE jargon" %}</span>

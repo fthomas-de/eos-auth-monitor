@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 10:28+0000\n"
-"PO-Revision-Date: 2026-09-29 10:28+0000\n"
+"POT-Creation-Date: 2026-09-29 11:19+0000\n"
+"PO-Revision-Date: 2026-09-29 11:19+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: zh_Hans\n"
 "Language: zh_Hans\n"
@@ -203,14 +203,17 @@ msgstr ""
 "corptools Corporation 审计的某个部分在多少天后被视为过期。留空：使用 corptools 对 Character 采用的同一期限。"
 
 #: models.py:58
-msgid "Fetch member lists from ESI"
-msgstr "从 ESI 获取成员列表"
+msgid "Fetch data from ESI"
+msgstr "从 ESI 获取数据"
 
 #: models.py:60
 msgid ""
-"Reads each Corporation's member list with a token corptools already has, to "
-"show members that are not registered in Auth."
-msgstr "使用 corptools 已有的令牌读取每个 Corporation 的成员列表，以显示未在 Auth 中注册的成员。"
+"Reads each Corporation's member list and Director roles with tokens "
+"corptools already has, to show members that are not registered in Auth and "
+"Directors without a token."
+msgstr ""
+"使用 corptools 已有的令牌读取每个 Corporation 的成员列表和 Director 角色，以显示未在 Auth "
+"中注册的成员和没有令牌的 Director。"
 
 #: models.py:67 models.py:70
 msgid "Configuration"
@@ -265,23 +268,23 @@ msgstr "正在保存"
 msgid "never updated"
 msgstr "从未更新"
 
-#: report.py:221
+#: report.py:223
 msgid "Registered in Auth"
 msgstr "已在 Auth 注册"
 
-#: report.py:226
+#: report.py:228
 msgid "Character Audit"
 msgstr "Character 审计"
 
-#: report.py:367
+#: report.py:372
 msgid "Members registered"
 msgstr "已注册成员"
 
-#: report.py:378
+#: report.py:383
 msgid "Character Audit complete"
 msgstr "Character 审计完整"
 
-#: report.py:389
+#: report.py:395
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s 正常运行"
@@ -395,29 +398,40 @@ msgstr "筛选 Corporation ..."
 msgid "Filter Corporations"
 msgstr "筛选 Corporation"
 
-#: templates/eos_auth_monitor/index.html:64
+#: templates/eos_auth_monitor/index.html:63
+#: templates/eos_auth_monitor/partials/corporation-header.html:31
+msgid "No Director token"
+msgstr "无 Director 令牌"
+
+#: templates/eos_auth_monitor/index.html:67
 #: templates/eos_auth_monitor/partials/corporation-header.html:15
 msgctxt "EVE jargon"
 msgid "Mains"
 msgstr "Main"
 
-#: templates/eos_auth_monitor/index.html:69
+#: templates/eos_auth_monitor/index.html:72
 #: templates/eos_auth_monitor/partials/corporation-header.html:18
 msgctxt "EVE jargon"
 msgid "Characters"
 msgstr "Character"
 
-#: templates/eos_auth_monitor/index.html:81
+#: templates/eos_auth_monitor/index.html:84
 msgid "No Corporation of the Alliance is known to Auth."
 msgstr "Auth 中没有该 Alliance 的任何 Corporation。"
 
-#: templates/eos_auth_monitor/index.html:84
+#: templates/eos_auth_monitor/index.html:87
 msgid "No Corporation matches the filter."
 msgstr "没有 Corporation 符合筛选条件。"
 
 #: templates/eos_auth_monitor/partials/corporation-header.html:16
 msgid "Accounts with problems"
 msgstr "有问题的账号"
+
+#: templates/eos_auth_monitor/partials/corporation-header.html:32
+msgid ""
+"No Director of this Corporation has a token that can read its roles, so "
+"Directors without a token go unseen here."
+msgstr "该 Corporation 没有任何 Director 的令牌能够读取其角色，因此这里无法发现没有令牌的 Director。"
 
 #: templates/eos_auth_monitor/partials/gauge.html:12
 #: templates/eos_auth_monitor/partials/tile-row.html:5

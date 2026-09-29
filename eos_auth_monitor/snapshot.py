@@ -137,10 +137,23 @@ def build(config, on_step=_no_progress) -> dict | None:
     character_problems = {}
     character_keys = {key for key in keys if CHECKS_BY_KEY[key].scope == CHARACTER}
     esi_directors = set()
-    if config.fetch_members and "char_director_token_missing" in character_keys:
+    # Corporations where the roles were asked for and no Director token could read them
+    roles_unreadable = set()
+    asked_roles = config.fetch_members and "char_director_token_missing" in character_keys
+    asked = set()
+
+    def ask_roles(corporation_id):
+        asked.add(corporation_id)
+        found = members_source.corporation_directors(corporation_id)
+        if found is None:
+            roles_unreadable.add(corporation_id)
+        else:
+            esi_directors.update(found)
+
+    if asked_roles:
         # one call per Corporation an account has a character in, and only where a Director has a token
         for corporation_id in sorted({c.corporation_id for chars in characters_by_user.values() for c in chars}):
-            esi_directors |= members_source.corporation_directors(corporation_id) or set()
+            ask_roles(corporation_id)
     if character_keys:
         character_ids = ownerships.values_list("character__character_id", flat=True)
         character_problems = corptools_source.character_problems(
@@ -171,6 +184,11 @@ def build(config, on_step=_no_progress) -> dict | None:
             {"name": main.corporation_name, "ticker": main.corporation_ticker, "member_total": None},
         )
     corporation_ids = sorted(corporations)
+    if asked_roles:
+        # a Corporation of the Alliance where nobody has a character yet still deserves its marker
+        for corporation_id in corporation_ids:
+            if corporation_id not in asked:
+                ask_roles(corporation_id)
 
     corporation_problems = defaultdict(list)
     corptools_keys = _keys_of_group(keys, "corptools_corporations")
@@ -248,6 +266,7 @@ def build(config, on_step=_no_progress) -> dict | None:
                     "ticker": corporations[corporation_id]["ticker"],
                     "member_total": corporations[corporation_id]["member_total"],
                     "problems": corporation_problems.get(corporation_id, []),
+                    "no_director_token": corporation_id in roles_unreadable,
                     "accounts": sorted(
                         accounts_by_corporation.get(corporation_id, []),
                         key=lambda account: account["main_name"].lower(),

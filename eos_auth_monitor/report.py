@@ -152,6 +152,8 @@ class Corporation:
     services: list[Service] = field(repr=False)
     checks: list[Check] = field(repr=False)
     member_total: int | None = None
+    # no Director token could read the roles: Director problems of this Corporation go unseen
+    no_director_token: bool = False
 
     @property
     def characters(self) -> int | None:
@@ -248,6 +250,8 @@ class Gauge:
     total: int
     icon: str
     service: Service | None = None
+    # a tile without a page of its own points to Auth's list of services
+    to_services: bool = False
 
     @property
     def percent(self) -> int | None:
@@ -318,6 +322,7 @@ class Report:
             self.services,
             self.checks,
             row.get("member_total"),
+            row.get("no_director_token", False),
         )
 
     @property
@@ -379,6 +384,7 @@ class Report:
                     sum(not character.problems for character in characters),
                     len(characters),
                     "fas fa-user-check",
+                    to_services=True,
                 )
             )
 
@@ -393,6 +399,7 @@ class Report:
                         ),
                         len(self.corporations),
                         icon,
+                        to_services=True,
                     )
                 )
 

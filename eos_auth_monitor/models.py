@@ -55,10 +55,10 @@ class MonitorConfiguration(SingletonModel):
     excluded_corporation_scopes = models.JSONField(default=list, blank=True)
     fetch_members = models.BooleanField(
         default=True,
-        verbose_name=_("Fetch member lists from ESI"),
+        verbose_name=_("Fetch data from ESI"),
         help_text=_(
-            "Reads each Corporation's member list with a token corptools already has, "
-            "to show members that are not registered in Auth."
+            "Reads each Corporation's member list and Director roles with tokens corptools already has, "
+            "to show members that are not registered in Auth and Directors without a token."
         ),
     )
 

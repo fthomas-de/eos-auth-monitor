@@ -12,6 +12,40 @@ def report(corporations, **kwargs):
     return Report(store_snapshot(snapshot_data(corporations, **kwargs)))
 
 
+class TestDirectorMarker(MonitorTestCase):
+    def test_should_read_the_marker_of_a_corporation(self):
+        marked = {**corporation_row(2001), "no_director_token": True}
+
+        found = report([marked, corporation_row(2002)])
+
+        self.assertTrue(found.corporation(2001).no_director_token)
+        self.assertFalse(found.corporation(2002).no_director_token)
+
+    def test_should_not_mark_a_corporation_of_an_older_snapshot(self):
+        self.assertFalse(report([corporation_row(2001)]).corporation(2001).no_director_token)
+
+
+class TestGaugeTargets(MonitorTestCase):
+    def test_should_send_the_audit_and_structures_gauges_to_the_services_page(self):
+        account = account_row(11, 1101)
+        gauges = report(
+            [corporation_row(2001, [account])],
+            checks=["char_audit_missing", "corp_token_missing", "structures_no_owner"],
+            services=["discord"],
+        ).cockpit()
+
+        targets = {str(gauge.label): gauge.to_services for gauge in gauges}
+        self.assertEqual(
+            targets,
+            {
+                "Discord": False,
+                "Character Audit complete": True,
+                "Corporation Audit working": True,
+                "Structures working": True,
+            },
+        )
+
+
 class TestDescribe(MonitorTestCase):
     def test_should_join_the_detail(self):
         self.assertEqual(describe(SCOPES_MISSING), "a, b")

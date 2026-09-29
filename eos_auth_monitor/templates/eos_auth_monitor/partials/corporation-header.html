@@ -25,6 +25,13 @@
                         {% if problem.detail %}<span class="text-break">({{ problem.detail }})</span>{% endif %}
                     </div>
                 {% endfor %}
+                {% if corporation.no_director_token %}
+                    {# not a problem of the Corporation: the check cannot see its Directors, which is a gap in the monitoring #}
+                    <div class="small mb-1">
+                        <span class="badge text-bg-info text-wrap">{% translate "No Director token" %}</span>
+                        <span class="text-body-secondary">{% translate "No Director of this Corporation has a token that can read its roles, so Directors without a token go unseen here." %}</span>
+                    </div>
+                {% endif %}
             </div>
         </div>
 

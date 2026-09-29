@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Corporations where no Director's token could read the roles are marked
+  "No Director token" on the overview tile and on the Corporation page: the
+  check *Director token missing* cannot see their Directors. It is a marker,
+  not a problem, and does not count in the percentages.
+
+### Changed
+
+- The cockpit tiles Character Audit, Corporation Audit and Structures link to
+  Alliance Auth's services page.
+- The settings switch *Fetch member lists from ESI* is now called *Fetch data
+  from ESI*, as it also covers the roles call (migration 0004, help text only).
+
 ## [0.0.1] - 2026-09-29
 
 ### Added

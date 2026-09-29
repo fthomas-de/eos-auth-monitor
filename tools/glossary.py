@@ -59,6 +59,12 @@ TRANSLATIONS = {
         "corptools 将该审计标记为未激活：某个部分太久没有更新。",
     ),
     "Director token missing": ("Director-Token fehlt", "Нет токена Director", "缺少 Director 令牌"),
+    "No Director token": ("Kein Director-Token", "Токен Director отсутствует", "无 Director 令牌"),
+    "No Director of this Corporation has a token that can read its roles, so Directors without a token go unseen here.": (
+        "Kein Director dieser Corporation hat einen Token, der ihre Rollen lesen kann; Director ohne Token bleiben hier unsichtbar.",
+        "Ни у одного Director этой Corporation нет токена, способного читать её роли, поэтому Director без токена здесь остаются незамеченными.",
+        "该 Corporation 没有任何 Director 的令牌能够读取其角色，因此这里无法发现没有令牌的 Director。",
+    ),
     "The character is a Director of its Corporation, but none of its tokens carries all scopes corptools needs for the Corporation audit.": (
         "Der Character ist Director seiner Corporation, aber keiner seiner Tokens trägt alle Scopes, die corptools für das Corporation-Audit braucht.",
         "Character — Director своей Corporation, но ни один из его токенов не содержит все скоупы, нужные corptools для аудита Corporation.",
@@ -186,15 +192,15 @@ TRANSLATIONS = {
         "Через сколько дней раздел аудита Corporation в corptools считается устаревшим. Пусто: тот же срок, что corptools использует для Character.",
         "corptools Corporation 审计的某个部分在多少天后被视为过期。留空：使用 corptools 对 Character 采用的同一期限。",
     ),
-    "Fetch member lists from ESI": (
-        "Mitgliederlisten von ESI abrufen",
-        "Получать списки участников из ESI",
-        "从 ESI 获取成员列表",
+    "Fetch data from ESI": (
+        "Daten von ESI abrufen",
+        "Получать данные из ESI",
+        "从 ESI 获取数据",
     ),
-    "Reads each Corporation's member list with a token corptools already has, to show members that are not registered in Auth.": (
-        "Liest die Mitgliederliste jeder Corporation mit einem Token, den corptools bereits hat, um Mitglieder zu zeigen, die nicht in Auth registriert sind.",
-        "Читает список участников каждой Corporation с помощью токена, который уже есть у corptools, чтобы показать участников, не зарегистрированных в Auth.",
-        "使用 corptools 已有的令牌读取每个 Corporation 的成员列表，以显示未在 Auth 中注册的成员。",
+    "Reads each Corporation's member list and Director roles with tokens corptools already has, to show members that are not registered in Auth and Directors without a token.": (
+        "Liest die Mitgliederliste und die Director-Rollen jeder Corporation mit Tokens, die corptools bereits hat, um Mitglieder zu zeigen, die nicht in Auth registriert sind, und Director ohne Token.",
+        "Читает список участников и роли Director каждой Corporation с помощью токенов, которые уже есть у corptools, чтобы показать участников, не зарегистрированных в Auth, и Director без токена.",
+        "使用 corptools 已有的令牌读取每个 Corporation 的成员列表和 Director 角色，以显示未在 Auth 中注册的成员和没有令牌的 Director。",
     ),
     "Configuration": ("Konfiguration", "Конфигурация", "配置"),
     "Pass accounts that HAVE problems instead of those without.": (
