@@ -8,19 +8,20 @@ Last updated 2026-09-29.
 
 ## Release
 
-- Version **0.0.1**, the first release (see `CHANGELOG.md`, which holds
-  everything done so far under 0.0.1: it was never pushed before, `origin`
-  had only the initial commit). The tag `v0.0.1` is set on the release commit
-  and pushed with it.
-- Migrations **0001-0004** applied in `aa_dev` (0004 only renames the ESI
-  switch, a no-op in SQL).
-- Migration **0005** (drops the smart filter's table, adds `view_own`) is
-  written but **not applied** in `aa_dev` until the user says yes.
-- 214 tests without the translation tests (working tree after 0.0.1; 187 at
-  0.0.1), 3 translation tests, all green.
+- Version **0.0.2** of 2026-09-29, tagged `v0.0.2` on the release commit and
+  pushed with it (`v0.0.1` is the first release). New in 0.0.2, see
+  `CHANGELOG.md`: to-do list with copy buttons on the Corporation page, tiles
+  or table plus a problems-only switch on the overview, a hint with an app
+  link per problem, compact lists, *My account* for members (`view_own`), page
+  names in the header, cockpit tiles linking to corptools/aa-structures; the
+  smart filter is removed; AA floor 5.1.4; broker outage handled.
+- Migrations **0001-0005** applied in `aa_dev` (0005 dropped the empty smart
+  filter table - no filter rows, no securegroups bindings - and added
+  `view_own`).
+- 214 tests without the translation tests, 3 translation tests, all green.
   Every check, access rule and feature was counter-checked against broken
   code (a sabotage that stays green means the test is too weak - it happened
-  five times and each was fixed; the latest features went nine for nine).
+  five times and each was fixed; the 0.0.2 features went 34 for 34).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -161,6 +162,24 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
   into the scratchpad and run it by its `/mnt/c/...` path.
 - `.git/CLAUDE_COMMIT_MSG` must be *read* before it is written again, or the
   Write tool refuses and `git commit -F` silently reuses the old message.
+- From Windows' Git Bash, `wsl.exe ... python3 /mnt/c/...` needs
+  `MSYS_NO_PATHCONV=1`, or the path is mangled into `C:/Program Files/Git/...`.
+  A heredoc in that shell broke on a long template as well: write patch
+  scripts with the Write tool.
+- `eos-test` is a login-shell function: a script that calls it must run under
+  `bash -l` (or `bash -lc`), or every run silently finds nothing.
+- A `pgrep -f name` wait loop inside `bash -lc '... name ...'` matches its own
+  command line and never ends; match the full command (`python3 /mnt/c/.*name`).
+- `{% url ... as var %}` inside `{% for %}` keeps `var` across iterations (one
+  context for the whole loop): clear it in an `{% else %}` (`{% firstof "" as
+  var %}`). A `{% url %}` that cannot resolve sets `var` to "" - that is how an
+  uninstalled app's link disappears.
+- DataTables 2 right-aligns any column whose `data-order` is numeric;
+  `tables.js` sets `dt-left` on all columns. It also measures widths of a
+  hidden table as zero, hence `autoWidth: false` (the overview table starts
+  hidden).
+- Short words may clash with Alliance Auth's catalogue ("View" did): the
+  translation test names them; give them `context "eos-auth-monitor"`.
 
 ## Open points / next steps
 
@@ -199,14 +218,16 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
   bridge 1.7.6, Discord and Mumble - the readers ran against the real schemas.
   The dev DB has one account and no service links: every service number is 0.
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
-  Comes), nothing switched off, ESI on. The Celery worker was restarted
-  after the last code change (started from a shell, log in `/tmp/celery-eos.log`
-  in WSL, not from a terminal tab) and the snapshot rebuilt by hand at 11:14
-  (WSL clock): the code is current. Ether Element: 279 in the member list,
+  Comes), nothing switched off, ESI on. The Celery worker was restarted on
+  the 0.0.2 code at 14:03 (WSL clock), started detached from a shell
+  (`setsid nohup ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo`
+  in `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`, not from a
+  terminal tab). The snapshot format did not change in 0.0.2, so the stored
+  one still renders; the next beat run rebuilds it. Ether Element: 279 in the member list,
   290 in Auth's count, 14 Directors named by ESI; Nah vi is one of them and
   is flagged. The other Corporations have no token with the membership scope
   and carry "No Director token".
-- `collectstatic` was run after `filter.js` was added.
+- `collectstatic` was run after `view.js` and `copy.js` were added.
 - Installed: allianceauth 5.3.1, allianceauth-corptools 3.5.0, django-solo
   2.5.1, django-esi 9.10.0. Target production per checklist: AA 5.4.0,
   corptools 3.5.0, aa-structures 4.0.1.
