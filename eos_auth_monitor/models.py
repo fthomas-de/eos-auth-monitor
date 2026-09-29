@@ -2,6 +2,7 @@ from solo.models import SingletonModel
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import pgettext_lazy
 
 from allianceauth.eveonline.models import EveAllianceInfo
 
@@ -28,7 +29,7 @@ class MonitorConfiguration(SingletonModel):
         null=True,
         blank=True,
         related_name="+",
-        verbose_name=_("Alliance"),
+        verbose_name=pgettext_lazy("EVE jargon", "Alliance"),
         help_text=_("The Alliance whose accounts and Corporations are monitored."),
     )
     # Empty follows corptools' CT_CHAR_MAX_INACTIVE_DAYS at the time the

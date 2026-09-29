@@ -32,7 +32,7 @@
                                         <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="stretched-link text-reset text-decoration-none">{{ account.main_name }}</a>
                                     </h6>
                                     <div class="small text-body-secondary mb-1">
-                                        {% blocktranslate count counter=account.characters|length %}{{ counter }} character{% plural %}{{ counter }} characters{% endblocktranslate %}
+                                        {% blocktranslate count counter=account.characters|length context "EVE jargon" %}{{ counter }} character{% plural %}{{ counter }} characters{% endblocktranslate %}
                                     </div>
                                     <div class="d-flex flex-wrap gap-1">
                                         {% for check in account.keywords %}

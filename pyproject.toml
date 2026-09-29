@@ -43,8 +43,10 @@ dependencies = [
 # them - or upgrade the ones a site has pinned.
 
 [project.optional-dependencies]
+# tools/translate.py needs polib; tox and coverage run the suite standalone
 dev = [
     "coverage",
+    "polib",
     "tox",
 ]
 

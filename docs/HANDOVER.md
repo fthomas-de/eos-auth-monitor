@@ -15,7 +15,9 @@ Last updated 2026-09-29.
 - 175 tests, all green (`eos-test eos_auth_monitor --exclude-tag
   translations`); every check, access rule and new feature counter-checked
   against broken code (37 sabotages over the session, each turned a test red).
-- No translations yet; all texts English (`## Release` says "none yet").
+- Translated into de, ru and zh_Hans (machine-generated, marked in the `.po`
+  header) - see `## Translations` in `CLAUDE.md`. The catalogues are only
+  brought up to date at `/commit`.
 
 ## What the app does
 
@@ -102,7 +104,7 @@ percentages for the templates), `smart_filters.py` + `models.AccountProblemsFilt
   figures - seconds per step, queries, sizes - is there to measure it): the character check reads
   all tokens with their scopes in one query; the member lists cost one ESI
   call per Corporation per run (cached by django-esi).
-- Translations (de, ru, zh_Hans like the sister apps) once the texts settle.
+- The translations are machine-generated: a native speaker should read them.
 
 ## Dev instance
 

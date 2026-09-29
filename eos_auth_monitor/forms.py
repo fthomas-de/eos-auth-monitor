@@ -1,5 +1,6 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import pgettext_lazy
 
 from allianceauth.eveonline.models import EveAllianceInfo
 
@@ -53,7 +54,7 @@ def _corptools_choices(field_name):
 
 class MonitorConfigurationForm(forms.ModelForm):
     alliance = forms.ModelChoiceField(
-        label=_("Alliance"),
+        label=pgettext_lazy("EVE jargon", "Alliance"),
         queryset=EveAllianceInfo.objects.order_by("alliance_name"),
         required=False,
         help_text=MonitorConfiguration._meta.get_field("alliance").help_text,

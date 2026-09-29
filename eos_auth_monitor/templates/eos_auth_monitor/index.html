@@ -38,7 +38,7 @@
         {% endif %}
 
         <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-            <h5 class="mb-0 me-auto">{% translate "Corporations" %}</h5>
+            <h5 class="mb-0 me-auto">{% translate "Corporations" context "EVE jargon" %}</h5>
             {% if report.corporations %}
                 <input type="search" class="form-control form-control-sm w-auto" style="min-width: 14rem"
                        placeholder="{% translate 'Filter Corporations ...' %}" aria-label="{% translate 'Filter Corporations' %}"
@@ -61,12 +61,12 @@
                             </div>
                             <ul class="list-unstyled small mb-0">
                                 <li class="d-flex justify-content-between gap-2">
-                                    <span><i class="fas fa-user fa-fw"></i> {% translate "Mains" %}</span>
+                                    <span><i class="fas fa-user fa-fw"></i> {% translate "Mains" context "EVE jargon" %}</span>
                                     <span>{{ corporation.mains }}</span>
                                 </li>
                                 {% if corporation.characters is not None %}
                                     <li class="d-flex justify-content-between gap-2">
-                                        <span><i class="fas fa-users fa-fw"></i> {% translate "Characters" %}</span>
+                                        <span><i class="fas fa-users fa-fw"></i> {% translate "Characters" context "EVE jargon" %}</span>
                                         <span>{{ corporation.characters }}</span>
                                     </li>
                                 {% endif %}

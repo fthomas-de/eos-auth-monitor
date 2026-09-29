@@ -54,8 +54,37 @@ app. Commands run from `~/aa-dev/working/myauth`.
 - Tests while working: `eos-test eos_auth_monitor.tests.<module>`
 - Suite without translation tests: `eos-test eos_auth_monitor --exclude-tag translations`
 - Checks: `~/aa-dev/venv/bin/python manage.py makemigrations eos_auth_monitor --check --dry-run`
-- Translations: none yet
-- Translation tests: none yet
+- Translations: new messages into `tools/glossary.py`, then
+  `~/aa-dev/venv/bin/python tools/translate.py` from the repo root
+- Translation tests: run by `tools/translate.py` (`--tag translations`)
+
+## Translations
+
+Three catalogues: `de`, `ru`, `zh_Hans`, machine-generated and marked so in
+the `.po` header. They are only touched **at a commit**; between commits all
+texts are English.
+
+- The glossary `tools/glossary.py` is the source of truth. Add every new
+  message there (de, ru, zh_Hans; plurals under `PLURALS`), never in a `.po`
+  file: the next run overwrites a hand edit.
+- `tools/translate.py` runs makemessages, fills the catalogues, drops
+  obsolete entries, checks them against the glossary, runs `msgfmt --check`
+  and compilemessages, confirms each `.mo` is newer than its `.po` and runs
+  the catalogue tests. A message missing from the glossary stops it with a
+  list; it never leaves gettext's fuzzy guess. It needs `polib` in the venv.
+- The `.mo` files are committed, like Alliance Auth's and corptools': there
+  is no build step at deploy.
+- EVE jargon stays English: Corporation, Alliance, Character, Main. Alliance
+  Auth translates some short words itself and wins a msgid clash, so those
+  carry a context: `EVE jargon` for the jargon words, `eos-auth-monitor` for
+  ordinary words AA translates differently (Save, Structures, Services;
+  `pgettext_lazy`, `{% translate ... context "..." %}`).
+  `test_should_show_our_translation_for_every_message` asks Django what it
+  shows for each entry and names every clash - it runs only inside
+  `tools/translate.py`, like the other catalogue tests, because between
+  commits the catalogues describe the last commit, not the code.
+- Every new message must be a plain string in the source: xgettext does not
+  look inside an f-string.
 
 ## The database is irreplaceable
 

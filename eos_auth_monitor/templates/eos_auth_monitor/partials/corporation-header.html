@@ -12,10 +12,10 @@
                     <span class="text-body-secondary small">[{{ corporation.ticker }}]</span>
                 </h5>
                 <div class="small mb-2">
-                    {% translate "Mains" %}: {{ corporation.mains }} ·
+                    {% translate "Mains" context "EVE jargon" %}: {{ corporation.mains }} ·
                     {% translate "Accounts with problems" %}: {{ corporation.problem_accounts|length }}
                     {% if corporation.characters is not None %}
-                        · {% translate "Characters" %}: {{ corporation.characters }}
+                        · {% translate "Characters" context "EVE jargon" %}: {{ corporation.characters }}
                     {% endif %}
                 </div>
                 {% for problem in corporation.problems %}

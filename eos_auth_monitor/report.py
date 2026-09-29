@@ -7,13 +7,14 @@ page costs one read however big the Alliance is.
 from dataclasses import dataclass, field
 
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import pgettext_lazy
 
 from .checks import CHARACTER, CHECKS_BY_KEY, SERVICES_BY_KEY, Check, Service
 
 # corporation-level check groups: (group key, label, cockpit icon)
 CORPORATION_GROUPS = (
     ("corptools_corporations", _("Corporation Audit"), "fas fa-building-circle-check"),
-    ("structures", _("Structures"), "fas fa-tower-broadcast"),
+    ("structures", pgettext_lazy("eos-auth-monitor", "Structures"), "fas fa-tower-broadcast"),
 )
 
 

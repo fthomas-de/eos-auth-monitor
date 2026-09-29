@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Translations into German, Russian and Simplified Chinese (machine-generated),
+  kept in `tools/glossary.py` and written into the catalogues by
+  `tools/translate.py`. EVE jargon (Corporation, Alliance, Character, Main)
+  stays English.
 - Number of characters per Corporation on the overview and on the Corporation
   page, from the member count Auth stores (no token needed); the member list
   wins where it could be read.

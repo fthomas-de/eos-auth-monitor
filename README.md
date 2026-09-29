@@ -276,6 +276,14 @@ registered in Auth, read from ESI. It is shown to the holders of the
 permissions above. It stores whether a service is linked, not the Discord, QQ
 or Telegram account itself.
 
+## Languages
+
+English, German, Russian and Simplified Chinese. The German, Russian and
+Chinese texts are machine-generated and may be inaccurate; a correction goes
+into `tools/glossary.py`. EVE terms - Corporation, Alliance, Character, Main -
+stay English. The compiled catalogues are part of the package, no extra step
+is needed.
+
 ## Upgrading
 
 ```bash
