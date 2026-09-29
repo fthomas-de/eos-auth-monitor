@@ -7,20 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
-- Corporations where no Director's token could read the roles are marked
-  "No Director token" on the overview tile and on the Corporation page: the
-  check *Director token missing* cannot see their Directors. It is a marker,
-  not a problem, and does not count in the percentages.
-
-### Changed
-
-- The cockpit tiles Character Audit, Corporation Audit and Structures link to
-  Alliance Auth's services page.
-- The settings switch *Fetch member lists from ESI* is now called *Fetch data
-  from ESI*, as it also covers the roles call (migration 0004, help text only).
-
 ## [0.0.1] - 2026-09-29
 
 ### Added
@@ -74,6 +60,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   service buttons in the header of that page (the other Corporation pages keep
   the buttons). The overview had them for the whole Alliance already; both use
   the same tile now.
+- Corporations where no Director's token could read the roles are marked
+  "No Director token" on the overview tile and on the Corporation page: the
+  check *Director token missing* cannot see their Directors. It is a marker,
+  not a problem, and does not count in the percentages.
 - Footer with the cost of the last rebuild for holders of `view_all` or
   `manage_settings`: duration and time per step, database queries with their
   time, Corporations, accounts and characters read, member lists read, size
@@ -82,6 +72,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The cockpit tiles Character Audit, Corporation Audit and Structures link to
+  Alliance Auth's services page.
+- The settings switch *Fetch member lists from ESI* is now called *Fetch data
+  from ESI*, as it also covers the roles call (migration 0004, help text only).
 - The cockpit's and the Corporation tiles' service shares count members Auth
   does not know as mains that linked nothing (before: only the registered
   mains, so 0 of 1 for a Corporation of 279 members).

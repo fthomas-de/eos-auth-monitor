@@ -9,13 +9,15 @@ Last updated 2026-09-29.
 ## Release
 
 - Version **0.0.1**, the first release (see `CHANGELOG.md`, which holds
-  everything done so far under 0.0.1: it was never pushed before). The tag
-  `v0.0.1` is set on the release commit and pushed with it.
-- Migrations **0001-0004** applied in `aa_dev` (0004 only renames the ESI switch, a no-op in SQL).
-- 176 tests without the translation tests, 3 translation tests, all green.
+  everything done so far under 0.0.1: it was never pushed before, `origin`
+  had only the initial commit). The tag `v0.0.1` is set on the release commit
+  and pushed with it.
+- Migrations **0001-0004** applied in `aa_dev` (0004 only renames the ESI
+  switch, a no-op in SQL).
+- 187 tests without the translation tests, 3 translation tests, all green.
   Every check, access rule and feature was counter-checked against broken
   code (a sabotage that stays green means the test is too weak - it happened
-  five times and each was fixed).
+  five times and each was fixed; the latest features went nine for nine).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -90,6 +92,15 @@ Partials: `gauge.html` (a statistic tile), `corporation-rows.html`,
 - The account page shows the account's own service links as green/red tiles
   and no longer the Corporation's shares in the header.
 - Translations in de, ru, zh_Hans at every `/commit`, like eos-invoices.
+- **Cockpit tiles without a page of their own** (Character Audit, Corporation
+  Audit, Structures) link to Auth's `/services/`. The Members registered tile
+  and the Corporation tile rows have no link of their own.
+- **"No Director token"** marks a Corporation where no Director's token could
+  read the roles: a badge on the overview tile and the Corporation page, *not*
+  a problem - no percentage, sorting or border colour changes. Set only while
+  the ESI switch and the Director check are on; a Corporation of the Alliance
+  without any account in Auth is asked as well.
+- The ESI switch is called **Fetch data from ESI** (it also covers the roles).
 
 ## Pitfalls found
 
@@ -115,23 +126,26 @@ Partials: `gauge.html` (a statistic tile), `corporation-rows.html`,
 - A full test run occasionally hangs for minutes; run sabotage rounds as a
   script in the background and never start a second run meanwhile, or a
   half-sabotaged file is left behind. Restore from a `cp` made just before.
+- `eos-test` takes one test label per call; run several modules one after
+  the other. A full run takes about 15 s; only a sabotage round of many
+  reruns is long - start it in the background.
+- Do not put a Python patch into `wsl.exe -e bash -lc '...'`: an apostrophe
+  in `Auth's` ends the quoted string. Write the script with the Write tool
+  into the scratchpad and run it by its `/mnt/c/...` path.
 - `.git/CLAUDE_COMMIT_MSG` must be *read* before it is written again, or the
   Write tool refuses and `git commit -F` silently reuses the old message.
 
 ## Open points / next steps
 
-- **Unreleased, not yet in a commit**: the cockpit tiles Character Audit,
-  Corporation Audit and Structures link to Auth's `/services/` (the user's
-  answer to the old wish about a Telegram overview); the marker "No Director
-  token" (a badge, not a problem); the ESI switch is called "Fetch data from
-  ESI" (migration 0004). Translations of the new texts come with `/commit`.
 - Nothing was looked at in a browser: the pages need a login. `filter.js`, the
   tiles and the footer are covered by tests of the rendered HTML only.
 - The service lists behind a tile show the registered mains only, while the
   tile's total also counts unknown members.
 - A Director whose roles neither corptools nor ESI (no Director token in the
-  Corporation) could read is not found; such Corporations now carry the
-  marker "No Director token" instead of showing nothing.
+  Corporation) could read is not found; such Corporations carry the marker
+  "No Director token". In the dev instance 31 of 32 Corporations have it, so
+  the badge is nearly everywhere there - the user has not yet judged whether
+  it should be quieter (e.g. only where Auth knows mains).
 - Performance with a large Alliance is untested; the footer with the build
   figures is there to measure it. The character check reads all tokens with
   their scopes in one query; the member lists and roles cost up to two ESI
@@ -151,12 +165,13 @@ Partials: `gauge.html` (a statistic tile), `corporation-rows.html`,
   bridge 1.7.6, Discord and Mumble - the readers ran against the real schemas.
   The dev DB has one account and no service links: every service number is 0.
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
-  Comes), nothing switched off, member lists on. The stored snapshot was
-  rebuilt by hand at 08:03 UTC and is older than the last code changes:
-  restart the Celery worker, then *Rebuild now*. Ether Element: 279 in the
-  member list, 290 in Auth's count, 14 Directors named by ESI; Nah vi is one
-  of them and is flagged. The other Corporations have no token with the
-  membership scope.
+  Comes), nothing switched off, ESI on. The Celery worker was restarted
+  after the last code change (started from a shell, log in `/tmp/celery-eos.log`
+  in WSL, not from a terminal tab) and the snapshot rebuilt by hand at 11:14
+  (WSL clock): the code is current. Ether Element: 279 in the member list,
+  290 in Auth's count, 14 Directors named by ESI; Nah vi is one of them and
+  is flagged. The other Corporations have no token with the membership scope
+  and carry "No Director token".
 - `collectstatic` was run after `filter.js` was added.
 - Installed: allianceauth 5.3.1, allianceauth-corptools 3.5.0, django-solo
   2.5.1, django-esi 9.10.0. Target production per checklist: AA 5.4.0,
