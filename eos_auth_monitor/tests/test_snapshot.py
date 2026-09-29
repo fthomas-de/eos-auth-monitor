@@ -49,6 +49,20 @@ class TestAccounts(MonitorTestCase):
         )
         self.assertTrue(all(character["problems"] for character in account["characters"]))
 
+    def test_should_leave_out_the_characters_outside_the_alliance_when_switched_on(self):
+        inside = add_alt(self.pilot, 9002, "Alt inside", corporation_id=2002)
+        other_alliance = add_alt(self.pilot, 9003, "Alt allied", corporation_id=2999, alliance_id=OTHER_ALLIANCE_ID)
+
+        with patch(
+            "eos_auth_monitor.snapshot.corptools_source.character_problems", return_value={}
+        ) as characters:
+            account = corporation(build(alliance_characters_only=True), 2001)["accounts"][0]
+
+        main_id = self.pilot.profile.main_character.character_id
+        self.assertEqual([character["id"] for character in account["characters"]], [main_id, inside.character_id])
+        self.assertEqual(sorted(characters.call_args.args[0]), [main_id, inside.character_id])
+        self.assertNotIn(other_alliance.character_id, characters.call_args.args[0])
+
     def test_should_take_the_character_count_from_what_auth_stores_for_the_corporation(self):
         EveCorporationInfo.objects.filter(corporation_id=2001).update(member_count=290)
         # a Corporation only known through a main has no stored count
@@ -257,6 +271,15 @@ class TestDirectorsFromEsi(MonitorTestCase):
         ask, _ = self.handed_over(fetch_members=True)
 
         self.assertEqual(sorted(call.args[0] for call in ask.call_args_list), [2001, 2002])
+
+    def test_should_ask_about_no_corporation_outside_the_alliance_when_only_its_characters_count(self):
+        add_alt(self.pilot, 5003, "Alt elsewhere", corporation_id=5005, alliance_id=None)
+
+        everywhere, _ = self.handed_over(fetch_members=True)
+        inside, _ = self.handed_over(fetch_members=True, alliance_characters_only=True)
+
+        self.assertEqual(sorted(call.args[0] for call in everywhere.call_args_list), [2001, 5005])
+        self.assertEqual([call.args[0] for call in inside.call_args_list], [2001])
 
     def marker(self, directors, **config):
         with (

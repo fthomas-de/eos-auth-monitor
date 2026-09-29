@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 18:12+0000\n"
-"PO-Revision-Date: 2026-09-29 18:12+0000\n"
+"POT-Creation-Date: 2026-09-29 19:00+0000\n"
+"PO-Revision-Date: 2026-09-29 19:00+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: zh_Hans\n"
 "Language: zh_Hans\n"
@@ -277,7 +277,17 @@ msgstr ""
 "使用 corptools 已有的令牌读取每个 Corporation 的成员列表和 Director 角色，以显示未在 Auth "
 "中注册的成员和没有令牌的 Director。"
 
-#: models.py:68 models.py:71
+#: models.py:67
+msgid "Only characters in the Alliance"
+msgstr "仅限 Alliance 中的 Character"
+
+#: models.py:69
+msgid ""
+"Checks, shows and counts only the characters of an account that are in the "
+"Alliance; alts elsewhere are left out."
+msgstr "只检查、显示和统计账号中属于该 Alliance 的 Character；其他地方的小号不计入。"
+
+#: models.py:76 models.py:79
 msgid "Configuration"
 msgstr "配置"
 
@@ -658,16 +668,16 @@ msgstr "重建进度"
 msgid "%(part)s of %(total)s mains linked"
 msgstr "已关联 %(part)s / %(total)s 个 Main"
 
-#: templates/eos_auth_monitor/settings.html:42
+#: templates/eos_auth_monitor/settings.html:43
 msgctxt "eos-auth-monitor"
 msgid "Services"
 msgstr "服务"
 
-#: templates/eos_auth_monitor/settings.html:57
+#: templates/eos_auth_monitor/settings.html:58
 msgid "corptools: what the checks count"
 msgstr "corptools：检查所计入的内容"
 
-#: templates/eos_auth_monitor/settings.html:61
+#: templates/eos_auth_monitor/settings.html:62
 msgid ""
 "Untick what the Alliance does not use, e.g. Moon Observations and the mining"
 " scope for an Alliance without moons. A section and its scope are separate "
@@ -676,11 +686,11 @@ msgstr ""
 "取消勾选 Alliance 不使用的内容，例如没有月球的 Alliance 可取消 Moon Observations 及采矿 Scope。某个部分与其"
 " Scope 是各自独立的条目。"
 
-#: templates/eos_auth_monitor/settings.html:79
+#: templates/eos_auth_monitor/settings.html:80
 msgid "None of the apps the checks and services read from is installed."
 msgstr "检查和服务所读取的应用均未安装。"
 
-#: templates/eos_auth_monitor/settings.html:83
+#: templates/eos_auth_monitor/settings.html:84
 msgctxt "eos-auth-monitor"
 msgid "Save"
 msgstr "保存"

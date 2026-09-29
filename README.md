@@ -83,6 +83,9 @@ An account belongs to the overview when its **main character** is in a
 Corporation of the configured Alliance. It appears on the tile of the main's
 Corporation. All characters of the account are checked, including alts
 outside the Alliance: a missing token on an alt is a problem of the account.
+With *Only characters in the Alliance* on, the alts outside the Alliance are
+left out altogether: not checked, not shown, not counted, and their
+Corporations are not asked for Director roles.
 
 Services are linked per Auth account, not per character, so the service
 figures count mains.
@@ -267,7 +270,8 @@ the app needs a main character. Superusers hold every permission and see
 everything.
 
 `basic_access` shows every account of the Corporation with **all its alts**,
-alts outside the Alliance included, and for members whose main is elsewhere
+alts outside the Alliance included (unless *Only characters in the Alliance*
+is on), and for members whose main is elsewhere
 that main and its Corporation. Give it to a leadership group, **never to a
 state**: every member would see who plays which alt. `basic_access` follows
 the main, not in-game roles - someone who loses the CEO role keeps it until
@@ -290,6 +294,7 @@ put in `local.py`.
 | Alliance | The Alliance whose accounts and Corporations are monitored; a searchable dropdown of the Alliances Auth knows |
 | Stale after (days) | When a section of the corptools Corporation audit counts as stale. Empty (the default): the same limit corptools uses for characters, `CT_CHAR_MAX_INACTIVE_DAYS` |
 | Fetch data from ESI | See [ESI](#esi); on by default |
+| Only characters in the Alliance | Leaves out every character of an account that is not in the Alliance - in the checks, the pages, the counts and the roles calls (see [How accounts are counted](#how-accounts-are-counted)); off by default |
 | Checks | One switch per check, grouped by app |
 | Services | One switch per service, to hide a service the Alliance does not use |
 | corptools: what the checks count | Four lists - Character Audit sections and scopes, Corporation Audit sections and scopes. Untick what the Alliance does not use, e.g. *Moon Observations* and `esi-industry.read_corporation_mining.v1` for an Alliance without moons; a section and its scope are separate entries |

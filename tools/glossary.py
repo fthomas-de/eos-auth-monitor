@@ -202,6 +202,16 @@ TRANSLATIONS = {
         "Читает список участников и роли Director каждой Corporation с помощью токенов, которые уже есть у corptools, чтобы показать участников, не зарегистрированных в Auth, и Director без токена.",
         "使用 corptools 已有的令牌读取每个 Corporation 的成员列表和 Director 角色，以显示未在 Auth 中注册的成员和没有令牌的 Director。",
     ),
+    "Only characters in the Alliance": (
+        "Nur Characters in der Alliance",
+        "Только Character в Alliance",
+        "仅限 Alliance 中的 Character",
+    ),
+    "Checks, shows and counts only the characters of an account that are in the Alliance; alts elsewhere are left out.": (
+        "Prüft, zeigt und zählt nur die Characters eines Accounts, die in der Alliance sind; Alts anderswo werden weggelassen.",
+        "Проверяет, показывает и считает только тех Character аккаунта, которые состоят в Alliance; альты в других местах не учитываются.",
+        "只检查、显示和统计账号中属于该 Alliance 的 Character；其他地方的小号不计入。",
+    ),
     "Configuration": ("Konfiguration", "Конфигурация", "配置"),
     "Corporation Audit": ("Corporation-Audit", "Аудит Corporation", "Corporation 审计"),
     "Structures": ("Structures", "Структуры", "建筑"),

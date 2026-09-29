@@ -640,6 +640,15 @@ class TestSettings(ViewTestCase):
         self.assertIn("char_scopes_missing", config.disabled_checks)
         task.delay.assert_called_once_with()
 
+    def test_should_offer_and_store_the_limit_to_the_alliance_characters(self):
+        response = self.get(self.admin, "settings")
+        self.assertContains(response, 'name="alliance_characters_only"')
+        self.assertFalse(MonitorConfiguration.get_solo().alliance_characters_only)
+
+        self.post({"alliance": make_alliance().pk, "alliance_characters_only": "on"})
+
+        self.assertTrue(MonitorConfiguration.get_solo().alliance_characters_only)
+
     def test_should_offer_the_corptools_sections_and_scopes(self):
         response = self.get(self.admin, "settings")
 

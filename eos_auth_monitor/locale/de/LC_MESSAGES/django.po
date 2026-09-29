@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 18:12+0000\n"
-"PO-Revision-Date: 2026-09-29 18:12+0000\n"
+"POT-Creation-Date: 2026-09-29 19:00+0000\n"
+"PO-Revision-Date: 2026-09-29 19:00+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: de\n"
 "Language: de\n"
@@ -308,7 +308,19 @@ msgstr ""
 "Tokens, die corptools bereits hat, um Mitglieder zu zeigen, die nicht in "
 "Auth registriert sind, und Director ohne Token."
 
-#: models.py:68 models.py:71
+#: models.py:67
+msgid "Only characters in the Alliance"
+msgstr "Nur Characters in der Alliance"
+
+#: models.py:69
+msgid ""
+"Checks, shows and counts only the characters of an account that are in the "
+"Alliance; alts elsewhere are left out."
+msgstr ""
+"Prüft, zeigt und zählt nur die Characters eines Accounts, die in der "
+"Alliance sind; Alts anderswo werden weggelassen."
+
+#: models.py:76 models.py:79
 msgid "Configuration"
 msgstr "Konfiguration"
 
@@ -711,16 +723,16 @@ msgstr "Fortschritt des Neuaufbaus"
 msgid "%(part)s of %(total)s mains linked"
 msgstr "%(part)s von %(total)s Mains verknüpft"
 
-#: templates/eos_auth_monitor/settings.html:42
+#: templates/eos_auth_monitor/settings.html:43
 msgctxt "eos-auth-monitor"
 msgid "Services"
 msgstr "Dienste"
 
-#: templates/eos_auth_monitor/settings.html:57
+#: templates/eos_auth_monitor/settings.html:58
 msgid "corptools: what the checks count"
 msgstr "corptools: was die Prüfungen zählen"
 
-#: templates/eos_auth_monitor/settings.html:61
+#: templates/eos_auth_monitor/settings.html:62
 msgid ""
 "Untick what the Alliance does not use, e.g. Moon Observations and the mining"
 " scope for an Alliance without moons. A section and its scope are separate "
@@ -730,12 +742,12 @@ msgstr ""
 "Mining-Scope für eine Alliance ohne Monde. Ein Abschnitt und sein Scope sind"
 " getrennte Einträge."
 
-#: templates/eos_auth_monitor/settings.html:79
+#: templates/eos_auth_monitor/settings.html:80
 msgid "None of the apps the checks and services read from is installed."
 msgstr ""
 "Keine der Apps, aus denen die Prüfungen und Dienste lesen, ist installiert."
 
-#: templates/eos_auth_monitor/settings.html:83
+#: templates/eos_auth_monitor/settings.html:84
 msgctxt "eos-auth-monitor"
 msgid "Save"
 msgstr "Speichern"

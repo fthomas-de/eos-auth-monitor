@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Setting *Only characters in the Alliance* (off by default): with it on,
+  the characters of an account outside the Alliance are left out of every
+  check, page and count, and their Corporations are no longer asked for
+  Director roles. Migration `0006`.
+
 ## [0.0.3] - 2026-09-29
 
 ### Added

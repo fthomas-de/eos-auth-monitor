@@ -16,7 +16,8 @@ Last updated 2026-09-29.
   CSV export of the to-do list per group and as a whole, *My account*'s
   service tiles linking to Auth's services page. No new permission, no
   migration.
-- Migrations **0001-0005** applied in `aa_dev` (0005 dropped the empty smart
+- Migrations **0001-0006** applied in `aa_dev` (0006, not yet released,
+  adds `alliance_characters_only`; 0005 dropped the empty smart
   filter table - no filter rows, no securegroups bindings - and added
   `view_own`).
 - 245 tests without the translation tests, 3 translation tests, all green.
@@ -40,7 +41,7 @@ Last updated 2026-09-29.
 | Service | `view_all` | Every main of the Alliance, linked yes/no |
 | My account (`own_account`) | `view_own` | The viewer's own account on `account.html` with `own=True`: service tiles linking to Alliance Auth's `services:services`, no Corporation header, the problems with hints; a notice when the account is not in the snapshot. `view_own` alone is sent here from the index |
 | Dashboard widgets (`views.dashboard_own`, `views.dashboard_corporation`) | `view_own` / `basic_access` | On Alliance Auth's dashboard, order 4 like eos-invoices, own before Corporation (registration order). Own: failed checks with the number of characters (`Account.keyword_counts`), service icons, link to My account. Corporation: its own problems, each to-do group with the number of mains, the unregistered count, link to the Corporation page. `""` without the permission or when the snapshot has nothing about the viewer |
-| Settings | `manage_settings` | Alliance (Tom Select), stale limit, ESI member lists on/off (also switches the roles call), check and service switches, corptools sections and scopes |
+| Settings | `manage_settings` | Alliance (Tom Select), stale limit, ESI member lists on/off (also switches the roles call), only characters in the Alliance on/off, check and service switches, corptools sections and scopes |
 | Rebuild (POST) / progress (JSON) | `view_all` or `manage_settings` / any app permission | Start the task / state for the progress bar |
 
 Every page has a footer with the cost of the last rebuild (`view_all` or
@@ -78,7 +79,11 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
 
 - **Scope**: an account belongs to the overview when its main is in the
   configured Alliance; it sits on the main's Corporation tile. All its
-  characters are checked, alts outside the Alliance included.
+  characters are checked, alts outside the Alliance included - unless the
+  setting *Only characters in the Alliance* (2026-09-29, off by default) is
+  on: then those alts are left out altogether (not checked, shown, counted,
+  nor their Corporations asked for roles), filtered on the ownerships in
+  `snapshot.build`.
 - **Corporation page**: every member of the Corporation, reduced to mains
   where Auth knows the account; unknown counts as a main.
 - **Member lists from ESI** with tokens corptools already has - corptools
@@ -237,7 +242,8 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
   (now a message, `progress.withdrawn()`), the member tier (`view_own`) and the
   smart filter (removed) are done. Still open, the user chose not to do them
   for now: failed ESI tokens are retried every run and spend the error limit,
-  roles are asked for every Corporation any alt is in; no CI; the
+  roles are asked for every Corporation any alt is in (unless *Only
+  characters in the Alliance* is on); no CI; the
   token-by-scope query and per-Corporation queries at scale.
 
 ## Dev instance
@@ -251,13 +257,13 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
   bridge 1.7.6, Discord and Mumble - the readers ran against the real schemas.
   The dev DB has one account and no service links: every service number is 0.
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
-  Comes), nothing switched off, ESI on. The Celery worker was restarted on
-  the 0.0.2 code at 14:03 (WSL clock), started detached from a shell
-  (`setsid nohup ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo`
+  Comes), nothing switched off, ESI on, *Only characters in the Alliance*
+  off. The Celery worker was restarted on the code with
+  `alliance_characters_only` at 20:50 (WSL clock), started detached from a
+  shell (`setsid nohup ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo`
   in `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`, not from a
-  terminal tab). 0.0.3 changed no task code, so it was not restarted; at the
-  release a second `celery -A myauth worker` was running as well, started
-  outside this session about 20 minutes before - check `ps` before the next
+  terminal tab); the two workers running before (one started outside a
+  session) were both stopped, one runs now - check `ps` before the next
   restart. The snapshot format did not change in 0.0.2 or 0.0.3, so the
   stored one still renders; the next beat run rebuilds it. Ether Element: 279 in the member list,
   290 in Auth's count, 14 Directors named by ESI; Nah vi is one of them and

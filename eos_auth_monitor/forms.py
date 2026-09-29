@@ -63,7 +63,7 @@ class MonitorConfigurationForm(forms.ModelForm):
 
     class Meta:
         model = MonitorConfiguration
-        fields = ["alliance", "stale_after_days", "fetch_members"]
+        fields = ["alliance", "stale_after_days", "fetch_members", "alliance_characters_only"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

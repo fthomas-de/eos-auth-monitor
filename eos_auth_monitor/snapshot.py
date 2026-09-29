@@ -128,6 +128,9 @@ def build(config, on_step=_no_progress) -> dict | None:
     )
     users = User.objects.filter(profile__main_character__alliance_id=alliance_id)
     ownerships = CharacterOwnership.objects.filter(user__in=users).select_related("character")
+    if config.alliance_characters_only:
+        # dropped here, an alt elsewhere is neither checked nor asked about nor counted
+        ownerships = ownerships.filter(character__alliance_id=alliance_id)
 
     characters_by_user = defaultdict(list)
     for ownership in ownerships:

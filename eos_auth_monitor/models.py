@@ -62,6 +62,14 @@ class MonitorConfiguration(SingletonModel):
             "to show members that are not registered in Auth and Directors without a token."
         ),
     )
+    alliance_characters_only = models.BooleanField(
+        default=False,
+        verbose_name=_("Only characters in the Alliance"),
+        help_text=_(
+            "Checks, shows and counts only the characters of an account that are in the Alliance; "
+            "alts elsewhere are left out."
+        ),
+    )
 
     class Meta:
         default_permissions = ()
