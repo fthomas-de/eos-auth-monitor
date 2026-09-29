@@ -8,24 +8,22 @@ Last updated 2026-09-29.
 
 ## Release
 
-- Version **0.0.2** of 2026-09-29, tagged `v0.0.2` on the release commit and
-  pushed with it (`v0.0.1` is the first release). New in 0.0.2, see
-  `CHANGELOG.md`: to-do list with copy buttons on the Corporation page, tiles
-  or table plus a problems-only switch on the overview, a hint with an app
-  link per problem, compact lists, *My account* for members (`view_own`), page
-  names in the header, cockpit tiles linking to corptools/aa-structures; the
-  smart filter is removed; AA floor 5.1.4; broker outage handled.
+- Version **0.0.3** of 2026-09-29, tagged `v0.0.3` on the release commit and
+  pushed with it, like `v0.0.1` and `v0.0.2`. New in 0.0.3, see
+  `CHANGELOG.md`: navbar tabs My account > My Corporation > Alliance overview
+  > Settings, two widgets on Alliance Auth's dashboard (own account for
+  `view_own`, own Corporation for `basic_access`, order 4 like eos-invoices),
+  CSV export of the to-do list per group and as a whole, *My account*'s
+  service tiles linking to Auth's services page. No new permission, no
+  migration.
 - Migrations **0001-0005** applied in `aa_dev` (0005 dropped the empty smart
   filter table - no filter rows, no securegroups bindings - and added
   `view_own`).
 - 245 tests without the translation tests, 3 translation tests, all green.
   Every check, access rule and feature was counter-checked against broken
   code (a sabotage that stays green means the test is too weak - it happened
-  six times and each was fixed; the 0.0.2 features went 34 for 34, the navbar
-  tabs, dashboard widgets and CSV export after 0.0.2 31 for 31 once the
-  view_own test of the own widget was sharpened).
-- Not released yet since 0.0.2 (committed, see `[Unreleased]`): navbar tabs,
-  dashboard widgets, CSV export, service links on *My account*.
+  six times and each was fixed; 0.0.2 went 34 for 34, 0.0.3 31 for 31 once
+  the view_own test of the own widget was sharpened).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -214,8 +212,13 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
 ## Open points / next steps
 
 - Nothing was looked at in a browser: the pages need a login. The JS files
-  (`filter.js`, `view.js`, `copy.js`), the tiles, the table and the footer are
-  covered by tests of the rendered HTML only.
+  (`filter.js`, `view.js`, `copy.js`), the tiles, the table, the footer, the
+  navbar tabs, the two dashboard widgets and the CSV download are covered by
+  tests of the rendered HTML (and of the CSV bytes) only.
+- Whether the Telegram and QQ tiles on *My account* lead anywhere useful:
+  they link to Auth's services page like Discord and Mumble, as asked, but
+  aa-qqbot and the Telegram bridge may keep their linking on pages of their
+  own.
 - The service lists behind a tile show the registered mains only, while the
   tile's total also counts unknown members.
 - A Director whose roles neither corptools nor ESI (no Director token in the
@@ -252,8 +255,11 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
   the 0.0.2 code at 14:03 (WSL clock), started detached from a shell
   (`setsid nohup ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo`
   in `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`, not from a
-  terminal tab). The snapshot format did not change in 0.0.2, so the stored
-  one still renders; the next beat run rebuilds it. Ether Element: 279 in the member list,
+  terminal tab). 0.0.3 changed no task code, so it was not restarted; at the
+  release a second `celery -A myauth worker` was running as well, started
+  outside this session about 20 minutes before - check `ps` before the next
+  restart. The snapshot format did not change in 0.0.2 or 0.0.3, so the
+  stored one still renders; the next beat run rebuilds it. Ether Element: 279 in the member list,
   290 in Auth's count, 14 Directors named by ESI; Nah vi is one of them and
   is flagged. The other Corporations have no token with the membership scope
   and carry "No Director token".
