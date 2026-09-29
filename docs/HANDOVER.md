@@ -8,23 +8,21 @@ Last updated 2026-09-29.
 
 ## Release
 
-- Version **0.0.3** of 2026-09-29, tagged `v0.0.3` on the release commit and
-  pushed with it, like `v0.0.1` and `v0.0.2`. New in 0.0.3, see
-  `CHANGELOG.md`: navbar tabs My account > My Corporation > Alliance overview
-  > Settings, two widgets on Alliance Auth's dashboard (own account for
-  `view_own`, own Corporation for `basic_access`, order 4 like eos-invoices),
-  CSV export of the to-do list per group and as a whole, *My account*'s
-  service tiles linking to Auth's services page. No new permission, no
-  migration.
-- Migrations **0001-0006** applied in `aa_dev` (0006, not yet released,
-  adds `alliance_characters_only`; 0005 dropped the empty smart
-  filter table - no filter rows, no securegroups bindings - and added
-  `view_own`).
-- 245 tests without the translation tests, 3 translation tests, all green.
+- Version **0.0.4** of 2026-09-29, tagged `v0.0.4` on the release commit and
+  pushed with it, like `v0.0.1` to `v0.0.3`. New in 0.0.4, see
+  `CHANGELOG.md`: the setting *Only characters in the Alliance*
+  (`MonitorConfiguration.alliance_characters_only`, off by default, migration
+  0006) - with it on, an account's characters outside the Alliance are left
+  out of every check, page and count and their Corporations are not asked
+  for roles. No new permission.
+- Migrations **0001-0006** applied in `aa_dev` (0006 adds
+  `alliance_characters_only`; 0005 dropped the empty smart filter table - no
+  filter rows, no securegroups bindings - and added `view_own`).
+- 248 tests without the translation tests, 3 translation tests, all green.
   Every check, access rule and feature was counter-checked against broken
   code (a sabotage that stays green means the test is too weak - it happened
   six times and each was fixed; 0.0.2 went 34 for 34, 0.0.3 31 for 31 once
-  the view_own test of the own widget was sharpened).
+  the view_own test of the own widget was sharpened, 0.0.4 3 for 3).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -215,6 +213,10 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
   translation test names them; give them `context "eos-auth-monitor"`.
 
 ## Open points / next steps
+
+- With *Only characters in the Alliance* on, the account page and *My
+  account* do not say that characters were left out; a short notice there
+  was offered to the user (2026-09-29), not asked for yet.
 
 - Nothing was looked at in a browser: the pages need a login. The JS files
   (`filter.js`, `view.js`, `copy.js`), the tiles, the table, the footer, the
