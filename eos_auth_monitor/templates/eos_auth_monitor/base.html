@@ -30,6 +30,8 @@
         {% include "eos_auth_monitor/partials/state.html" %}
 
         {% block details %}{% endblock %}
+
+        {% include "eos_auth_monitor/partials/metrics.html" %}
     </div>
 {% endblock %}
 
@@ -41,4 +43,5 @@
     {% include "bundles/datatables-2-js-bs5.html" %}
     {% sri_static "eos_auth_monitor/js/tables.js" %}
     {% sri_static "eos_auth_monitor/js/progress.js" %}
+    {% sri_static "eos_auth_monitor/js/filter.js" %}
 {% endblock %}

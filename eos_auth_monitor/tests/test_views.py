@@ -6,7 +6,8 @@ from django.urls import reverse
 import eos_auth_monitor
 from eos_auth_monitor import progress
 from eos_auth_monitor.auth_hooks import AuthMonitorMenuItem
-from eos_auth_monitor.models import MonitorConfiguration
+from eos_auth_monitor.checks import is_app_installed
+from eos_auth_monitor.models import MonitorConfiguration, Snapshot
 from eos_auth_monitor.permissions import APP_PERMISSIONS, BASIC_ACCESS, MANAGE_SETTINGS, VIEW_ALL
 
 from .base import (
@@ -136,10 +137,57 @@ class TestPages(ViewTestCase):
     def test_should_show_the_cockpit_and_one_tile_per_corporation(self):
         response = self.get(self.leader, "index")
 
-        self.assertContains(response, reverse("eos_auth_monitor:service", args=["discord"]))
+        url = reverse("eos_auth_monitor:service", args=["discord"])
+        self.assertContains(response, f'href="{url}" class="stretched-link" aria-label="Discord"')
         self.assertContains(response, "50&nbsp;%")
         for corporation_id in (2001, 2002):
             self.assertContains(response, reverse("eos_auth_monitor:corporation", args=[corporation_id]))
+
+    def test_should_tag_a_main_whose_director_has_no_corporation_token(self):
+        snapshot = Snapshot.objects.get()
+        problem = {"check": "char_director_token_missing", "detail": ["esi-wallet.read_corporation_wallets.v1"]}
+        snapshot.data["corporations"][0]["accounts"][0]["characters"][0]["problems"] = [problem]
+        snapshot.data["checks"] = ["char_director_token_missing"]
+        snapshot.save()
+
+        response = self.get(self.leader, "corporation", 2001)
+
+        self.assertContains(response, "Director token missing")
+        self.assertContains(response, 'badge text-bg-danger text-wrap">Director token missing')
+
+    def test_should_show_a_tile_per_service_on_the_corporation_page(self):
+        response = self.get(self.leader, "corporation", 2001)
+
+        url = reverse("eos_auth_monitor:corporation_service", args=[2001, "discord"])
+        self.assertContains(response, f'href="{url}" class="stretched-link" aria-label="Discord"')
+        self.assertContains(response, "1 of 1")
+
+    def test_should_show_each_service_once_on_the_corporation_page(self):
+        response = self.get(self.leader, "corporation", 2001)
+
+        # the header's buttons would be a second link to the same list
+        url = reverse("eos_auth_monitor:corporation_service", args=[2001, "discord"])
+        self.assertContains(response, f'href="{url}"', count=1)
+
+    def test_should_keep_the_service_buttons_on_the_other_pages_of_a_corporation(self):
+        response = self.get(self.leader, "corporation_service", 2001, "discord")
+
+        url = reverse("eos_auth_monitor:corporation_service", args=[2001, "discord"])
+        self.assertContains(response, f'href="{url}" class="btn btn-sm btn-outline-secondary')
+
+    def test_should_count_only_the_mains_of_the_corporation_in_its_tile(self):
+        response = self.get(self.leader, "corporation", 2002)
+
+        self.assertContains(response, "0 of 1")
+
+    def test_should_show_no_service_tiles_when_no_service_is_in_use(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["services"] = []
+        snapshot.save()
+
+        response = self.get(self.leader, "corporation", 2001)
+
+        self.assertNotContains(response, reverse("eos_auth_monitor:corporation_service", args=[2001, "discord"]))
 
     def test_should_name_the_problems_of_a_main(self):
         response = self.get(self.leader, "corporation", 2002)
@@ -152,6 +200,73 @@ class TestPages(ViewTestCase):
 
         self.assertContains(response, "Char 2201")
         self.assertContains(response, "The character has no corptools Character Audit.")
+
+    def test_should_show_a_green_tile_for_a_linked_service_on_the_account_page(self):
+        response = self.get(self.leader, "account", 11)
+
+        self.assertContains(response, 'card h-100 text-center border-success')
+        self.assertNotContains(response, 'card h-100 text-center border-danger')
+
+    def test_should_show_a_red_tile_for_a_service_that_is_not_linked(self):
+        response = self.get(self.leader, "account", 22)
+
+        self.assertContains(response, 'card h-100 text-center border-danger')
+        self.assertNotContains(response, 'card h-100 text-center border-success')
+        self.assertContains(response, "not linked")
+
+    def test_should_link_the_account_tile_to_the_corporations_list_not_the_alliance_wide_one(self):
+        response = self.get(self.leader, "account", 22)
+
+        url = reverse("eos_auth_monitor:corporation_service", args=[2002, "discord"])
+        self.assertContains(response, f'href="{url}" class="stretched-link" aria-label="Discord"')
+        # once: the header's own button to the same list would be a duplicate
+        self.assertContains(response, f'href="{url}"', count=1)
+        self.assertNotContains(response, reverse("eos_auth_monitor:service", args=["discord"]))
+
+    def test_should_show_how_many_characters_each_corporation_has(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["member_total"] = 290
+        snapshot.save()
+
+        response = self.get(self.leader, "index")
+
+        self.assertContains(response, "Characters")
+        self.assertContains(response, "<span>290</span>", html=True)
+
+    def test_should_not_show_a_character_count_where_it_is_not_known(self):
+        self.assertNotContains(self.get(self.leader, "index"), 'fa-users fa-fw"></i> Characters')
+
+    def test_should_offer_a_filter_for_the_corporation_tiles(self):
+        response = self.get(self.leader, "index")
+
+        self.assertContains(response, 'data-eos-auth-monitor-filter=".eos-auth-monitor-corporation"')
+        self.assertRegex(response.content.decode(), r"eos_auth_monitor/js/filter[^\"]*\.js")
+        # name and ticker are what the filter searches
+        self.assertContains(response, 'data-eos-auth-monitor-filter-text="Corp 2002 C2002"')
+        self.assertContains(response, 'data-eos-auth-monitor-filter-text="Corp 2001 C2001"')
+
+    def test_should_have_no_filter_without_corporations(self):
+        store_snapshot(snapshot_data([]))
+
+        response = self.get(self.leader, "index")
+
+        self.assertNotContains(response, "data-eos-auth-monitor-filter=")
+
+    def test_should_put_the_corporation_with_the_most_problems_first_on_the_overview(self):
+        response = self.get(self.leader, "index")
+        content = response.content.decode()
+
+        # 2002 has the account with a problem, 2001 none
+        first = reverse("eos_auth_monitor:corporation", args=[2002])
+        second = reverse("eos_auth_monitor:corporation", args=[2001])
+        self.assertLess(content.index(f'href="{first}" class="stretched-link'), content.index(f'href="{second}" class="stretched-link'))
+
+    def test_should_put_the_mains_with_the_most_problems_first_on_the_alliance_wide_service_list(self):
+        response = self.get(self.leader, "service", "discord")
+
+        # Char 2201 (Corp 2002) has a problem, Char 1101 (Corp 2001) none
+        content = response.content.decode()
+        self.assertLess(content.index("Char 2201"), content.index("Char 1101"))
 
     def test_should_mark_problem_characters_in_the_service_list(self):
         response = self.get(self.leader, "corporation_service", 2002, "discord")
@@ -189,7 +304,10 @@ class TestPages(ViewTestCase):
 
         response = self.get(self.leader, "corporation", 2001)
 
-        self.assertContains(response, "Stranger")
+        # a character Auth does not know gets the card of a main, not a table row
+        self.assertContains(response, '<h6 class="mb-1 text-truncate">Stranger</h6>', html=False)
+        self.assertContains(response, 'class="badge text-bg-danger text-wrap">Not registered in Auth</span>')
+        self.assertNotContains(response, "eos-auth-monitor-sortable")
         self.assertContains(response, "Visitor main")
         self.assertContains(response, "Visitor alt")
         self.assertContains(response, "Registered in Auth")
@@ -214,6 +332,51 @@ class TestPages(ViewTestCase):
         self.assertContains(self.get(self.leader, "index"), "The Alliance was changed.")
 
 
+class TestMetricsFooter(ViewTestCase):
+    def setUp(self):
+        super().setUp()
+        snapshot = Snapshot.objects.get()
+        snapshot.data["metrics"] = {
+            "seconds": 3.5,
+            "phases": {"accounts": 0.5},
+            "queries": 40,
+            "query_seconds": 1.25,
+            "corporations": 2,
+            "accounts": 5,
+            "characters": 9,
+            "member_lists": 1,
+            "payload_bytes": 20480,
+        }
+        snapshot.save()
+
+    def test_should_show_the_cost_of_the_last_rebuild_to_leadership(self):
+        response = self.get(self.leader, "index")
+
+        self.assertContains(response, "Last rebuild 3.5 s, 40 queries (1.25 s)")
+        self.assertContains(response, "2 Corporations, 5 accounts, 9 characters")
+        self.assertContains(response, "20 KB stored")
+        self.assertContains(response, "Reading accounts: 0.5 s")
+
+    def test_should_show_the_member_lists_only_when_they_are_fetched(self):
+        self.assertNotContains(self.get(self.leader, "index"), "member lists 1/2")
+
+        data = Snapshot.objects.get()
+        data.data["members_fetched"] = True
+        data.save()
+
+        self.assertContains(self.get(self.leader, "index"), "member lists 1/2")
+
+    def test_should_keep_it_from_a_ceo(self):
+        self.assertNotContains(self.get(self.ceo, "corporation", 2001), "Last rebuild")
+
+    def test_should_show_nothing_for_a_snapshot_without_figures(self):
+        snapshot = Snapshot.objects.get()
+        del snapshot.data["metrics"]
+        snapshot.save()
+
+        self.assertNotContains(self.get(self.leader, "index"), "Last rebuild")
+
+
 class TestSettings(ViewTestCase):
     def post(self, data):
         self.client.force_login(self.admin)
@@ -232,8 +395,11 @@ class TestSettings(ViewTestCase):
 
         self.assertContains(response, "corptools - Character Audit")
         self.assertContains(response, "corptools - Corporation Audit")
-        # aa-structures is not installed here
-        self.assertNotContains(response, "aa-structures")
+        # a group is offered only when the app it reads from is installed
+        if is_app_installed("structures"):
+            self.assertContains(response, "aa-structures")
+        else:
+            self.assertNotContains(response, "aa-structures")
 
     def test_should_store_the_switched_off_checks_and_rebuild(self):
         alliance = make_alliance(ALLIANCE_ID + 5)

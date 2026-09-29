@@ -1,10 +1,12 @@
+# hatchling instead of flit: flit cannot leave the tests out of the wheel
 [build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "eos_auth_monitor"
-dynamic = ["version", "description"]
+description = "Problem accounts and Corporations of an Alliance, read from other Alliance Auth apps"
+dynamic = ["version"]
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.10"
@@ -27,8 +29,11 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
 ]
 dependencies = [
-    # Raise the lower bound once the code relies on something a later 5.x
-    # release introduced (a template partial, a bundle, a migration).
+    # 5.0 is the floor the code needs: page-header.html, the DataTables 2
+    # bundles and the sri/evelinks/navactive tags exist in 5.0.0, and its
+    # django-esi (>=9.0) already has ESIClientProvider(operations=...) and
+    # .result(use_etag=...). Checked by reading the tags, not by running
+    # against 5.0; raise it once something a later 5.x release introduced is used.
     "allianceauth>=5.0,<6",
     # the settings page is a singleton; AA ships django-solo, but we import it
     "django-solo",
@@ -49,11 +54,16 @@ Source = "https://github.com/fthomas-de/eos-auth-monitor"
 Changelog = "https://github.com/fthomas-de/eos-auth-monitor/blob/main/CHANGELOG.md"
 Tracker = "https://github.com/fthomas-de/eos-auth-monitor/issues"
 
-[tool.flit.module]
-name = "eos_auth_monitor"
+[tool.hatch.version]
+path = "eos_auth_monitor/__init__.py"
 
-[tool.flit.sdist]
-exclude = ["testauth", "runtests.py", "tox.ini", ".coveragerc", "docs", "CLAUDE.md"]
+[tool.hatch.build.targets.wheel]
+packages = ["eos_auth_monitor"]
+exclude = ["eos_auth_monitor/tests"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/eos_auth_monitor", "/CHANGELOG.md"]
+exclude = ["/eos_auth_monitor/tests"]
 
 [tool.isort]
 profile = "black"

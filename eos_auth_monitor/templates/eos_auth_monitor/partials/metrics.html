@@ -1,0 +1,18 @@
+{% load i18n %}
+{# What the last rebuild cost; for those who can rebuild, since they are the ones who tune it. #}
+{% if report.metrics and perms.eos_auth_monitor.view_all or report.metrics and perms.eos_auth_monitor.manage_settings %}
+    {% with metrics=report.metrics %}
+        <footer class="small text-body-secondary text-end mt-4 eos-auth-monitor-metrics">
+            <span title="{% for label, seconds in metrics.phases %}{{ label }}: {{ seconds }} s{% if not forloop.last %}, {% endif %}{% endfor %}">
+                <i class="fas fa-gauge-high"></i>
+                {% blocktranslate with seconds=metrics.seconds queries=metrics.queries query_seconds=metrics.query_seconds %}Last rebuild {{ seconds }} s, {{ queries }} queries ({{ query_seconds }} s){% endblocktranslate %}
+            </span>
+            ·
+            {% blocktranslate with corporations=metrics.corporations accounts=metrics.accounts characters=metrics.characters %}{{ corporations }} Corporations, {{ accounts }} accounts, {{ characters }} characters{% endblocktranslate %}
+            {% if report.members_fetched %}
+                · {% blocktranslate with lists=metrics.member_lists corporations=metrics.corporations %}member lists {{ lists }}/{{ corporations }}{% endblocktranslate %}
+            {% endif %}
+            · {% blocktranslate with kilobytes=metrics.kilobytes %}{{ kilobytes }} KB stored{% endblocktranslate %}
+        </footer>
+    {% endwith %}
+{% endif %}

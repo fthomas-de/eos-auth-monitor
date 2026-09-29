@@ -3,18 +3,33 @@
 {% load evelinks %}
 
 {% block details %}
-    {% include "eos_auth_monitor/partials/corporation-header.html" %}
+    {# the service buttons of the header show the Corporation's shares; this page shows the account's own links as tiles #}
+    {% include "eos_auth_monitor/partials/corporation-header.html" with hide_services=True %}
+
+    {% if account.services %}
+        <div class="row row-cols-2 row-cols-md-4 row-cols-xl-6 g-3 mb-3">
+            {% for link in account.services %}
+                <div class="col">
+                    <div class="card h-100 text-center {% if link.linked %}border-success{% else %}border-danger{% endif %}">
+                        <div class="card-body position-relative">
+                            <i class="{{ link.service.icon }} fa-lg mb-2 {% if link.linked %}text-success{% else %}text-danger{% endif %}"></i>
+                            <div class="small">{{ link.service.label }}</div>
+                            <div class="fw-bold {% if link.linked %}text-success{% else %}text-danger{% endif %}">
+                                {% if link.linked %}{% translate "linked" %}{% else %}{% translate "not linked" %}{% endif %}
+                            </div>
+                            {# the list of this Corporation's characters for the service, not the Alliance-wide one #}
+                            <a href="{% url 'eos_auth_monitor:corporation_service' corporation.id link.service.key %}" class="stretched-link" aria-label="{{ link.service.label }}"></a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <div class="card">
         <div class="card-header d-flex flex-wrap align-items-center gap-2">
             <img src="{{ account.main_id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
             <div class="card-title mb-0 me-auto text-break">{{ account.main_name }}</div>
-            {% for link in account.services %}
-                <span class="badge {% if link.linked %}text-bg-success{% else %}text-bg-secondary{% endif %}">
-                    <i class="{{ link.service.icon }}"></i>
-                    {{ link.service.label }}: {% if link.linked %}{% translate "linked" %}{% else %}{% translate "not linked" %}{% endif %}
-                </span>
-            {% endfor %}
         </div>
 
         <div class="card-body">
@@ -29,7 +44,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for character in account.characters %}
+                        {% for character in account.characters_by_problems %}
                             <tr>
                                 <td data-order="{% if character.problems %}0{% else %}1{% endif %}{{ character.name }}">
                                     {% include "eos_auth_monitor/partials/character-cell.html" %}

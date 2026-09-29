@@ -14,8 +14,8 @@
                 <div class="small mb-2">
                     {% translate "Mains" %}: {{ corporation.mains }} ·
                     {% translate "Accounts with problems" %}: {{ corporation.problem_accounts|length }}
-                    {% if corporation.member_count is not None %}
-                        · {% translate "Members" %}: {{ corporation.member_count }}
+                    {% if corporation.characters is not None %}
+                        · {% translate "Characters" %}: {{ corporation.characters }}
                     {% endif %}
                 </div>
                 {% for problem in corporation.problems %}
@@ -28,23 +28,11 @@
             </div>
         </div>
 
-        {% if corporation.rows %}
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-2 mt-2">
-                {% for row in corporation.rows %}
-                    <div class="col">
-                        {% if row.service %}
-                            <a href="{% url 'eos_auth_monitor:corporation_service' corporation.id row.service.key %}" class="btn btn-sm btn-outline-secondary w-100 d-flex justify-content-between gap-2">
-                                <span class="text-truncate"><i class="{{ row.icon }} fa-fw"></i> {{ row.label }}</span>
-                                <span class="text-nowrap">{{ row.part }}/{{ row.total }}{% if row.percent is not None %} · {{ row.percent }}&nbsp;%{% endif %}</span>
-                            </a>
-                        {% else %}
-                            <ul class="list-unstyled small mb-0 border rounded px-2 py-1">
-                                {% include "eos_auth_monitor/partials/tile-row.html" %}
-                            </ul>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
+        {# the Corporation page shows the services as tiles below; every other page keeps the buttons to switch lists #}
+        {% if hide_services %}
+            {% include "eos_auth_monitor/partials/corporation-rows.html" with rows=corporation.check_rows %}
+        {% else %}
+            {% include "eos_auth_monitor/partials/corporation-rows.html" with rows=corporation.rows %}
         {% endif %}
     </div>
 </div>

@@ -20,6 +20,35 @@ class TestDescribe(MonitorTestCase):
         self.assertEqual(describe({"check": "corp_data_stale", "detail": []}), "never updated")
 
 
+class TestMetrics(MonitorTestCase):
+    STORED = {
+        "seconds": 3.5,
+        "phases": {"accounts": 0.5, "characters": 3.0, "gone_in_a_later_release": 1.0},
+        "queries": 40,
+        "query_seconds": 1.25,
+        "corporations": 2,
+        "accounts": 5,
+        "characters": 9,
+        "member_lists": 1,
+        "payload_bytes": 30720,
+    }
+
+    def metrics(self, stored):
+        data = snapshot_data([])
+        if stored:
+            data["metrics"] = stored
+        return Report(store_snapshot(data)).metrics
+
+    def test_should_have_none_for_a_snapshot_from_before_they_were_kept(self):
+        self.assertIsNone(self.metrics(None))
+
+    def test_should_label_the_phases_and_skip_unknown_ones(self):
+        self.assertEqual(self.metrics(self.STORED)["phases"], [("Reading accounts", 0.5), ("Checking characters", 3.0)])
+
+    def test_should_give_the_size_in_kilobytes(self):
+        self.assertEqual(self.metrics(self.STORED)["kilobytes"], 30)
+
+
 class TestAccounts(MonitorTestCase):
     def test_should_name_each_failed_check_once(self):
         account = account_row(
@@ -43,6 +72,48 @@ class TestAccounts(MonitorTestCase):
 
         self.assertEqual([account.user_id for account in corporation.accounts_by_problems], [2, 1])
         self.assertEqual([account.user_id for account in corporation.problem_accounts], [2])
+
+    def test_should_sort_by_the_number_of_problems_not_only_by_whether_there_are_any(self):
+        one = account_row(1, 101, characters=[character_row(101, [AUDIT_MISSING])])
+        three = account_row(
+            2, 201, characters=[character_row(201, [AUDIT_MISSING, SCOPES_MISSING]), character_row(202, [AUDIT_MISSING])]
+        )
+        none = account_row(3, 301)
+
+        corporation = report([corporation_row(2001, [none, one, three])]).corporation(2001)
+
+        self.assertEqual([account.user_id for account in corporation.accounts_by_problems], [2, 1, 3])
+
+    def test_should_sort_equal_problem_counts_by_name(self):
+        accounts = [account_row(1, 102), account_row(2, 101)]
+
+        corporation = report([corporation_row(2001, accounts)]).corporation(2001)
+
+        self.assertEqual([account.main_id for account in corporation.accounts_by_problems], [101, 102])
+
+    def test_should_list_the_characters_of_an_account_by_problems_with_the_main_first_among_equals(self):
+        characters = [
+            character_row(103),
+            character_row(102, [AUDIT_MISSING, SCOPES_MISSING]),
+            character_row(101),
+            character_row(104, [AUDIT_MISSING]),
+        ]
+        _, found = report([corporation_row(2001, [account_row(1, 101, characters=characters)])]).account(1)
+
+        self.assertEqual([character.id for character in found.characters_by_problems], [102, 104, 101, 103])
+
+    def test_should_rank_corporations_by_their_own_problems_plus_those_of_their_accounts(self):
+        broken_account = account_row(1, 101, characters=[character_row(101, [AUDIT_MISSING, SCOPES_MISSING])])
+        corporations = [
+            corporation_row(2001),
+            corporation_row(2002, [broken_account]),
+            corporation_row(2003, problems=[CORP_TOKEN_MISSING]),
+            corporation_row(2004),
+        ]
+
+        ranked = report(corporations).corporations_by_problems
+
+        self.assertEqual([corporation.id for corporation in ranked], [2002, 2003, 2001, 2004])
 
     def test_should_ignore_checks_an_old_snapshot_knows_but_this_release_not(self):
         account = account_row(1, 101, characters=[character_row(101, [{"check": "gone", "detail": []}])])
@@ -100,6 +171,39 @@ class TestCockpit(MonitorTestCase):
 
         self.assertEqual([(service.key, linked) for service, linked in connections], [("discord", 1), ("qq", 1)])
 
+    def test_should_give_a_corporation_a_gauge_per_service_over_its_own_mains(self):
+        corporations = [
+            corporation_row(2001, [account_row(1, 101, services={"discord": True, "qq": False}), account_row(2, 201)]),
+            corporation_row(2002, [account_row(3, 301, services={"discord": True, "qq": True})]),
+        ]
+
+        gauges = report(corporations, services=["discord", "qq"]).corporation(2001).service_gauges
+
+        self.assertEqual(
+            [(str(gauge.label), gauge.part, gauge.total, gauge.percent, gauge.service.key) for gauge in gauges],
+            [("Discord", 1, 2, 50, "discord"), ("QQ", 0, 2, 0, "qq")],
+        )
+
+    def test_should_count_unknown_members_as_mains_that_linked_nothing(self):
+        strangers = [{"id": n, "name": f"Stranger {n}"} for n in range(3)]
+        corporations = [
+            {
+                **corporation_row(2001, [account_row(1, 101, services={"discord": True}), account_row(2, 201)]),
+                "member_count": 6,
+                "unregistered": strangers,
+            },
+            # no member list read: only its registered mains can be counted
+            corporation_row(2002, [account_row(3, 301, services={"discord": True})]),
+        ]
+        found = report(corporations, services=["discord"])
+
+        self.assertEqual(self.gauges(corporations, services=["discord"])["Discord"], (2, 6, 33))
+        gauge = found.corporation(2001).service_gauges[0]
+        self.assertEqual((gauge.part, gauge.total), (1, 5))
+        self.assertEqual([(row.part, row.total) for row in found.corporation(2001).service_counts], [(1, 5)])
+        # the connections tile counts what is linked, unknown members add nothing
+        self.assertEqual([linked for _, linked in found.connections()], [2])
+
     def test_should_show_only_gauges_of_checks_that_ran(self):
         self.assertEqual(self.gauges([corporation_row(2001)]), {})
 
@@ -107,6 +211,20 @@ class TestCockpit(MonitorTestCase):
         gauges = self.gauges([corporation_row(2001)], services=["discord"])
 
         self.assertEqual(gauges["Discord"], (0, 0, None))
+
+
+class TestCharacterCount(MonitorTestCase):
+    def characters(self, **fields):
+        return report([{**corporation_row(2001), **fields}]).corporation(2001).characters
+
+    def test_should_prefer_the_member_list(self):
+        self.assertEqual(self.characters(member_count=279, member_total=290), 279)
+
+    def test_should_fall_back_to_the_count_auth_stores(self):
+        self.assertEqual(self.characters(member_count=None, member_total=290), 290)
+
+    def test_should_have_none_when_neither_is_known(self):
+        self.assertIsNone(self.characters())
 
 
 class TestTileRows(MonitorTestCase):
@@ -134,6 +252,12 @@ class TestTileRows(MonitorTestCase):
                 "Discord": (1, 1, 100),
             },
         )
+
+    def test_should_keep_the_services_out_of_the_check_rows(self):
+        corporation = report([corporation_row(2001, [account_row(1, 101)])], services=["discord"]).corporation(2001)
+
+        self.assertEqual([str(row.label) for row in corporation.rows], ["Discord"])
+        self.assertEqual(corporation.check_rows, [])
 
     def test_should_leave_out_what_did_not_run(self):
         self.assertEqual(self.rows(corporation_row(2001)), {})

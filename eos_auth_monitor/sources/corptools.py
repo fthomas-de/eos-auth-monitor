@@ -142,14 +142,24 @@ def _is_fresh(value, time_ref) -> bool:
     return updated is not None and updated > time_ref
 
 
-def character_problems(character_ids, keys, excluded_sections=(), excluded_scopes=()) -> dict[int, list[dict]]:
+def character_problems(
+    character_ids,
+    keys,
+    excluded_sections=(),
+    excluded_scopes=(),
+    excluded_corporation_scopes=(),
+    esi_directors=(),
+) -> dict[int, list[dict]]:
     """Problems per EVE character ID.
 
     ``character_ids`` is a flat ``values_list`` queryset: used as a subquery
     in the filters below, so an Alliance of thousands of characters never
     becomes a long IN list.
+
+    ``esi_directors`` are Directors ESI named that corptools does not know
+    as such, e.g. because it never read their roles.
     """
-    from corptools.models import CharacterAudit
+    from corptools.models import CharacterAudit, CharacterRoles
     from esi.models import Token
 
     audits = {
@@ -159,8 +169,17 @@ def character_problems(character_ids, keys, excluded_sections=(), excluded_scope
         )
     }
 
+    directors = set()
+    if "char_director_token_missing" in keys:
+        directors = set(esi_directors)
+        directors |= set(
+            CharacterRoles.objects.filter(
+                character__character__character_id__in=character_ids, director=True
+            ).values_list("character__character__character_id", flat=True)
+        )
+
     scopes_per_token = defaultdict(dict)
-    if "char_scopes_missing" in keys:
+    if "char_scopes_missing" in keys or directors:
         rows = Token.objects.filter(character_id__in=character_ids).values_list("pk", "character_id", "scopes__name")
         for token_id, character_id, scope in rows:
             scopes = scopes_per_token[character_id].setdefault(token_id, set())
@@ -168,6 +187,7 @@ def character_problems(character_ids, keys, excluded_sections=(), excluded_scope
                 scopes.add(scope)
 
     required = set(character_scopes()) - set(excluded_scopes)
+    required_corporation = set(corporation_scopes()) - set(excluded_corporation_scopes)
     sections = [key for key in character_sections() if key not in set(excluded_sections)]
     time_ref = timezone.now() - datetime.timedelta(days=max_inactive_days())
     result = {}
@@ -190,6 +210,12 @@ def character_problems(character_ids, keys, excluded_sections=(), excluded_scope
                 # the token closest to complete says what re-adding one would fix
                 best = max(tokens, key=lambda scopes: len(scopes & required), default=set())
                 found.append(problem("char_scopes_missing", sorted(required - best)))
+
+        if character_id in directors:
+            tokens = scopes_per_token.get(character_id, {}).values()
+            if not any(required_corporation <= scopes for scopes in tokens):
+                best = max(tokens, key=lambda scopes: len(scopes & required_corporation), default=set())
+                found.append(problem("char_director_token_missing", sorted(required_corporation - best)))
 
         if found:
             result[character_id] = found

@@ -4,14 +4,15 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-09-28.
+Last updated 2026-09-29.
 
 ## Release
 
 - Version **0.0.1**, the first release (see `CHANGELOG.md`). Pushed to
-  `origin/main`; no Git tag yet.
+  `origin/main`. Tag `v0.0.1` exists **locally** on the release commit
+  0b472f6, not pushed yet (`git push origin v0.0.1`).
 - Migrations **0001-0003** applied in `aa_dev`.
-- 120 tests, all green (`eos-test eos_auth_monitor --exclude-tag
+- 175 tests, all green (`eos-test eos_auth_monitor --exclude-tag
   translations`); every check, access rule and new feature counter-checked
   against broken code (37 sabotages over the session, each turned a test red).
 - No translations yet; all texts English (`## Release` says "none yet").
@@ -31,7 +32,8 @@ Last updated 2026-09-28.
 Code layout: `checks.py` (registry of checks, groups, services),
 `sources/` (one reader per foreign app, read only; `members.py` is the one
 ESI call), `snapshot.py` (builds the JSON, run by `tasks.update_snapshot`),
-`progress.py` (task state in the cache), `report.py` (labels, counts,
+`progress.py` (task state in the cache), `metrics.py` (times and counts a build,
+stored under `metrics` in the snapshot, footer `partials/metrics.html`), `report.py` (labels, counts,
 percentages for the templates), `smart_filters.py` + `models.AccountProblemsFilter`
 (securegroups), `views.py`, `forms.py`. JS: `tables.js` (DataTables),
 `progress.js`, `searchable.js` (Tom Select).
@@ -84,18 +86,20 @@ percentages for the templates), `smart_filters.py` + `models.AccountProblemsFilt
 
 ## Open points / next steps
 
-- Tag `v0.0.1` on GitHub if releases should be tagged (checklist 1.2.2).
-- aa-structures, aa-qqbot, the Telegram bridge and allianceauth-securegroups
-  are not installed in the dev venv; their parts are tested with fakes.
-  Installing them would test against the real schema (ask first; pip pulls
-  dependencies).
-- Discord and Mumble services are not in the dev `INSTALLED_APPS` either.
-- The wheel built by flit contains `eos_auth_monitor/tests`; the checklist
-  (1.3.2) wants tests out of the package.
-- Raise the `allianceauth` lower bound once it is clear which 5.x release
-  introduced `framework/header/page-header.html` and the DataTables 2
-  bundles the templates use.
-- Performance with a large Alliance is untested: the character check reads
+- Push the tag `v0.0.1` (checklist 1.2.2); it only exists locally.
+- Since 2026-09-29 the dev instance has aa-structures 4.0.1, securegroups
+  0.10.2, aa-qqbot 1.0.0, the Telegram bridge 1.7.6, Discord and Mumble in
+  `INSTALLED_APPS`, so the readers ran against the real schemas (`user`
+  one-to-one in each service model). The dev DB has one account and no
+  links yet: every service number is 0, and aa-structures' own tables hold
+  no owner. Tests that assumed aa-structures absent were made independent
+  of what is installed. Not checked: that the snapshot of a large,
+  really linked Alliance counts right - only fakes and the empty dev data.
+- The `allianceauth>=5.0` bound was checked by reading the tags (page-header,
+  DataTables 2 bundles and template tags exist in 5.0.0; its django-esi 9.0
+  has the ESI client calls used). Never run against 5.0 itself.
+- Performance with a large Alliance is untested (the footer with the build
+  figures - seconds per step, queries, sizes - is there to measure it): the character check reads
   all tokens with their scopes in one query; the member lists cost one ESI
   call per Corporation per run (cached by django-esi).
 - Translations (de, ru, zh_Hans like the sister apps) once the texts settle.

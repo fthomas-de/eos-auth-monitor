@@ -7,7 +7,18 @@
         {% if not corporation %}
             <div class="alert alert-info">{% translate "This Corporation is not part of the overview." %}</div>
         {% else %}
-            {% include "eos_auth_monitor/partials/corporation-header.html" %}
+            {% include "eos_auth_monitor/partials/corporation-header.html" with hide_services=True %}
+
+            {% if corporation.service_gauges %}
+                <div class="row row-cols-2 row-cols-md-4 row-cols-xl-6 g-3 mb-4">
+                    {% for gauge in corporation.service_gauges %}
+                        <div class="col">
+                            {% url 'eos_auth_monitor:corporation_service' corporation.id gauge.service.key as gauge_link %}
+                            {% include "eos_auth_monitor/partials/gauge.html" with link=gauge_link %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
             <h6>{% translate "Mains of this Corporation" %} <span class="badge text-bg-secondary">{{ corporation.mains }}</span></h6>
             <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3 mb-4">
@@ -78,26 +89,21 @@
             {% else %}
                 <h6>{% translate "Not registered in Auth" %} <span class="badge {% if corporation.unregistered %}text-bg-danger{% else %}text-bg-success{% endif %}">{{ corporation.unregistered|length }}</span></h6>
                 {% if corporation.unregistered %}
-                    <div class="card">
-                        <div class="card-body">
-                            <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
-                                <thead>
-                                    <tr><th>{% translate "Character" %}</th></tr>
-                                </thead>
-                                <tbody>
-                                    {% for character in corporation.unregistered %}
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <img src="{{ character.id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
-                                                    <span class="text-break">{{ character.name }}</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                    {# each one counts as a main of its own, so it gets the card of a main #}
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3">
+                        {% for character in corporation.unregistered %}
+                            <div class="col">
+                                <div class="card h-100 border-danger">
+                                    <div class="card-body d-flex align-items-start gap-3">
+                                        <img src="{{ character.id|character_portrait_url:64 }}" width="48" height="48" class="rounded flex-shrink-0" alt="">
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <h6 class="mb-1 text-truncate">{{ character.name }}</h6>
+                                            <span class="badge text-bg-danger text-wrap">{% translate "Not registered in Auth" %}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
                 {% endif %}
             {% endif %}

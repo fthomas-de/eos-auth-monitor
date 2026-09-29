@@ -89,6 +89,16 @@ CHECKS = (
         _("corptools marks the audit inactive: a section has not updated for too long."),
     ),
     Check(
+        "char_director_token_missing",
+        "corptools_characters",
+        CHARACTER,
+        _("Director token missing"),
+        _(
+            "The character is a Director of its Corporation, but none of its tokens carries "
+            "all scopes corptools needs for the Corporation audit."
+        ),
+    ),
+    Check(
         "corp_audit_missing",
         "corptools_corporations",
         CORPORATION,

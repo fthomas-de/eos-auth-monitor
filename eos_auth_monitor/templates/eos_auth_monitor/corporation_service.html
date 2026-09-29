@@ -21,8 +21,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for account in corporation.accounts %}
-                            {% for character in account.characters %}
+                        {% for account in corporation.accounts_by_problems %}
+                            {% for character in account.characters_by_problems %}
                                 <tr>
                                     <td data-order="{% if character.problems %}0{% else %}1{% endif %}{{ character.name }}">
                                         {% include "eos_auth_monitor/partials/character-cell.html" with link_account=account %}

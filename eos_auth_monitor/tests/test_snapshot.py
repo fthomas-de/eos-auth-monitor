@@ -2,15 +2,17 @@ from unittest.mock import patch
 
 from corptools.app_settings import CT_CHAR_MAX_INACTIVE_DAYS
 
+from django.contrib.auth.models import User
+
+from allianceauth.eveonline.models import EveCorporationInfo
+
 from allianceauth.tests.auth_utils import AuthUtils
 
 from eos_auth_monitor import progress, snapshot
-from eos_auth_monitor.checks import CHECKS, SERVICES_BY_KEY
+from eos_auth_monitor.checks import CHECKS, SERVICES_BY_KEY, installed_checks
 from eos_auth_monitor.models import MonitorConfiguration, Snapshot
 
 from .base import ALLIANCE_ID, OTHER_ALLIANCE_ID, MonitorTestCase, add_alt, configure, make_corporation, make_user
-
-ALL_CORPTOOLS_CHECKS = [check.key for check in CHECKS if check.group.startswith("corptools")]
 
 
 def build(**config):
@@ -46,6 +48,16 @@ class TestAccounts(MonitorTestCase):
             [self.pilot.profile.main_character.character_id, self.alt.character_id],
         )
         self.assertTrue(all(character["problems"] for character in account["characters"]))
+
+    def test_should_take_the_character_count_from_what_auth_stores_for_the_corporation(self):
+        EveCorporationInfo.objects.filter(corporation_id=2001).update(member_count=290)
+        # a Corporation only known through a main has no stored count
+        make_user("visitor", corporation_id=2555)
+
+        data = build()
+
+        self.assertEqual(corporation(data, 2001)["member_total"], 290)
+        self.assertIsNone(corporation(data, 2555)["member_total"])
 
     def test_should_leave_out_accounts_with_their_main_elsewhere(self):
         spy = make_user("spy", corporation_id=2001, alliance_id=OTHER_ALLIANCE_ID)
@@ -83,7 +95,7 @@ class TestChecksAndServices(MonitorTestCase):
         self.pilot = make_user("pilot", corporation_id=2001)
 
     def test_should_run_no_check_that_is_switched_off(self):
-        data = build(disabled_checks=ALL_CORPTOOLS_CHECKS)
+        data = build(disabled_checks=[check.key for check in CHECKS])
 
         row = corporation(data, 2001)
         self.assertEqual(data["checks"], [])
@@ -93,7 +105,7 @@ class TestChecksAndServices(MonitorTestCase):
     def test_should_record_the_checks_it_ran(self):
         data = build(disabled_checks=["corp_data_stale"])
 
-        self.assertEqual(data["checks"], [key for key in ALL_CORPTOOLS_CHECKS if key != "corp_data_stale"])
+        self.assertEqual(data["checks"], [check.key for check in installed_checks() if check.key != "corp_data_stale"])
 
     def test_should_take_the_stale_limit_from_corptools_unless_set(self):
         self.assertEqual(build()["stale_after_days"], CT_CHAR_MAX_INACTIVE_DAYS)
@@ -146,6 +158,42 @@ class TestUpdate(MonitorTestCase):
 
         self.assertEqual(list(dict.fromkeys(phases)), list(progress.PHASES))
 
+    def test_should_store_what_the_build_cost(self):
+        make_corporation(2001)
+        add_alt(make_user("pilot"), 3001, "Alt")
+        configure()
+
+        metrics = snapshot.update().data["metrics"]
+
+        self.assertGreater(metrics["queries"], 0)
+        self.assertEqual(list(metrics["phases"]), list(progress.PHASES))
+        self.assertEqual((metrics["accounts"], metrics["characters"]), (1, 2))
+        self.assertGreater(metrics["payload_bytes"], 0)
+        self.assertGreaterEqual(metrics["seconds"], metrics["query_seconds"])
+
+    def test_should_count_only_the_queries_of_its_own_build(self):
+        make_corporation(2001)
+        configure()
+        first = snapshot.update().data["metrics"]["queries"]
+
+        User.objects.count()  # outside any build: must not add to the next one
+        second = snapshot.update().data["metrics"]["queries"]
+
+        self.assertEqual(first, second)
+
+    def test_should_count_the_member_lists_it_could_read(self):
+        make_corporation(2001)
+        make_corporation(2002)
+        configure(fetch_members=True)
+
+        with (
+            patch("eos_auth_monitor.snapshot.members_source.corporation_members", side_effect=[[1], None]),
+            patch("eos_auth_monitor.snapshot.members_source.names", return_value={1: "Nobody"}),
+        ):
+            metrics = snapshot.update().data["metrics"]
+
+        self.assertEqual(metrics["member_lists"], 1)
+
 
 class TestExclusions(MonitorTestCase):
     def setUp(self):
@@ -165,8 +213,57 @@ class TestExclusions(MonitorTestCase):
                 excluded_corporation_scopes=["b"],
             )
 
-        self.assertEqual(characters.call_args.args[2:], (["mails"], ["a"]))
+        self.assertEqual(characters.call_args.args[2:], (["mails"], ["a"], ["b"], set()))
         self.assertEqual(corporations.call_args.args[3:], (["observers"], ["b"]))
+
+
+class TestDirectorsFromEsi(MonitorTestCase):
+    def setUp(self):
+        super().setUp()
+        make_corporation(2001)
+        self.pilot = make_user("pilot", corporation_id=2001)
+        self.main_id = self.pilot.profile.main_character.character_id
+
+    def handed_over(self, **config):
+        with (
+            patch("eos_auth_monitor.snapshot.members_source.corporation_directors", return_value={self.main_id}) as ask,
+            patch("eos_auth_monitor.snapshot.members_source.corporation_members", return_value=None),
+            patch("eos_auth_monitor.snapshot.corptools_source.character_problems", return_value={}) as characters,
+        ):
+            build(**config)
+        return ask, characters
+
+    def test_should_hand_the_directors_esi_names_to_corptools(self):
+        ask, characters = self.handed_over(fetch_members=True)
+
+        ask.assert_called_once_with(2001)
+        self.assertEqual(characters.call_args.args[-1], {self.main_id})
+
+    def test_should_not_ask_esi_for_roles_when_member_lists_are_switched_off(self):
+        ask, characters = self.handed_over(fetch_members=False)
+
+        ask.assert_not_called()
+        self.assertEqual(characters.call_args.args[-1], set())
+
+    def test_should_not_ask_esi_for_roles_when_the_director_check_is_off(self):
+        ask, _ = self.handed_over(fetch_members=True, disabled_checks=["char_director_token_missing"])
+
+        ask.assert_not_called()
+
+    def test_should_ask_once_per_corporation_the_accounts_have_characters_in(self):
+        add_alt(self.pilot, 5001, "Alt", corporation_id=2001)
+        add_alt(self.pilot, 5002, "Other alt", corporation_id=2002)
+
+        ask, _ = self.handed_over(fetch_members=True)
+
+        self.assertEqual(sorted(call.args[0] for call in ask.call_args_list), [2001, 2002])
+
+    def test_should_survive_a_corporation_without_a_readable_roles_list(self):
+        with (
+            patch("eos_auth_monitor.snapshot.members_source.corporation_directors", return_value=None),
+            patch("eos_auth_monitor.snapshot.members_source.corporation_members", return_value=None),
+        ):
+            self.assertIsNotNone(build(fetch_members=True))
 
 
 class TestMembers(MonitorTestCase):

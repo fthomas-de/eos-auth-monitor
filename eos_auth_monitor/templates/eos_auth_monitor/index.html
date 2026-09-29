@@ -30,30 +30,25 @@
                 {% endif %}
                 {% for gauge in cockpit %}
                     <div class="col">
-                        <div class="card h-100 text-center">
-                            <div class="card-body position-relative">
-                                <i class="{{ gauge.icon }} fa-lg mb-2"></i>
-                                <div class="fs-3 fw-bold {{ gauge.percent|percent_class }}">
-                                    {% if gauge.percent is None %}-{% else %}{{ gauge.percent }}&nbsp;%{% endif %}
-                                </div>
-                                <div class="small">{{ gauge.label }}</div>
-                                <div class="small text-body-secondary">
-                                    {% blocktranslate with part=gauge.part total=gauge.total %}{{ part }} of {{ total }}{% endblocktranslate %}
-                                </div>
-                                {% if gauge.service %}
-                                    <a href="{% url 'eos_auth_monitor:service' gauge.service.key %}" class="stretched-link" aria-label="{{ gauge.label }}"></a>
-                                {% endif %}
-                            </div>
-                        </div>
+                        {% if gauge.service %}{% url 'eos_auth_monitor:service' gauge.service.key as gauge_link %}{% endif %}
+                        {% include "eos_auth_monitor/partials/gauge.html" with link=gauge_link %}
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
 
-        <h5>{% translate "Corporations" %}</h5>
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <h5 class="mb-0 me-auto">{% translate "Corporations" %}</h5>
+            {% if report.corporations %}
+                <input type="search" class="form-control form-control-sm w-auto" style="min-width: 14rem"
+                       placeholder="{% translate 'Filter Corporations ...' %}" aria-label="{% translate 'Filter Corporations' %}"
+                       data-eos-auth-monitor-filter=".eos-auth-monitor-corporation"
+                       data-eos-auth-monitor-filter-empty=".eos-auth-monitor-filter-empty">
+            {% endif %}
+        </div>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3">
-            {% for corporation in report.corporations %}
-                <div class="col">
+            {% for corporation in report.corporations_by_problems %}
+                <div class="col eos-auth-monitor-corporation" data-eos-auth-monitor-filter-text="{{ corporation.name }} {{ corporation.ticker }}">
                     <div class="card h-100 {% if corporation.has_problems %}border-danger{% else %}border-success{% endif %}">
                         <div class="card-body position-relative">
                             {# align-items-start: a flex row would otherwise stretch the logo to the text's height #}
@@ -69,6 +64,12 @@
                                     <span><i class="fas fa-user fa-fw"></i> {% translate "Mains" %}</span>
                                     <span>{{ corporation.mains }}</span>
                                 </li>
+                                {% if corporation.characters is not None %}
+                                    <li class="d-flex justify-content-between gap-2">
+                                        <span><i class="fas fa-users fa-fw"></i> {% translate "Characters" %}</span>
+                                        <span>{{ corporation.characters }}</span>
+                                    </li>
+                                {% endif %}
                                 {% for row in corporation.rows %}
                                     {% include "eos_auth_monitor/partials/tile-row.html" %}
                                 {% endfor %}
@@ -80,5 +81,6 @@
                 <div class="col"><div class="alert alert-info">{% translate "No Corporation of the Alliance is known to Auth." %}</div></div>
             {% endfor %}
         </div>
+        <div class="alert alert-info d-none mt-3 eos-auth-monitor-filter-empty">{% translate "No Corporation matches the filter." %}</div>
     {% endif %}
 {% endblock %}

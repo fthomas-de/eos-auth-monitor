@@ -1,0 +1,18 @@
+{% load i18n %}
+{% load eos_auth_monitor %}
+{# One statistic tile: a percentage, what it counts, and optionally the page behind it (`link`). #}
+<div class="card h-100 text-center">
+    <div class="card-body position-relative">
+        <i class="{{ gauge.icon }} fa-lg mb-2"></i>
+        <div class="fs-3 fw-bold {{ gauge.percent|percent_class }}">
+            {% if gauge.percent is None %}-{% else %}{{ gauge.percent }}&nbsp;%{% endif %}
+        </div>
+        <div class="small">{{ gauge.label }}</div>
+        <div class="small text-body-secondary">
+            {% blocktranslate with part=gauge.part total=gauge.total %}{{ part }} of {{ total }}{% endblocktranslate %}
+        </div>
+        {% if link %}
+            <a href="{{ link }}" class="stretched-link" aria-label="{{ gauge.label }}"></a>
+        {% endif %}
+    </div>
+</div>

@@ -18,18 +18,8 @@ from .permissions import (
     can_view_corporation,
     own_corporation_id,
 )
-from .report import Report
+from .report import PHASE_LABELS, Report
 from .tasks import update_snapshot
-
-
-PHASE_LABELS = {
-    "accounts": _("Reading accounts"),
-    "characters": _("Checking characters"),
-    "corporations": _("Checking Corporations"),
-    "members": _("Reading member lists"),
-    "services": _("Reading services"),
-    "store": _("Saving"),
-}
 
 
 def _render(request, template, context=None):
@@ -130,7 +120,10 @@ def service(request, service_key):
     service = report.service(service_key) if report else None
     if service is None:
         raise Http404
-    rows = [(corporation, account) for corporation in report.corporations for account in corporation.accounts]
+    rows = sorted(
+        ((corporation, account) for corporation in report.corporations for account in corporation.accounts),
+        key=lambda row: (-row[1].problem_count, row[0].name.lower(), row[1].main_name.lower()),
+    )
     return _render(
         request,
         "eos_auth_monitor/service.html",

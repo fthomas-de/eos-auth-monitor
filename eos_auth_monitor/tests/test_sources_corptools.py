@@ -2,7 +2,7 @@ import datetime
 from unittest.mock import patch
 
 from corptools import app_settings
-from corptools.models import CharacterAudit, CorporationAudit, CorptoolsConfiguration
+from corptools.models import CharacterAudit, CharacterRoles, CorporationAudit, CorptoolsConfiguration
 
 from django.utils import timezone
 
@@ -13,6 +13,7 @@ from eos_auth_monitor.sources import corptools
 from .base import MonitorTestCase, add_alt, make_corporation, make_token, make_user
 
 CHARACTER_KEYS = {"char_audit_missing", "char_scopes_missing", "char_audit_inactive"}
+DIRECTOR_KEY = "char_director_token_missing"
 CORPORATION_KEYS = {"corp_audit_missing", "corp_token_missing", "corp_data_stale"}
 # fixed, so the tests do not depend on which corptools modules this instance runs
 SECTIONS = ["assets", "skills"]
@@ -96,6 +97,78 @@ class TestCharacterProblems(MonitorTestCase):
         make_token(self.main, self.scopes[:-1])
 
         self.assertEqual(self.problems(excluded_scopes=self.scopes[-1:]), [])
+
+    def director(self, director=True):
+        audit = CharacterAudit.objects.create(character=self.main, update_timestamps=fresh())
+        CharacterRoles.objects.create(character=audit, director=director)
+
+    def test_should_report_a_director_without_a_corporation_token(self, _):
+        self.director()
+        make_token(self.main, self.scopes)
+
+        problems = self.problems({DIRECTOR_KEY})
+
+        self.assertEqual([item["check"] for item in problems], [DIRECTOR_KEY])
+        # the character token already covers some of them; only the rest is named
+        self.assertEqual(problems[0]["detail"], sorted(set(corptools.corporation_scopes()) - set(self.scopes)))
+
+    def test_should_name_what_the_best_token_of_a_director_lacks(self, _):
+        self.director()
+        make_token(self.main, corptools.corporation_scopes()[:-1])
+
+        self.assertEqual(
+            self.problems({DIRECTOR_KEY}),
+            [{"check": DIRECTOR_KEY, "detail": corptools.corporation_scopes()[-1:]}],
+        )
+
+    def test_should_pass_a_director_with_a_complete_corporation_token(self, _):
+        self.director()
+        make_token(self.main, corptools.corporation_scopes())
+
+        self.assertEqual(self.problems({DIRECTOR_KEY}), [])
+
+    def test_should_not_ask_a_character_that_is_no_director_for_a_corporation_token(self, _):
+        self.director(director=False)
+        make_token(self.main, self.scopes)
+
+        self.assertEqual(self.problems({DIRECTOR_KEY}), [])
+
+    def test_should_know_a_director_esi_named_although_corptools_never_read_the_roles(self, _):
+        CharacterAudit.objects.create(character=self.main, update_timestamps=fresh())
+        make_token(self.main, self.scopes)
+        ids = EveCharacter.objects.filter(character_id=self.main.character_id).values_list("character_id", flat=True)
+
+        found = corptools.character_problems(ids, {DIRECTOR_KEY}, esi_directors={self.main.character_id})
+
+        self.assertEqual([item["check"] for item in found[self.main.character_id]], [DIRECTOR_KEY])
+
+    def test_should_not_apply_esi_directors_when_the_check_is_off(self, _):
+        ids = EveCharacter.objects.filter(character_id=self.main.character_id).values_list("character_id", flat=True)
+
+        self.assertEqual(
+            corptools.character_problems(ids, CHARACTER_KEYS - {DIRECTOR_KEY}, esi_directors={self.main.character_id}).get(
+                self.main.character_id, []
+            ),
+            [{"check": "char_audit_missing", "detail": []}, {"check": "char_scopes_missing", "detail": self.scopes}],
+        )
+
+    def test_should_not_know_a_director_whose_roles_corptools_never_read(self, _):
+        CharacterAudit.objects.create(character=self.main, update_timestamps=fresh())
+
+        self.assertEqual(self.problems({DIRECTOR_KEY}), [])
+
+    def test_should_leave_out_excluded_corporation_scopes_for_a_director(self, _):
+        self.director()
+        make_token(self.main, corptools.corporation_scopes()[:-1])
+
+        self.assertEqual(
+            self.problems({DIRECTOR_KEY}, excluded_corporation_scopes=corptools.corporation_scopes()[-1:]), []
+        )
+
+    def test_should_skip_the_director_check_when_it_is_switched_off(self, _):
+        self.director()
+
+        self.assertEqual(self.problems(CHARACTER_KEYS - {DIRECTOR_KEY}), [{"check": "char_scopes_missing", "detail": self.scopes}])
 
     def test_should_skip_checks_that_are_switched_off(self, _):
         self.assertEqual(self.checks({"char_scopes_missing"}), ["char_scopes_missing"])

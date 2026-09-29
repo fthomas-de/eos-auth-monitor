@@ -72,8 +72,9 @@ is no binary log and there are no dumps.
 ## Code
 
 - The app only reads other apps' tables and writes nothing but its own. Its
-  one ESI call is the Corporation member list (`sources/members.py`), with
-  tokens corptools already holds; nothing else goes to ESI.
+  ESI calls are the Corporation member list and the Corporation roles
+  (`sources/members.py`), with tokens corptools already holds; nothing else
+  goes to ESI.
 - Every foreign app is optional: guard it with `apps.is_installed(...)` and
   import its models inside that guard. Never add one to the dependencies.
 - Mirror the foreign app's own rules instead of reinventing them - corptools'

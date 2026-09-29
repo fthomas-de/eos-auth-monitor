@@ -7,19 +7,26 @@ or aa-structures token, members not registered in Auth, and how many members
 have linked Discord, Mumble, QQ and Telegram.
 
 The app reads what Alliance Auth and the installed apps already hold. Its
-only ESI call is the member list of each Corporation, which no installed app
-stores (see [ESI](#esi)). Every check can be switched off.
+only ESI calls are the member list and the roles of each Corporation, which no
+installed app stores (see [ESI](#esi)). Every check can be switched off.
 
 > **Status: in development.** No release has been tagged yet.
 
 ## Features
 
 - **Cockpit**: percentages across the whole Alliance at a glance - share of
-  mains with Discord, Mumble, QQ and Telegram linked, share of members
+  mains with Discord, Mumble, QQ and Telegram linked (members Auth does not
+  know count as mains that linked nothing, where the member list could be
+  read), share of members
   registered in Auth, share of characters with a complete corptools
   Character Audit, share of Corporations with a working corptools
   Corporation Audit and aa-structures owner - and a tile with the number of
   connections per service
+- **Most problems first**: Corporation tiles, mains, characters and the service
+  lists are ordered by the number of problems, then by name
+- **Filter** above the Corporation tiles of the overview (name or ticker)
+- **Service tiles** on the overview and on each Corporation page: the share of
+  mains that linked Discord, Mumble, QQ or Telegram, each opening its list
 - **One tile per Corporation**: its name as the title, below it each app with
   its share of complete entries (registered members, Character Audit,
   Corporation Audit, Structures, every service)
@@ -33,6 +40,9 @@ stores (see [ESI](#esi)). Every check can be switched off.
   the problem characters marked; per service every main of the Alliance and
   whether it has linked that service
 - **Rebuild now** with a progress bar while the task runs
+- **Build figures** in the footer for holders of `view_all` or `manage_settings`:
+  duration, time per step, database queries, sizes of the Alliance and of the
+  stored result
 - **Smart filter** for [allianceauth-securegroups](https://github.com/Solar-Helix-Independent-Transport/allianceauth-secure-groups):
   does an account have problems?
 - **Settings page**: the Alliance, chosen from a searchable dropdown; a
@@ -72,6 +82,7 @@ settings.
 | Audit missing | it has no `CharacterAudit` |
 | Scopes missing | none of its tokens carries all scopes corptools asks for (`get_character_scopes()`), minus the scopes left out in the settings; the detail names the scopes the most complete token lacks |
 | Audit inactive | a section corptools counts has not updated for longer than `CT_CHAR_MAX_INACTIVE_DAYS`, minus the sections left out in the settings; the detail names them |
+| Director token missing | corptools has read the character's roles and it is a Director, but none of its tokens carries all scopes of the Corporation audit (`CORP_REQUIRED_SCOPES` plus the roles scope), minus the Corporation scopes left out in the settings; the detail names what the most complete token lacks. A Director whose roles corptools never read is not found |
 
 "Audit inactive" follows the conditions of corptools'
 `CharacterAudit.is_active()` - which sections count depends on corptools'
@@ -118,12 +129,20 @@ Corporation:
 | Endpoint | Scope | Token |
 |---|---|---|
 | `GET /corporations/{corporation_id}/members/` | `esi-corporations.read_corporation_membership.v1` | any token corptools already holds of a character in that Corporation; corptools' Corporation audit requires the scope anyway. No in-game role needed |
+| `GET /corporations/{corporation_id}/roles` | `esi-corporations.read_corporation_membership.v1` | a token of a character corptools knows as a Director of that Corporation (ESI lists the roles of all members to a Director, Personnel Manager or a character with grantable roles). Names every Director, also those corptools never read the roles of because they have no token - for the check *Director token missing*. Skipped where no such token exists |
 | `POST /universe/names/` | none | for members Auth has no name for |
 
 django-esi caches the responses and honours their expiry. The app asks for
 no scopes of its own and adds no login step. *Fetch member lists from ESI*
-in the settings switches the calls off; the Corporation page then shows the
-registered accounts only.
+in the settings switches all of these calls off (the label says member lists,
+the roles go with them); the Corporation page then shows the registered
+accounts only, and the check *Director token missing* knows only the Directors
+corptools read.
+
+The character count of a Corporation on the overview is not read from ESI by
+this app: it is the member count Auth keeps on the Corporation
+(`EveCorporationInfo.member_count`, public ESI data that Auth refreshes
+itself). Where the member list was read, its count is used instead.
 
 ## How the data is updated
 
@@ -137,6 +156,13 @@ holders of `view_all` or `manage_settings` find above every page. While it is
 queued or running, a progress bar shows its step; the page reloads itself
 once the task is done. The progress lives in the default cache for up to an
 hour.
+
+While it builds, the task measures itself: the seconds per step, the number and
+duration of its database queries, and how many Corporations, accounts and
+characters it read. The figures are stored inside the snapshot and shown as a
+line at the foot of the pages to holders of `view_all` or `manage_settings`
+(the step times as its tooltip). ESI time is part of the *Reading member
+lists* step. A page view costs one query and is not part of the figures.
 
 ## Smart filter
 

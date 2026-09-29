@@ -16,6 +16,7 @@ from allianceauth.eveonline.models import EveCorporationInfo
 from allianceauth.services.hooks import get_extension_logger
 
 from .checks import CHARACTER, CHECKS_BY_KEY, enabled_checks, enabled_services, is_app_installed
+from .metrics import Measurement
 from .models import MonitorConfiguration, Snapshot
 from .sources import corptools as corptools_source
 from .sources import members as members_source
@@ -135,6 +136,11 @@ def build(config, on_step=_no_progress) -> dict | None:
     on_step("characters")
     character_problems = {}
     character_keys = {key for key in keys if CHECKS_BY_KEY[key].scope == CHARACTER}
+    esi_directors = set()
+    if config.fetch_members and "char_director_token_missing" in character_keys:
+        # one call per Corporation an account has a character in, and only where a Director has a token
+        for corporation_id in sorted({c.corporation_id for chars in characters_by_user.values() for c in chars}):
+            esi_directors |= members_source.corporation_directors(corporation_id) or set()
     if character_keys:
         character_ids = ownerships.values_list("character__character_id", flat=True)
         character_problems = corptools_source.character_problems(
@@ -142,6 +148,8 @@ def build(config, on_step=_no_progress) -> dict | None:
             character_keys,
             config.excluded_character_sections,
             config.excluded_character_scopes,
+            config.excluded_corporation_scopes,
+            esi_directors,
         )
 
     on_step("corporations")
@@ -151,13 +159,16 @@ def build(config, on_step=_no_progress) -> dict | None:
         corporation.corporation_id: {
             "name": corporation.corporation_name,
             "ticker": corporation.corporation_ticker,
+            # public ESI data that Auth keeps on the EveCorporationInfo; no token involved
+            "member_total": corporation.member_count,
         }
         for corporation in EveCorporationInfo.objects.filter(alliance__alliance_id=alliance_id)
     }
     for profile in profiles:
         main = profile.main_character
         corporations.setdefault(
-            main.corporation_id, {"name": main.corporation_name, "ticker": main.corporation_ticker}
+            main.corporation_id,
+            {"name": main.corporation_name, "ticker": main.corporation_ticker, "member_total": None},
         )
     corporation_ids = sorted(corporations)
 
@@ -235,6 +246,7 @@ def build(config, on_step=_no_progress) -> dict | None:
                     "id": corporation_id,
                     "name": corporations[corporation_id]["name"],
                     "ticker": corporations[corporation_id]["ticker"],
+                    "member_total": corporations[corporation_id]["member_total"],
                     "problems": corporation_problems.get(corporation_id, []),
                     "accounts": sorted(
                         accounts_by_corporation.get(corporation_id, []),
@@ -251,10 +263,12 @@ def build(config, on_step=_no_progress) -> dict | None:
 
 def update(on_step=_no_progress) -> Snapshot | None:
     """Rebuild and store the snapshot; without an Alliance the old one goes."""
-    data = build(MonitorConfiguration.get_solo(), on_step)
+    with Measurement(on_step) as measurement:
+        data = build(MonitorConfiguration.get_solo(), measurement.on_step)
     if data is None:
         Snapshot.objects.all().delete()
         return None
+    data["metrics"] = measurement.result(data)
 
     snapshot, _ = Snapshot.objects.update_or_create(pk=1, defaults={"built_at": timezone.now(), "data": data})
     logger.info(

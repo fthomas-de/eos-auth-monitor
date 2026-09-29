@@ -17,6 +17,16 @@ CORPORATION_GROUPS = (
 )
 
 
+PHASE_LABELS = {
+    "accounts": _("Reading accounts"),
+    "characters": _("Checking characters"),
+    "corporations": _("Checking Corporations"),
+    "members": _("Reading member lists"),
+    "services": _("Reading services"),
+    "store": _("Saving"),
+}
+
+
 def describe(item: dict) -> str:
     """The detail of a problem as one line of text."""
     if item["check"] == "corp_data_stale" and not item["detail"]:
@@ -71,6 +81,18 @@ class Account:
     @property
     def problem_characters(self) -> list[Character]:
         return [character for character in self.characters if character.problems]
+
+    @property
+    def problem_count(self) -> int:
+        return sum(len(character.problems) for character in self.characters)
+
+    @property
+    def characters_by_problems(self) -> list[Character]:
+        """Most problems first; the main before its alts and then by name where they are equal."""
+        return sorted(
+            self.characters,
+            key=lambda character: (-len(character.problems), not character.is_main, character.name.lower()),
+        )
 
     @property
     def has_problems(self) -> bool:
@@ -128,6 +150,20 @@ class Corporation:
     unregistered: list[dict]
     services: list[Service] = field(repr=False)
     checks: list[Check] = field(repr=False)
+    member_total: int | None = None
+
+    @property
+    def characters(self) -> int | None:
+        """All characters of the Corporation: the member list where it could be read, else Auth's stored count."""
+        return self.member_count if self.member_count is not None else self.member_total
+
+    @property
+    def service_total(self) -> int:
+        """What the service shares count: the mains, plus every member Auth does not know.
+
+        An unknown character is a main of its own that cannot have linked anything.
+        """
+        return self.mains + len(self.unregistered)
 
     @property
     def mains(self) -> int:
@@ -139,8 +175,13 @@ class Corporation:
 
     @property
     def accounts_by_problems(self) -> list[Account]:
-        """Accounts with a problem first; within both, by name as stored."""
-        return sorted(self.accounts, key=lambda account: not account.has_problems)
+        """Most problems first; by name where they are equal."""
+        return sorted(self.accounts, key=lambda account: (-account.problem_count, account.main_name.lower()))
+
+    @property
+    def problem_count(self) -> int:
+        """Problems of the Corporation itself plus those of all its accounts, to rank the tiles."""
+        return len(self.problems) + sum(account.problem_count for account in self.accounts)
 
     @property
     def registered(self) -> int | None:
@@ -155,15 +196,25 @@ class Corporation:
                 service.label,
                 service.icon,
                 sum(account.is_linked(service.key) for account in self.accounts),
-                self.mains,
+                self.service_total,
                 service=service,
             )
             for service in self.services
         ]
 
     @property
+    def service_gauges(self) -> list["Gauge"]:
+        """Per service the share of this Corporation's mains that linked it, as on the overview."""
+        return [Gauge(row.label, row.part, row.total, row.icon, row.service) for row in self.service_counts]
+
+    @property
     def rows(self) -> list[Row]:
         """What the tile lists: every app that ran, with its share of complete entries."""
+        return self.check_rows + self.service_counts
+
+    @property
+    def check_rows(self) -> list[Row]:
+        """The rows of the apps whose checks ran, without the services."""
         rows = []
         if self.member_count is not None:
             rows.append(Row(_("Registered in Auth"), "fas fa-user-plus", self.registered, self.member_count))
@@ -182,7 +233,7 @@ class Corporation:
                 rows.append(
                     Row(label, icon, problems=[problem for problem in self.problems if problem.check.group == group])
                 )
-        return rows + self.service_counts
+        return rows
 
     @property
     def has_problems(self) -> bool:
@@ -213,6 +264,20 @@ class Report:
         self.stale_after_days = data.get("stale_after_days")
         self.members_fetched = data.get("members_fetched", False)
         self.corporations = [self._corporation(row) for row in data["corporations"]]
+        self.metrics = self._metrics(data.get("metrics"))
+
+    @staticmethod
+    def _metrics(stored) -> dict | None:
+        """The build figures ready to show; None for a snapshot from before they were kept."""
+        if not stored:
+            return None
+        return {
+            **stored,
+            "kilobytes": round(stored["payload_bytes"] / 1024),
+            "phases": [
+                (PHASE_LABELS[phase], seconds) for phase, seconds in stored["phases"].items() if phase in PHASE_LABELS
+            ],
+        }
 
     def _corporation(self, row) -> Corporation:
         accounts = [
@@ -251,11 +316,17 @@ class Report:
             row.get("unregistered", []),
             self.services,
             self.checks,
+            row.get("member_total"),
         )
 
     @property
     def accounts(self) -> list[Account]:
         return [account for corporation in self.corporations for account in corporation.accounts]
+
+    @property
+    def corporations_by_problems(self) -> list[Corporation]:
+        """Most problems first; by name where they are equal."""
+        return sorted(self.corporations, key=lambda corporation: (-corporation.problem_count, corporation.name.lower()))
 
     def corporation(self, corporation_id: int) -> Corporation | None:
         return next((corporation for corporation in self.corporations if corporation.id == corporation_id), None)
@@ -281,7 +352,7 @@ class Report:
             Gauge(
                 service.label,
                 sum(account.is_linked(service.key) for account in accounts),
-                len(accounts),
+                sum(corporation.service_total for corporation in self.corporations),
                 service.icon,
                 service,
             )
