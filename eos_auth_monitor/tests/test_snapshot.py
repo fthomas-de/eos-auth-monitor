@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from corptools.app_settings import CT_CHAR_MAX_INACTIVE_DAYS
+from corptools.models import CharacterAudit, CharacterRoles
 
 from django.contrib.auth.models import User
 
@@ -62,6 +63,27 @@ class TestAccounts(MonitorTestCase):
         self.assertEqual([character["id"] for character in account["characters"]], [main_id, inside.character_id])
         self.assertEqual(sorted(characters.call_args.args[0]), [main_id, inside.character_id])
         self.assertNotIn(other_alliance.character_id, characters.call_args.args[0])
+        # the alt without an Alliance and the one in another Alliance
+        self.assertEqual(account["left_out"], 2)
+
+    def test_should_leave_out_no_character_by_default(self):
+        account = corporation(build(), 2001)["accounts"][0]
+
+        self.assertEqual(account["left_out"], 0)
+
+    def director_problems(self, character):
+        audit = CharacterAudit.objects.create(character=character, update_timestamps={})
+        CharacterRoles.objects.create(character=audit, director=True)
+        account = corporation(build(), 2001)["accounts"][0]
+        found = next(entry for entry in account["characters"] if entry["id"] == character.character_id)
+        return [item["check"] for item in found["problems"] if item["check"] == "char_director_token_missing"]
+
+    def test_should_flag_a_director_of_the_alliance_without_a_corporation_token(self):
+        self.assertEqual(self.director_problems(self.pilot.profile.main_character), ["char_director_token_missing"])
+
+    def test_should_not_flag_a_director_of_a_corporation_outside_the_alliance(self):
+        # the alt is checked for everything else, but its Corporation is none of the Alliance's
+        self.assertEqual(self.director_problems(self.alt), [])
 
     def test_should_take_the_character_count_from_what_auth_stores_for_the_corporation(self):
         EveCorporationInfo.objects.filter(corporation_id=2001).update(member_count=290)
@@ -272,14 +294,25 @@ class TestDirectorsFromEsi(MonitorTestCase):
 
         self.assertEqual(sorted(call.args[0] for call in ask.call_args_list), [2001, 2002])
 
-    def test_should_ask_about_no_corporation_outside_the_alliance_when_only_its_characters_count(self):
+    def test_should_ask_about_no_corporation_outside_the_alliance(self):
         add_alt(self.pilot, 5003, "Alt elsewhere", corporation_id=5005, alliance_id=None)
 
         everywhere, _ = self.handed_over(fetch_members=True)
         inside, _ = self.handed_over(fetch_members=True, alliance_characters_only=True)
 
-        self.assertEqual(sorted(call.args[0] for call in everywhere.call_args_list), [2001, 5005])
+        # the alt is still checked, its Corporation's Directors are not the Alliance's concern
+        self.assertEqual([call.args[0] for call in everywhere.call_args_list], [2001])
         self.assertEqual([call.args[0] for call in inside.call_args_list], [2001])
+
+    def test_should_let_only_the_characters_in_the_alliance_count_as_directors(self):
+        inside = add_alt(self.pilot, 5004, "Alt inside", corporation_id=2001)
+        add_alt(self.pilot, 5003, "Alt elsewhere", corporation_id=5005, alliance_id=None)
+
+        _, characters = self.handed_over(fetch_members=True)
+
+        self.assertEqual(
+            sorted(characters.call_args.kwargs["director_ids"]), sorted([self.main_id, inside.character_id])
+        )
 
     def marker(self, directors, **config):
         with (

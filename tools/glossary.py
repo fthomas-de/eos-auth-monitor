@@ -550,6 +550,18 @@ PLURALS = {
         ["%(counter)s Character", "%(counter)s Character", "%(counter)s Character"],
         ["%(counter)s 个 Character"],
     ),
+    '%(counter)s character outside the Alliance is neither shown nor checked here.': (
+        [
+            '%(counter)s Character außerhalb der Alliance wird hier weder angezeigt noch geprüft.',
+            '%(counter)s Characters außerhalb der Alliance werden hier weder angezeigt noch geprüft.',
+        ],
+        [
+            '%(counter)s Character вне Alliance здесь не показывается и не проверяется.',
+            '%(counter)s Character вне Alliance здесь не показываются и не проверяются.',
+            '%(counter)s Character вне Alliance здесь не показываются и не проверяются.',
+        ],
+        ['%(counter)s 个 Alliance 之外的 Character 在此既不显示也不检查。'],
+    ),
     '%(counter)s character without problems': (
         ['%(counter)s Character ohne Probleme', '%(counter)s Characters ohne Probleme'],
         ['%(counter)s Character без проблем', '%(counter)s Character без проблем', '%(counter)s Character без проблем'],

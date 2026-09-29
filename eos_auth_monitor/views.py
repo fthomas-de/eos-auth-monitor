@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import NoReverseMatch, reverse
 from django.template.loader import render_to_string
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.text import get_valid_filename
@@ -192,6 +193,14 @@ def account(request, user_id):
     )
 
 
+def _charlink_url() -> str | None:
+    """aa-charlink's page, where a member adds a character to every app at once; None without the app."""
+    try:
+        return reverse("charlink:index")
+    except NoReverseMatch:
+        return None
+
+
 @any_permission_required(VIEW_OWN)
 def own_account(request):
     """The viewer's own account, for members: their problems and what to do, nothing about others."""
@@ -200,7 +209,15 @@ def own_account(request):
     return _render(
         request,
         "eos_auth_monitor/account.html",
-        {**_state(report), "corporation": corporation, "account": account, "own": True, "location": _("My account")},
+        {
+            **_state(report),
+            "corporation": corporation,
+            "account": account,
+            "own": True,
+            "location": _("My account"),
+            # a member fixes their own tokens in aa-charlink; without it the check's own app stays the link
+            "own_fix_link": _charlink_url(),
+        },
         NAV_OWN,
     )
 

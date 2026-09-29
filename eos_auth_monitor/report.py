@@ -81,6 +81,8 @@ class Account:
     corporation_id: int
     services: list[ServiceLink]
     characters: list[Character]
+    # characters outside the Alliance that *Only characters in the Alliance* left out
+    left_out: int = 0
 
     @property
     def problem_characters(self) -> list[Character]:
@@ -395,6 +397,8 @@ class Report:
                     )
                     for character in account["characters"]
                 ],
+                # a snapshot from before 0.0.5 has no such count
+                left_out=account.get("left_out", 0),
             )
             for account in row["accounts"]
         ]

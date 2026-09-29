@@ -105,6 +105,14 @@
                     </details>
                 {% endif %}
             {% endwith %}
+
+            {% if account.left_out %}
+                {# without it, "no problem" would read as if the alts elsewhere were fine too #}
+                <div class="small text-body-secondary mt-3 eos-auth-monitor-left-out">
+                    <i class="fas fa-circle-info"></i>
+                    {% blocktranslate count counter=account.left_out context "EVE jargon" %}{{ counter }} character outside the Alliance is neither shown nor checked here.{% plural %}{{ counter }} characters outside the Alliance are neither shown nor checked here.{% endblocktranslate %}
+                </div>
+            {% endif %}
         </div>
     </div>
     {% endif %}

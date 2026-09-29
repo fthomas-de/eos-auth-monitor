@@ -149,6 +149,7 @@ def character_problems(
     excluded_scopes=(),
     excluded_corporation_scopes=(),
     esi_directors=(),
+    director_ids=None,
 ) -> dict[int, list[dict]]:
     """Problems per EVE character ID.
 
@@ -158,6 +159,11 @@ def character_problems(
 
     ``esi_directors`` are Directors ESI named that corptools does not know
     as such, e.g. because it never read their roles.
+
+    ``director_ids`` (a queryset like ``character_ids``) are the characters
+    that may count as Directors at all: those in the Alliance. A Director of
+    a Corporation elsewhere owes the Alliance no Corporation token. None
+    leaves nobody out.
     """
     from corptools.models import CharacterAudit, CharacterRoles
     from esi.models import Token
@@ -172,11 +178,10 @@ def character_problems(
     directors = set()
     if "char_director_token_missing" in keys:
         directors = set(esi_directors)
-        directors |= set(
-            CharacterRoles.objects.filter(
-                character__character__character_id__in=character_ids, director=True
-            ).values_list("character__character__character_id", flat=True)
-        )
+        roles = CharacterRoles.objects.filter(character__character__character_id__in=character_ids, director=True)
+        if director_ids is not None:
+            roles = roles.filter(character__character__character_id__in=director_ids)
+        directors |= set(roles.values_list("character__character__character_id", flat=True))
 
     scopes_per_token = defaultdict(dict)
     if "char_scopes_missing" in keys or directors:

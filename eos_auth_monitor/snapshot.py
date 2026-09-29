@@ -6,7 +6,7 @@ Runs in the periodic task, never in a web request. The result is plain JSON;
 labels are looked up when a page is rendered, in the viewer's language.
 """
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -128,7 +128,10 @@ def build(config, on_step=_no_progress) -> dict | None:
     )
     users = User.objects.filter(profile__main_character__alliance_id=alliance_id)
     ownerships = CharacterOwnership.objects.filter(user__in=users).select_related("character")
+    # per account, how many characters the pages leave out - so that they can say so
+    left_out = Counter()
     if config.alliance_characters_only:
+        left_out.update(ownerships.exclude(character__alliance_id=alliance_id).values_list("user_id", flat=True))
         # dropped here, an alt elsewhere is neither checked nor asked about nor counted
         ownerships = ownerships.filter(character__alliance_id=alliance_id)
 
@@ -154,8 +157,11 @@ def build(config, on_step=_no_progress) -> dict | None:
             esi_directors.update(found)
 
     if asked_roles:
-        # one call per Corporation an account has a character in, and only where a Director has a token
-        for corporation_id in sorted({c.corporation_id for chars in characters_by_user.values() for c in chars}):
+        # one call per Corporation of the Alliance an account has a character in, and only where a
+        # Director has a token; the Directors of a Corporation elsewhere are not the Alliance's concern
+        for corporation_id in sorted(
+            {c.corporation_id for chars in characters_by_user.values() for c in chars if c.alliance_id == alliance_id}
+        ):
             ask_roles(corporation_id)
     if character_keys:
         character_ids = ownerships.values_list("character__character_id", flat=True)
@@ -166,6 +172,9 @@ def build(config, on_step=_no_progress) -> dict | None:
             config.excluded_character_scopes,
             config.excluded_corporation_scopes,
             esi_directors,
+            director_ids=ownerships.filter(character__alliance_id=alliance_id).values_list(
+                "character__character_id", flat=True
+            ),
         )
 
     on_step("corporations")
@@ -243,6 +252,7 @@ def build(config, on_step=_no_progress) -> dict | None:
                     }
                     for character in characters
                 ],
+                "left_out": left_out[profile.user_id],
             }
         )
 

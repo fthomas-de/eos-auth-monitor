@@ -153,6 +153,21 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
 - *My account*'s service tiles link to Alliance Auth's services page.
 - **CSV export** on the Corporation page: per to-do group beside *Copy
   names*, and one for the whole list (Problem, Name).
+- **Accepted as they are** (asked again and settled on 2026-09-29, not to be
+  raised as open points any more): the QQ and Telegram tiles on *My account*
+  linking to Auth's services page - both apps link from there; the service
+  lists showing registered mains only while the tile's total counts unknown
+  members; Directors nobody can read the roles of staying unfound (marker
+  "No Director token"); the `allianceauth>=5.1.4` floor derived from the tags
+  without a run against 5.1.4; the machine-generated translations; no CI;
+  performance with a large Alliance untested (the footer with the build
+  figures is there to measure it; the token-by-scope query and the
+  per-Corporation queries and ESI calls stay as they are).
+- **Director check only inside the Alliance**: a Director of a Corporation
+  outside the Alliance is no problem, with or without *Only characters in
+  the Alliance*; such Corporations are not asked for roles.
+- **My account links to aa-charlink** for every problem (the other pages
+  keep the check's app); without aa-charlink the check's app stays.
 - Claude may apply this app's migrations to `aa_dev` and restart the dev
   Celery worker without asking.
 
@@ -214,39 +229,34 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
 
 ## Open points / next steps
 
-- With *Only characters in the Alliance* on, the account page and *My
-  account* do not say that characters were left out; a short notice there
-  was offered to the user (2026-09-29), not asked for yet.
+- Unreleased since 0.0.4: the notice on the account page and *My account*
+  about characters left out by *Only characters in the Alliance*
+  (`left_out` per account in the snapshot, `Account.left_out`, counted from
+  the ownerships outside the Alliance before they are dropped in
+  `snapshot.build`). Asked for by the user on 2026-09-29; 5 new tests,
+  sabotage 5 for 5. Its plural message is not in `tools/glossary.py` yet -
+  that happens at `/commit`.
+- Unreleased as well: *Director token missing* only for characters in the
+  Alliance (`director_ids` of `sources.corptools.character_problems`, roles
+  asked only for Corporations of the Alliance), whatever *Only characters in
+  the Alliance* says - the user saw a main flagged for an alt that directs a
+  Corporation outside the Alliance (2026-09-29). And *My account* links each
+  problem to `charlink:index` (`views._charlink_url`, `own_fix_link` in
+  `problem-hint.html`), falling back to the check's app without aa-charlink.
+  Label "CharLink", untranslated as an app name. 12 new tests (one runs only
+  with aa-charlink installed), sabotage 6 for 6; rendered against `aa_dev`,
+  the account's 3 problem links go to `/charlink/`. Full suite 261 green.
 
 - Nothing was looked at in a browser: the pages need a login. The JS files
   (`filter.js`, `view.js`, `copy.js`), the tiles, the table, the footer, the
   navbar tabs, the two dashboard widgets and the CSV download are covered by
   tests of the rendered HTML (and of the CSV bytes) only.
-- Whether the Telegram and QQ tiles on *My account* lead anywhere useful:
-  they link to Auth's services page like Discord and Mumble, as asked, but
-  aa-qqbot and the Telegram bridge may keep their linking on pages of their
-  own.
-- The service lists behind a tile show the registered mains only, while the
-  tile's total also counts unknown members.
-- A Director whose roles neither corptools nor ESI (no Director token in the
-  Corporation) could read is not found; such Corporations carry the marker
-  "No Director token". In the dev instance 31 of 32 Corporations have it; the
-  user chose a quiet info icon over a badge (2026-09-29).
-- Performance with a large Alliance is untested; the footer with the build
-  figures is there to measure it. The character check reads all tokens with
-  their scopes in one query; the member lists and roles cost up to two ESI
-  calls per Corporation per run (cached by django-esi).
-- The `allianceauth>=5.1.4` bound (migration 0002 needs `eveonline` 0025,
-  first in 5.1.4) was checked by reading the tags, never run against 5.1.4.
-- The translations are machine-generated: a native speaker should read them.
 - Checklist review of 2026-09-29 (working tree after 0.0.1): README
   mismatches, the AA floor, the Members registered link, the broker outage
   (now a message, `progress.withdrawn()`), the member tier (`view_own`) and the
   smart filter (removed) are done. Still open, the user chose not to do them
-  for now: failed ESI tokens are retried every run and spend the error limit,
-  roles are asked for every Corporation any alt is in (unless *Only
-  characters in the Alliance* is on); no CI; the
-  token-by-scope query and per-Corporation queries at scale.
+  for now: failed ESI tokens are retried every run and spend the error limit.
+  (Roles for every Corporation any alt is in are gone with the Director fix.)
 
 ## Dev instance
 
@@ -257,11 +267,14 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
   (every 30 min) in its `local.py`. Also installed there (by the user):
   aa-structures 4.0.1, securegroups 0.10.2, aa-qqbot 1.0.0, the Telegram
   bridge 1.7.6, Discord and Mumble - the readers ran against the real schemas.
+  aa-charlink 1.14.0 installed by Claude on the user's request (2026-09-29,
+  `charlink` last in `INSTALLED_APPS`, its migrations 0001-0004 applied,
+  `collectstatic` run; stays installed).
   The dev DB has one account and no service links: every service number is 0.
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
   Comes), nothing switched off, ESI on, *Only characters in the Alliance*
   off. The Celery worker was restarted on the code with
-  `alliance_characters_only` at 20:50 (WSL clock), started detached from a
+  the Director fix and the charlink link at 21:30 (WSL clock), started detached from a
   shell (`setsid nohup ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo`
   in `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`, not from a
   terminal tab); the two workers running before (one started outside a

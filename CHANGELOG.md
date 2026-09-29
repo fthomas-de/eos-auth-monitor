@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- With *Only characters in the Alliance* on, the account page and *My
+  account* say how many characters of the account are outside the Alliance
+  and neither shown nor checked there. A snapshot built before this release
+  shows no such line until it is rebuilt.
+
+### Changed
+
+- The problems on *My account* link to aa-charlink, where members add a
+  character to every app at once; without aa-charlink they keep the link to
+  the app of the check. Every other page keeps linking to that app.
+
+### Fixed
+
+- *Director token missing* flagged a main whose alt is a Director of a
+  Corporation outside the Alliance. Only Directors in the Alliance count
+  now, whatever *Only characters in the Alliance* says, and the roles are
+  no longer asked for Corporations outside the Alliance - which also spares
+  those ESI calls.
+
 ## [0.0.4] - 2026-09-29
 
 ### Added

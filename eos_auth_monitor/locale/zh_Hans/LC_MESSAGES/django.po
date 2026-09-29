@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 19:00+0000\n"
-"PO-Revision-Date: 2026-09-29 19:00+0000\n"
+"POT-Creation-Date: 2026-09-29 19:42+0000\n"
+"PO-Revision-Date: 2026-09-29 19:42+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: zh_Hans\n"
 "Language: zh_Hans\n"
@@ -328,29 +328,29 @@ msgstr "正在保存"
 msgid "never updated"
 msgstr "从未更新"
 
-#: report.py:267 templates/eos_auth_monitor/corporation.html:49
+#: report.py:269 templates/eos_auth_monitor/corporation.html:49
 #: templates/eos_auth_monitor/corporation.html:147
 #: templates/eos_auth_monitor/dashboard.corporation.html:32
 msgid "Not registered in Auth"
 msgstr "未在 Auth 注册"
 
-#: report.py:310
+#: report.py:312
 msgid "Registered in Auth"
 msgstr "已在 Auth 注册"
 
-#: report.py:315
+#: report.py:317
 msgid "Character Audit"
 msgstr "Character 审计"
 
-#: report.py:477
+#: report.py:481
 msgid "Members registered"
 msgstr "已注册成员"
 
-#: report.py:488
+#: report.py:492
 msgid "Character Audit complete"
 msgstr "Character 审计完整"
 
-#: report.py:500
+#: report.py:504
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s 正常运行"
@@ -411,7 +411,18 @@ msgctxt "EVE jargon"
 msgid "Main"
 msgstr "Main"
 
-#: templates/eos_auth_monitor/base.html:12 views.py:203
+#: templates/eos_auth_monitor/account.html:113
+#, python-format
+msgctxt "EVE jargon"
+msgid ""
+"%(counter)s character outside the Alliance is neither shown nor checked "
+"here."
+msgid_plural ""
+"%(counter)s characters outside the Alliance are neither shown nor checked "
+"here."
+msgstr[0] "%(counter)s 个 Alliance 之外的 Character 在此既不显示也不检查。"
+
+#: templates/eos_auth_monitor/base.html:12 views.py:217
 msgid "My account"
 msgstr "我的账号"
 
@@ -423,7 +434,7 @@ msgstr "我的 Corporation"
 msgid "Alliance overview"
 msgstr "Alliance 概览"
 
-#: templates/eos_auth_monitor/base.html:30 views.py:40
+#: templates/eos_auth_monitor/base.html:30 views.py:41
 msgid "Settings"
 msgstr "设置"
 
@@ -695,41 +706,41 @@ msgctxt "eos-auth-monitor"
 msgid "Save"
 msgstr "保存"
 
-#: views.py:37
+#: views.py:38
 msgid "Corporation overview"
 msgstr "Corporation 概览"
 
-#: views.py:38
+#: views.py:39
 msgid "Corporation details"
 msgstr "Corporation 详情"
 
-#: views.py:39
+#: views.py:40
 msgid "Main details"
 msgstr "Main 详情"
 
-#: views.py:162
+#: views.py:163
 msgctxt "eos-auth-monitor"
 msgid "Name"
 msgstr "名称"
 
-#: views.py:167
+#: views.py:168
 msgid "Problem"
 msgstr "问题"
 
-#: views.py:253
+#: views.py:270
 msgid "Settings saved. The overview is being rebuilt."
 msgstr "设置已保存。概览正在重建。"
 
-#: views.py:257
+#: views.py:274
 msgid ""
 "Settings saved, but the task queue is not reachable: the overview is rebuilt"
 " once it is back."
 msgstr "设置已保存，但任务队列无法访问：待其恢复后将重建概览。"
 
-#: views.py:281
+#: views.py:298
 msgid "The overview is being rebuilt."
 msgstr "概览正在重建。"
 
-#: views.py:283
+#: views.py:300
 msgid "The rebuild could not be started: the task queue is not reachable."
 msgstr "无法启动重建：任务队列无法访问。"

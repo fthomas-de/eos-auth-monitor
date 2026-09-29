@@ -127,6 +127,20 @@ class TestCharacterProblems(MonitorTestCase):
 
         self.assertEqual(self.problems({DIRECTOR_KEY}), [])
 
+    def test_should_not_ask_a_director_outside_the_alliance_for_a_corporation_token(self, _):
+        self.director()
+        make_token(self.main, self.scopes)
+        nobody = EveCharacter.objects.none().values_list("character_id", flat=True)
+
+        self.assertEqual(self.problems({DIRECTOR_KEY}, director_ids=nobody), [])
+
+    def test_should_ask_a_director_in_the_alliance_for_a_corporation_token(self, _):
+        self.director()
+        make_token(self.main, self.scopes)
+        inside = EveCharacter.objects.filter(pk=self.main.pk).values_list("character_id", flat=True)
+
+        self.assertEqual([item["check"] for item in self.problems({DIRECTOR_KEY}, director_ids=inside)], [DIRECTOR_KEY])
+
     def test_should_not_ask_a_character_that_is_no_director_for_a_corporation_token(self, _):
         self.director(director=False)
         make_token(self.main, self.scopes)

@@ -1,10 +1,12 @@
 import csv
 import io
 import re
+from unittest import skipUnless
 from unittest.mock import patch
 
 from kombu.exceptions import OperationalError
 
+from django.apps import apps
 from django.test import RequestFactory
 from django.urls import reverse
 
@@ -537,6 +539,21 @@ class TestPages(ViewTestCase):
         self.assertNotContains(response, "eos-auth-monitor-sortable")
         self.assertContains(response, "1 character without problems")
 
+    def test_should_say_how_many_characters_were_left_out(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["accounts"][0]["left_out"] = 2
+        snapshot.save()
+
+        response = self.get(self.leader, "account", 11)
+
+        self.assertContains(response, "2 characters outside the Alliance are neither shown nor checked here.")
+
+    def test_should_not_mention_left_out_characters_when_there_are_none(self):
+        # also a snapshot from before the count existed
+        response = self.get(self.leader, "account", 11)
+
+        self.assertNotContains(response, "eos-auth-monitor-left-out")
+
     def test_should_say_when_a_corporation_is_not_in_the_overview(self):
         outsider = make_user("outsider", BASIC_ACCESS, corporation_id=2999)
 
@@ -712,6 +729,43 @@ class TestOwnAccount(ViewTestCase):
         self.assertContains(response, "The player adds this character in the corptools Character Audit.")
         self.assertContains(response, '<small class="text-muted">My account</small>')
         self.assertContains(response, "1 character without problems")
+
+    def test_should_tell_a_member_about_their_characters_left_out(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][1]["accounts"][-1]["left_out"] = 1
+        snapshot.save()
+
+        response = self.get(self.member, "own_account")
+
+        self.assertContains(response, "1 character outside the Alliance is neither shown nor checked here.")
+
+    def fix_links(self, response):
+        return re.findall(r'<a href="([^"]*)" class="text-nowrap eos-auth-monitor-fix">\s*([^<]*?)\s*<', response.content.decode())
+
+    def test_should_link_the_own_problems_to_charlink(self):
+        with patch("eos_auth_monitor.views._charlink_url", return_value="/charlink/"):
+            response = self.get(self.member, "own_account")
+
+        self.assertEqual(self.fix_links(response), [("/charlink/", "CharLink")])
+
+    @skipUnless(apps.is_installed("charlink"), "aa-charlink is not installed")
+    def test_should_find_the_page_of_the_installed_charlink(self):
+        response = self.get(self.member, "own_account")
+
+        self.assertEqual(self.fix_links(response), [(reverse("charlink:index"), "CharLink")])
+
+    def test_should_link_the_own_problems_to_the_checks_app_without_charlink(self):
+        # whether or not this instance has aa-charlink
+        with patch("eos_auth_monitor.views._charlink_url", return_value=None):
+            response = self.get(self.member, "own_account")
+
+        self.assertEqual(self.fix_links(response), [(reverse("corptools:react"), "corptools - Character Audit")])
+
+    def test_should_keep_the_checks_app_on_someone_elses_account(self):
+        with patch("eos_auth_monitor.views._charlink_url", return_value="/charlink/"):
+            response = self.get(self.leader, "account", self.member.pk)
+
+        self.assertEqual(self.fix_links(response), [(reverse("corptools:react"), "corptools - Character Audit")])
 
     def test_should_show_nothing_of_the_other_accounts(self):
         response = self.get(self.member, "own_account")

@@ -60,7 +60,9 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   stored result
 - **My account** for members: their own characters, what is wrong and what
   to do about it - nothing about other accounts; the service tiles open
-  Alliance Auth's services page
+  Alliance Auth's services page, and each problem links to
+  [aa-charlink](https://github.com/Maestro-Zacht/aa-charlink) where it is
+  installed (otherwise to the app of the check)
 - **Navbar tabs** from the narrowest view to the widest: *My account*, *My
   Corporation* (the Corporation of the own main), *Alliance overview*, then
   *Settings* - each only for those who may open it
@@ -83,9 +85,11 @@ An account belongs to the overview when its **main character** is in a
 Corporation of the configured Alliance. It appears on the tile of the main's
 Corporation. All characters of the account are checked, including alts
 outside the Alliance: a missing token on an alt is a problem of the account.
-With *Only characters in the Alliance* on, the alts outside the Alliance are
-left out altogether: not checked, not shown, not counted, and their
-Corporations are not asked for Director roles.
+Only *Director token missing* stays with the Alliance: a Director of a
+Corporation elsewhere owes the Alliance no Corporation token, and that
+Corporation is not asked for its roles. With *Only characters in the
+Alliance* on, the alts outside the Alliance are left out altogether: not
+checked, not shown, not counted.
 
 Services are linked per Auth account, not per character, so the service
 figures count mains.
@@ -110,7 +114,7 @@ settings.
 | Audit missing | it has no `CharacterAudit` |
 | Scopes missing | none of its tokens carries all scopes corptools asks for (`get_character_scopes()`), minus the scopes left out in the settings; the detail names the scopes the most complete token lacks |
 | Audit inactive | a section corptools counts has not updated for longer than `CT_CHAR_MAX_INACTIVE_DAYS`, minus the sections left out in the settings; the detail names them |
-| Director token missing | corptools has read the character's roles and it is a Director, but none of its tokens carries all scopes of the Corporation audit (`CORP_REQUIRED_SCOPES` plus the roles scope), minus the Corporation scopes left out in the settings; the detail names what the most complete token lacks. The Directors come from the roles corptools read and, with *Fetch data from ESI* on, from ESI (see [ESI](#esi)), which also names Directors without any token |
+| Director token missing | the character is in the Alliance, corptools has read its roles and it is a Director, but none of its tokens carries all scopes of the Corporation audit (`CORP_REQUIRED_SCOPES` plus the roles scope), minus the Corporation scopes left out in the settings; the detail names what the most complete token lacks. The Directors come from the roles corptools read and, with *Fetch data from ESI* on, from ESI (see [ESI](#esi)), which also names Directors without any token |
 
 A Corporation where no Director's token could read the roles (the ESI call in
 [ESI](#esi) found no token, or none worked) carries a small info mark beside
@@ -164,7 +168,7 @@ Corporation:
 | Endpoint | Scope | Token |
 |---|---|---|
 | `GET /corporations/{corporation_id}/members/` | `esi-corporations.read_corporation_membership.v1` | any token with that scope of a character in that Corporation, from django-esi's store - whichever app it was granted for; corptools' Corporation audit requires the scope anyway. No in-game role needed |
-| `GET /corporations/{corporation_id}/roles` | `esi-corporations.read_corporation_membership.v1` | a token of a character corptools knows as a Director of that Corporation (ESI lists the roles of all members to a Director, Personnel Manager or a character with grantable roles). Names every Director, also those corptools never read the roles of because they have no token - for the check *Director token missing*. Skipped where no such token exists |
+| `GET /corporations/{corporation_id}/roles` | `esi-corporations.read_corporation_membership.v1` | Corporations of the Alliance only; a token of a character corptools knows as a Director of that Corporation (ESI lists the roles of all members to a Director, Personnel Manager or a character with grantable roles). Names every Director, also those corptools never read the roles of because they have no token - for the check *Director token missing*. Skipped where no such token exists |
 | `POST /universe/names/` | none | for members Auth has no name for |
 
 django-esi caches the responses and honours their expiry. The app asks for
@@ -294,7 +298,7 @@ put in `local.py`.
 | Alliance | The Alliance whose accounts and Corporations are monitored; a searchable dropdown of the Alliances Auth knows |
 | Stale after (days) | When a section of the corptools Corporation audit counts as stale. Empty (the default): the same limit corptools uses for characters, `CT_CHAR_MAX_INACTIVE_DAYS` |
 | Fetch data from ESI | See [ESI](#esi); on by default |
-| Only characters in the Alliance | Leaves out every character of an account that is not in the Alliance - in the checks, the pages, the counts and the roles calls (see [How accounts are counted](#how-accounts-are-counted)); off by default |
+| Only characters in the Alliance | Leaves out every character of an account that is not in the Alliance - in the checks, the pages and the counts (see [How accounts are counted](#how-accounts-are-counted)); off by default |
 | Checks | One switch per check, grouped by app |
 | Services | One switch per service, to hide a service the Alliance does not use |
 | corptools: what the checks count | Four lists - Character Audit sections and scopes, Corporation Audit sections and scopes. Untick what the Alliance does not use, e.g. *Moon Observations* and `esi-industry.read_corporation_mining.v1` for an Alliance without moons; a section and its scope are separate entries |
