@@ -8,54 +8,61 @@ Last updated 2026-09-29.
 
 ## Release
 
-- Version **0.0.1**, the first release (see `CHANGELOG.md`). Pushed to
-  `origin/main`. Tag `v0.0.1` exists **locally** on the release commit
-  0b472f6, not pushed yet (`git push origin v0.0.1`).
-- Migrations **0001-0003** applied in `aa_dev`.
-- 175 tests, all green (`eos-test eos_auth_monitor --exclude-tag
-  translations`); every check, access rule and new feature counter-checked
-  against broken code (37 sabotages over the session, each turned a test red).
-- Translated into de, ru and zh_Hans (machine-generated, marked in the `.po`
-  header) - see `## Translations` in `CLAUDE.md`. The catalogues are only
+- Version **0.0.1**, the first release (see `CHANGELOG.md`, which holds
+  everything done so far under 0.0.1: it was never pushed before). The tag
+  `v0.0.1` is set on the release commit and pushed with it.
+- Migrations **0001-0003** applied in `aa_dev`; no model changed since.
+- 176 tests without the translation tests, 3 translation tests, all green.
+  Every check, access rule and feature was counter-checked against broken
+  code (a sabotage that stays green means the test is too weak - it happened
+  five times and each was fixed).
+- Translated into de, ru and zh_Hans, machine-generated and marked so in the
+  `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
 
 ## What the app does
 
 | Page | Permission | What |
 |---|---|---|
-| Overview (`index`) | `view_all` | Cockpit (percentages, a Connections tile) and one tile per Corporation listing each app with its share; `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
-| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Every member reduced to mains: own mains as tiles with problem keywords, members whose main is elsewhere, members not registered (sortable table) |
-| Account | as Corporation, by the account's main | Every character, each problem with description and detail |
+| Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares) and one tile per Corporation, most problems first, with a filter box; each tile lists mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
+| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Service tiles, then own mains as cards (most problems first) with problem keywords, members whose main is elsewhere, members not registered in Auth as cards |
+| Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), every character, each problem with description and detail |
 | Corporation service | as Corporation | All characters of the Corporation's accounts, linked yes/no, problem characters marked |
 | Service | `view_all` | Every main of the Alliance, linked yes/no |
-| Settings | `manage_settings` | Alliance (Tom Select), stale limit, ESI member lists on/off, check and service switches, corptools sections and scopes |
+| Settings | `manage_settings` | Alliance (Tom Select), stale limit, ESI member lists on/off (also switches the roles call), check and service switches, corptools sections and scopes |
 | Rebuild (POST) / progress (JSON) | `view_all` or `manage_settings` / any app permission | Start the task / state for the progress bar |
 
-Code layout: `checks.py` (registry of checks, groups, services),
-`sources/` (one reader per foreign app, read only; `members.py` is the one
-ESI call), `snapshot.py` (builds the JSON, run by `tasks.update_snapshot`),
-`progress.py` (task state in the cache), `metrics.py` (times and counts a build,
-stored under `metrics` in the snapshot, footer `partials/metrics.html`), `report.py` (labels, counts,
-percentages for the templates), `smart_filters.py` + `models.AccountProblemsFilter`
-(securegroups), `views.py`, `forms.py`. JS: `tables.js` (DataTables),
-`progress.js`, `searchable.js` (Tom Select).
+Every page has a footer with the cost of the last rebuild (`view_all` or
+`manage_settings` only).
 
-## Decisions the user made (2026-09-28)
+Code layout: `checks.py` (registry of checks, groups, services),
+`sources/` (one reader per foreign app, read only; `members.py` holds the two
+ESI calls: member list and roles), `snapshot.py` (builds the JSON, run by
+`tasks.update_snapshot`), `metrics.py` (times and counts a build, stored under
+`metrics` in the snapshot), `progress.py` (task state in the cache),
+`report.py` (labels, counts, percentages, sort orders for the templates),
+`smart_filters.py` + `models.AccountProblemsFilter` (securegroups),
+`views.py`, `forms.py`. JS: `tables.js` (DataTables), `progress.js`,
+`searchable.js` (Tom Select), `filter.js` (live filter of the overview tiles).
+Partials: `gauge.html` (a statistic tile), `corporation-rows.html`,
+`metrics.html`. Translations: `tools/glossary.py`, `tools/translate.py`.
+
+## Decisions the user made
+
+2026-09-28:
 
 - **Scope**: an account belongs to the overview when its main is in the
   configured Alliance; it sits on the main's Corporation tile. All its
   characters are checked, alts outside the Alliance included.
 - **Corporation page**: every member of the Corporation, reduced to mains
   where Auth knows the account; unknown counts as a main.
-- **Member lists from ESI** (`GET /corporations/{id}/members/` plus
-  `/universe/names/`) with tokens corptools already has - corptools stores no
-  member list. Can be switched off in the settings.
+- **Member lists from ESI** with tokens corptools already has - corptools
+  stores no member list. Can be switched off in the settings.
 - **Permissions**: `basic_access` (own main's Corporation), `view_all`
   (all Corporations), `manage_settings` (settings page).
 - **Computation**: Celery task plus stored result; progress bar while it runs.
 - **Stale after**: default follows corptools' `CT_CHAR_MAX_INACTIVE_DAYS`.
-- **corptools checks** can leave out single sections and scopes (e.g. Moon
-  Observations) - four checkbox lists in the settings.
+- **corptools checks** can leave out single sections and scopes.
 - **aa-structures** fails on: no owner, owner inactive, no enabled owner
   character, `are_all_syncs_ok` false.
 - **QQ** from aa-qqbot (`qqbot.Binding`), **Telegram** from
@@ -64,8 +71,25 @@ percentages for the templates), `smart_filters.py` + `models.AccountProblemsFilt
 - Install and register every new app in the dev instance, then run
   `migrate` and `collectstatic` (also in `/projekt-setup`).
 - Corporation-level rows on a tile (Corporation Audit, Structures) show
-  100 % or 0 %: the checks pass or fail as a whole; the failed checks are the
-  tooltip.
+  100 % or 0 %.
+
+2026-09-29:
+
+- **Unknown members are mains that linked nothing**: the cockpit's and the
+  tiles' service shares count them in the total wherever the member list
+  could be read. The Connections tile still counts real links only.
+- **Character count per Corporation** from `EveCorporationInfo.member_count`
+  (Auth's own, no token); the member list wins where it was read.
+- **Everything is sorted by number of problems**, most first, then by name:
+  Corporation tiles, mains, characters, the service lists.
+- **Director check** ("Director token missing"): a Director without a token
+  carrying all Corporation-audit scopes. Directors come from corptools' roles
+  and from ESI (`GET /corporations/{id}/roles`, token of a character corptools
+  knows as Director) - corptools never reads the roles of a character without
+  a token, so Nah vi in Ether Element was invisible to it.
+- The account page shows the account's own service links as green/red tiles
+  and no longer the Corporation's shares in the header.
+- Translations in de, ru, zh_Hans at every `/commit`, like eos-invoices.
 
 ## Pitfalls found
 
@@ -77,47 +101,63 @@ percentages for the templates), `smart_filters.py` + `models.AccountProblemsFilt
 - `AuthUtils.add_main_character_2` creates no `CharacterOwnership`; deleting
   a main's ownership makes Auth clear the main.
 - The dev instance points `SOLO_CACHE` and the default cache at its Redis:
-  tests use `tests.base.MonitorTestCase` (and must call `super().setUp()`),
-  which switches the solo cache off and uses a memory cache. A leak happened
-  once; cleared with `MonitorConfiguration.clear_cache()`.
-- The running Celery worker (`-P solo`) has to be restarted to know
-  `eos_auth_monitor.tasks.update_snapshot`; until then *Rebuild now* queues a
-  task nobody runs and the bar waits.
-- A test module takes ~30 s (test database); a full sabotage round of 20
-  cases runs about 10 minutes - start it in the background.
+  tests use `tests.base.MonitorTestCase` (and must call `super().setUp()`).
+- The running Celery worker (`-P solo`) does not reload code: after any change
+  it has to be restarted, or *Rebuild now* builds with the old code, and a
+  new task name is queued for nobody.
+- A snapshot is a stored result: after installing an app or changing a check
+  the pages show the old one until it is rebuilt.
+- A new static file breaks every view test until `collectstatic` has run
+  (`sri_static` reads the manifest); a new template partial does not.
+- Test assertions on the overview or Corporation page must be specific: the
+  header buttons and the tiles carry the same URL and the same percentage, so
+  a loose `assertContains` stays green when the tile is gone.
+- A full test run occasionally hangs for minutes; run sabotage rounds as a
+  script in the background and never start a second run meanwhile, or a
+  half-sabotaged file is left behind. Restore from a `cp` made just before.
+- `.git/CLAUDE_COMMIT_MSG` must be *read* before it is written again, or the
+  Write tool refuses and `git commit -F` silently reuses the old message.
+- The ESI switch in the settings still says "member lists" although it also
+  covers the roles call: changing the model's help text needs a migration.
 
 ## Open points / next steps
 
-- Push the tag `v0.0.1` (checklist 1.2.2); it only exists locally.
-- Since 2026-09-29 the dev instance has aa-structures 4.0.1, securegroups
-  0.10.2, aa-qqbot 1.0.0, the Telegram bridge 1.7.6, Discord and Mumble in
-  `INSTALLED_APPS`, so the readers ran against the real schemas (`user`
-  one-to-one in each service model). The dev DB has one account and no
-  links yet: every service number is 0, and aa-structures' own tables hold
-  no owner. Tests that assumed aa-structures absent were made independent
-  of what is installed. Not checked: that the snapshot of a large,
-  really linked Alliance counts right - only fakes and the empty dev data.
-- The `allianceauth>=5.0` bound was checked by reading the tags (page-header,
-  DataTables 2 bundles and template tags exist in 5.0.0; its django-esi 9.0
-  has the ESI client calls used). Never run against 5.0 itself.
-- Performance with a large Alliance is untested (the footer with the build
-  figures - seconds per step, queries, sizes - is there to measure it): the character check reads
-  all tokens with their scopes in one query; the member lists cost one ESI
-  call per Corporation per run (cached by django-esi).
+- **Unanswered wish**: "Char Audit, Corp Audit and Structures tiles should link
+  to the Telegram overview" - unclear what is meant (the cockpit tiles? which
+  page?). Ask before building anything.
+- Nothing was looked at in a browser: the pages need a login. `filter.js`, the
+  tiles and the footer are covered by tests of the rendered HTML only.
+- The service lists behind a tile show the registered mains only, while the
+  tile's total also counts unknown members.
+- A Director whose roles neither corptools nor ESI (no Director token in the
+  Corporation) could read is not found; Corporations without a token show
+  no Director problems at all.
+- Performance with a large Alliance is untested; the footer with the build
+  figures is there to measure it. The character check reads all tokens with
+  their scopes in one query; the member lists and roles cost up to two ESI
+  calls per Corporation per run (cached by django-esi).
+- The `allianceauth>=5.0` bound was checked by reading the tags, never run
+  against 5.0 itself.
 - The translations are machine-generated: a native speaker should read them.
 
 ## Dev instance
 
 - Repo `~/aa-dev/working/eos-auth-monitor`, remote
   `https://github.com/fthomas-de/eos-auth-monitor.git`, branch `main`.
-- Installed editable into `~/aa-dev/venv` (`pip install --no-deps -e`), in
-  `INSTALLED_APPS` of `~/aa-dev/working/myauth`, beat entry
-  `eos_auth_monitor_update_snapshot` (every 30 min) in its `local.py`.
+- Installed editable into `~/aa-dev/venv`, in `INSTALLED_APPS` of
+  `~/aa-dev/working/myauth`, beat entry `eos_auth_monitor_update_snapshot`
+  (every 30 min) in its `local.py`. Also installed there (by the user):
+  aa-structures 4.0.1, securegroups 0.10.2, aa-qqbot 1.0.0, the Telegram
+  bridge 1.7.6, Discord and Mumble - the readers ran against the real schemas.
+  The dev DB has one account and no service links: every service number is 0.
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
-  Comes), nothing switched off, member lists on. A snapshot is stored:
-  32 Corporations, member list read for Ether Element only (279 members,
-  277 not registered) - the other Corporations have no token with the
+  Comes), nothing switched off, member lists on. The stored snapshot was
+  rebuilt by hand at 08:03 UTC and is older than the last code changes:
+  restart the Celery worker, then *Rebuild now*. Ether Element: 279 in the
+  member list, 290 in Auth's count, 14 Directors named by ESI; Nah vi is one
+  of them and is flagged. The other Corporations have no token with the
   membership scope.
+- `collectstatic` was run after `filter.js` was added.
 - Installed: allianceauth 5.3.1, allianceauth-corptools 3.5.0, django-solo
-  2.5.1. Target production per checklist: AA 5.4.0, corptools 3.5.0,
-  aa-structures 4.0.1 (field names checked against the 4.0.1 tag).
+  2.5.1, django-esi 9.10.0. Target production per checklist: AA 5.4.0,
+  corptools 3.5.0, aa-structures 4.0.1.
