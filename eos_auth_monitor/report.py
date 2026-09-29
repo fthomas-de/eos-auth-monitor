@@ -11,11 +11,14 @@ from django.utils.translation import pgettext_lazy
 
 from .checks import CHARACTER, CHECKS_BY_KEY, SERVICES_BY_KEY, Check, Service
 
-# corporation-level check groups: (group key, label, cockpit icon)
+# corporation-level check groups: (group key, label, cockpit icon, the app's own page)
 CORPORATION_GROUPS = (
-    ("corptools_corporations", _("Corporation Audit"), "fas fa-building-circle-check"),
-    ("structures", pgettext_lazy("eos-auth-monitor", "Structures"), "fas fa-tower-broadcast"),
+    ("corptools_corporations", _("Corporation Audit"), "fas fa-building-circle-check", "corptools:corp_react"),
+    ("structures", pgettext_lazy("eos-auth-monitor", "Structures"), "fas fa-tower-broadcast", "structures:index"),
 )
+
+# the menu entry of corptools' Character Audit
+CHARACTER_AUDIT_URL = "corptools:react"
 
 
 PHASE_LABELS = {
@@ -100,6 +103,18 @@ class Account:
         return bool(self.problem_characters)
 
     @property
+    def problem_characters_by_problems(self) -> list[Character]:
+        return [character for character in self.characters_by_problems if character.problems]
+
+    @property
+    def problem_free_characters(self) -> list[Character]:
+        """The characters without a problem: the main first, then by name."""
+        return sorted(
+            (character for character in self.characters if not character.problems),
+            key=lambda character: (not character.is_main, character.name.lower()),
+        )
+
+    @property
     def keywords(self) -> list[Check]:
         """Each check failed by any character of the account, once, in check order."""
         failed = {problem.check.key for character in self.characters for problem in character.problems}
@@ -126,6 +141,18 @@ class Row:
         if self.problems is not None:
             return 0 if self.problems else 100
         return percent(self.part or 0, self.total or 0)
+
+
+@dataclass
+class Todo:
+    """A failed character check and the mains whose accounts fail it - whom to write to."""
+
+    check: Check
+    accounts: list[Account]
+
+    @property
+    def names(self) -> str:
+        return ", ".join(account.main_name for account in self.accounts)
 
 
 @dataclass
@@ -182,6 +209,26 @@ class Corporation:
         return sorted(self.accounts, key=lambda account: (-account.problem_count, account.main_name.lower()))
 
     @property
+    def problem_free_accounts(self) -> list[Account]:
+        return sorted(
+            (account for account in self.accounts if not account.has_problems),
+            key=lambda account: account.main_name.lower(),
+        )
+
+    @property
+    def todos(self) -> list[Todo]:
+        """Per failed character check, in check order, the mains it concerns, by name."""
+        accounts_by_check: dict[str, list[Account]] = {}
+        for account in sorted(self.accounts, key=lambda account: account.main_name.lower()):
+            for check in account.keywords:
+                accounts_by_check.setdefault(check.key, []).append(account)
+        return [Todo(check, accounts_by_check[key]) for key, check in CHECKS_BY_KEY.items() if key in accounts_by_check]
+
+    @property
+    def unregistered_names(self) -> str:
+        return ", ".join(character["name"] for character in self.unregistered)
+
+    @property
     def problem_count(self) -> int:
         """Problems of the Corporation itself plus those of all its accounts, to rank the tiles."""
         return len(self.problems) + sum(account.problem_count for account in self.accounts)
@@ -231,7 +278,7 @@ class Corporation:
                     len(characters),
                 )
             )
-        for group, label, icon in CORPORATION_GROUPS:
+        for group, label, icon, _url_name in CORPORATION_GROUPS:
             if any(check.group == group for check in self.checks):
                 rows.append(
                     Row(label, icon, problems=[problem for problem in self.problems if problem.check.group == group])
@@ -250,8 +297,9 @@ class Gauge:
     total: int
     icon: str
     service: Service | None = None
-    # a tile without a page of its own points to Auth's list of services
-    to_services: bool = False
+    # a tile without a page of its own points to the app it counts; a URL
+    # name, since the app may not be installed and the template then drops it
+    url_name: str | None = None
 
     @property
     def percent(self) -> int | None:
@@ -347,6 +395,23 @@ class Report:
     def service(self, service_key: str) -> Service | None:
         return next((service for service in self.services if service.key == service_key), None)
 
+    def overview_table(self) -> tuple[list[Row], list[tuple[Corporation, list[Row | None]]]]:
+        """The overview as a table: a column per row of the tiles, a line per Corporation.
+
+        Every tile has the same rows except Registered in Auth, which only a
+        Corporation with a readable member list has; the longest tile gives the
+        columns in tile order, and a line leaves a row it lacks empty.
+        """
+        if not self.corporations:
+            return [], []
+        columns = max(self.corporations, key=lambda corporation: len(corporation.rows)).rows
+        keys = [str(column.label) for column in columns]
+        lines = []
+        for corporation in self.corporations_by_problems:
+            rows = {str(row.label): row for row in corporation.rows}
+            lines.append((corporation, [rows.get(key) for key in keys]))
+        return columns, lines
+
     def connections(self) -> list[tuple[Service, int]]:
         """Linked accounts per service across the Alliance, for the cockpit."""
         accounts = self.accounts
@@ -384,11 +449,11 @@ class Report:
                     sum(not character.problems for character in characters),
                     len(characters),
                     "fas fa-user-check",
-                    to_services=True,
+                    url_name=CHARACTER_AUDIT_URL,
                 )
             )
 
-        for group, label, icon in CORPORATION_GROUPS:
+        for group, label, icon, url_name in CORPORATION_GROUPS:
             if any(check.group == group for check in self.checks):
                 gauges.append(
                     Gauge(
@@ -399,7 +464,7 @@ class Report:
                         ),
                         len(self.corporations),
                         icon,
-                        to_services=True,
+                        url_name=url_name,
                     )
                 )
 

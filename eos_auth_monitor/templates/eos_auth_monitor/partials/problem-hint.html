@@ -1,0 +1,13 @@
+{% load i18n %}
+{# What to do about `problem`, with a link to the page of the app where it is done - if that app is installed. #}
+{% if problem.check.hint %}
+    <div class="small">
+        <i class="fas fa-wrench fa-fw text-body-secondary"></i> {{ problem.check.hint }}
+        {% if problem.check.fix_url %}
+            {% url problem.check.fix_url as fix_link %}
+            {% if fix_link %}
+                <a href="{{ fix_link }}" class="text-nowrap eos-auth-monitor-fix">{{ problem.check.app_title }} <i class="fas fa-arrow-up-right-from-square fa-xs"></i></a>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endif %}

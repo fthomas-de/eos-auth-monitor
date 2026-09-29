@@ -1,0 +1,10 @@
+{% load i18n %}
+{# One icon per service of `account`, green where it is linked; `inline` leaves out the spacing above. #}
+{% if account.services %}
+    {% if not inline %}<div class="mt-2">{% endif %}
+    {% for link in account.services %}
+        <i class="{{ link.service.icon }} me-1 {% if link.linked %}text-success{% else %}text-body-tertiary{% endif %}"
+           title="{{ link.service.label }}: {% if link.linked %}{% translate 'linked' %}{% else %}{% translate 'not linked' %}{% endif %}"></i>
+    {% endfor %}
+    {% if not inline %}</div>{% endif %}
+{% endif %}

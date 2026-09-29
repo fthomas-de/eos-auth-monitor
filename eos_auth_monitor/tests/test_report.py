@@ -26,7 +26,7 @@ class TestDirectorMarker(MonitorTestCase):
 
 
 class TestGaugeTargets(MonitorTestCase):
-    def test_should_send_the_audit_and_structures_gauges_to_the_services_page(self):
+    def test_should_send_the_audit_and_structures_gauges_to_their_apps(self):
         account = account_row(11, 1101)
         gauges = report(
             [corporation_row(2001, [account])],
@@ -34,16 +34,80 @@ class TestGaugeTargets(MonitorTestCase):
             services=["discord"],
         ).cockpit()
 
-        targets = {str(gauge.label): gauge.to_services for gauge in gauges}
+        targets = {str(gauge.label): gauge.url_name for gauge in gauges}
         self.assertEqual(
             targets,
             {
-                "Discord": False,
-                "Character Audit complete": True,
-                "Corporation Audit working": True,
-                "Structures working": True,
+                "Discord": None,
+                "Character Audit complete": "corptools:react",
+                "Corporation Audit working": "corptools:corp_react",
+                "Structures working": "structures:index",
             },
         )
+
+
+class TestCorporationLists(MonitorTestCase):
+    def corporation(self):
+        return report(
+            [
+                corporation_row(
+                    2001,
+                    [
+                        account_row(
+                            11, 1101, [character_row(1101, [AUDIT_MISSING]), character_row(1102, [SCOPES_MISSING])]
+                        ),
+                        account_row(12, 1201, [character_row(1201), character_row(1202, [AUDIT_MISSING])]),
+                        account_row(13, 1301),
+                    ],
+                )
+            ],
+            checks=["char_audit_missing", "char_scopes_missing"],
+        ).corporation(2001)
+
+    def test_should_group_the_mains_by_failed_check(self):
+        todos = self.corporation().todos
+
+        self.assertEqual(
+            [(todo.check.key, todo.names) for todo in todos],
+            [("char_audit_missing", "Char 1101, Char 1201"), ("char_scopes_missing", "Char 1101")],
+        )
+
+    def test_should_list_the_mains_without_problems(self):
+        self.assertEqual([account.main_name for account in self.corporation().problem_free_accounts], ["Char 1301"])
+
+    def test_should_split_the_characters_of_an_account(self):
+        account = self.corporation().accounts[1]
+
+        self.assertEqual([character.name for character in account.problem_characters_by_problems], ["Char 1202"])
+        self.assertEqual([character.name for character in account.problem_free_characters], ["Char 1201"])
+
+    def test_should_give_every_check_a_hint(self):
+        from eos_auth_monitor.checks import CHECKS
+
+        self.assertEqual([check.key for check in CHECKS if not check.hint], [])
+
+
+class TestOverviewTable(MonitorTestCase):
+    def test_should_align_the_columns_of_every_corporation(self):
+        counted = corporation_row(2001, [account_row(11, 1101, services={"discord": True})])
+        counted["member_count"] = 2
+        uncounted = corporation_row(2002, [account_row(22, 2201, corporation_id=2002)])
+
+        found = report([uncounted, counted], checks=["char_audit_missing"], services=["discord"])
+
+        columns, lines = found.overview_table()
+
+        # the Corporation with a member list has the Registered row; the other leaves it empty
+        self.assertEqual(
+            [str(column.label) for column in columns], ["Registered in Auth", "Character Audit", "Discord"]
+        )
+        cells = {corporation.id: cells for corporation, cells in lines}
+        self.assertIsNone(cells[2002][0])
+        self.assertEqual([cell.percent for cell in cells[2001]], [100, 100, 100])
+        self.assertEqual(cells[2002][2].percent, 0)
+
+    def test_should_have_no_table_without_corporations(self):
+        self.assertEqual(report([]).overview_table(), ([], []))
 
 
 class TestDescribe(MonitorTestCase):

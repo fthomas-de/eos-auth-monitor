@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+from kombu.exceptions import OperationalError
+
 from django.test import RequestFactory
 from django.urls import reverse
 
@@ -8,7 +10,7 @@ from eos_auth_monitor import progress
 from eos_auth_monitor.auth_hooks import AuthMonitorMenuItem
 from eos_auth_monitor.checks import is_app_installed
 from eos_auth_monitor.models import MonitorConfiguration, Snapshot
-from eos_auth_monitor.permissions import APP_PERMISSIONS, BASIC_ACCESS, MANAGE_SETTINGS, VIEW_ALL
+from eos_auth_monitor.permissions import APP_PERMISSIONS, BASIC_ACCESS, MANAGE_SETTINGS, VIEW_ALL, VIEW_OWN
 
 from .base import (
     ALLIANCE_ID,
@@ -134,6 +136,26 @@ class TestPages(ViewTestCase):
         self.assertContains(response, 'class="aa-page-header')
         self.assertContains(response, eos_auth_monitor.__version__)
 
+    def test_should_put_the_version_beside_the_name(self):
+        response = self.get(self.leader, "index")
+
+        self.assertContains(response, f"Auth Monitor ({eos_auth_monitor.__version__})")
+
+    def test_should_say_which_page_this_is_under_the_name(self):
+        pages = [
+            ("Corporation overview", "index"),
+            ("Corporation details", "corporation", 2001),
+            ("Main details", "account", 22),
+            ("Discord", "corporation_service", 2002, "discord"),
+            ("Discord", "service", "discord"),
+        ]
+        for location, name, *args in pages:
+            with self.subTest(name):
+                self.assertContains(
+                    self.get(self.leader, name, *args), f'<small class="text-muted">{location}</small>', html=False
+                )
+        self.assertContains(self.get(self.admin, "settings"), '<small class="text-muted">Settings</small>')
+
     def test_should_show_the_cockpit_and_one_tile_per_corporation(self):
         response = self.get(self.leader, "index")
 
@@ -143,17 +165,38 @@ class TestPages(ViewTestCase):
         for corporation_id in (2001, 2002):
             self.assertContains(response, reverse("eos_auth_monitor:corporation", args=[corporation_id]))
 
-    def test_should_link_the_audit_gauges_to_the_services_of_auth(self):
+    def test_should_link_the_audit_gauges_to_corptools(self):
         snapshot = Snapshot.objects.get()
-        snapshot.data["checks"] = ["char_audit_missing", "corp_token_missing", "structures_no_owner"]
+        snapshot.data["checks"] = ["char_audit_missing", "corp_token_missing"]
         snapshot.save()
 
         response = self.get(self.leader, "index")
 
-        url = reverse("services:services")
-        for label in ("Character Audit complete", "Corporation Audit working", "Structures working"):
+        targets = {"Character Audit complete": "corptools:react", "Corporation Audit working": "corptools:corp_react"}
+        for label, url_name in targets.items():
             with self.subTest(label):
-                self.assertContains(response, f'href="{url}" class="stretched-link" aria-label="{label}"')
+                self.assertContains(response, f'href="{reverse(url_name)}" class="stretched-link" aria-label="{label}"')
+        self.assertNotContains(response, reverse("services:services"))
+
+    def test_should_link_the_structures_gauge_to_aa_structures(self):
+        if not is_app_installed("structures"):
+            self.skipTest("aa-structures is not installed")
+        snapshot = Snapshot.objects.get()
+        snapshot.data["checks"] = ["structures_no_owner"]
+        snapshot.save()
+
+        response = self.get(self.leader, "index")
+
+        url = reverse("structures:index")
+        self.assertContains(response, f'href="{url}" class="stretched-link" aria-label="Structures working"')
+
+    def test_should_leave_a_gauge_unlinked_when_its_app_has_no_such_page(self):
+        # an app that is not installed has no URLs; the tile stays, without a link
+        with patch("eos_auth_monitor.report.CHARACTER_AUDIT_URL", "nowhere:page"):
+            response = self.get(self.leader, "index")
+
+        self.assertContains(response, "Character Audit complete")
+        self.assertNotContains(response, 'aria-label="Character Audit complete"')
 
     def test_should_mark_a_corporation_without_a_director_token(self):
         snapshot = Snapshot.objects.get()
@@ -164,8 +207,11 @@ class TestPages(ViewTestCase):
         page = self.get(self.leader, "corporation", 2001)
         other = self.get(self.leader, "corporation", 2002)
 
-        self.assertContains(overview, 'badge text-bg-info text-wrap">No Director token', count=1)
-        self.assertContains(page, 'badge text-bg-info text-wrap">No Director token', count=1)
+        # a quiet mark with the explanation as tooltip: on the tile and in the table line
+        self.assertContains(overview, "eos-auth-monitor-no-director", count=2)
+        self.assertContains(page, "eos-auth-monitor-no-director", count=1)
+        self.assertContains(page, 'title="No Director token: No Director of this Corporation')
+        self.assertNotContains(overview, 'badge text-bg-info text-wrap">No Director token')
         self.assertNotContains(other, "No Director token")
 
     def test_should_not_mark_a_corporation_by_default(self):
@@ -262,7 +308,9 @@ class TestPages(ViewTestCase):
         self.assertContains(response, "<span>290</span>", html=True)
 
     def test_should_not_show_a_character_count_where_it_is_not_known(self):
-        self.assertNotContains(self.get(self.leader, "index"), 'fa-users fa-fw"></i> Characters')
+        # the tile's row; the table has the column in any case, with "-" where the count is missing
+        tile_row = '<span><i class="fas fa-users fa-fw"></i> Characters</span>'
+        self.assertNotContains(self.get(self.leader, "index"), tile_row)
 
     def test_should_offer_a_filter_for_the_corporation_tiles(self):
         response = self.get(self.leader, "index")
@@ -296,11 +344,25 @@ class TestPages(ViewTestCase):
         content = response.content.decode()
         self.assertLess(content.index("Char 2201"), content.index("Char 1101"))
 
-    def test_should_mark_problem_characters_in_the_service_list(self):
+    def test_should_list_only_the_mains_in_the_service_list_of_a_corporation(self):
+        snapshot = Snapshot.objects.get()
+        alt = character_row(2202, [AUDIT_MISSING], corporation_id=2002)
+        snapshot.data["corporations"][1]["accounts"][0]["characters"].append(alt)
+        snapshot.save()
+
         response = self.get(self.leader, "corporation_service", 2002, "discord")
 
-        self.assertContains(response, "eos-auth-monitor-problem", count=1)
+        self.assertContains(response, reverse("eos_auth_monitor:account", args=[22]), count=1)
+        self.assertContains(response, "Char 2201")
+        self.assertNotContains(response, "Char 2202")
         self.assertContains(response, "not linked")
+
+    def test_should_show_no_problems_in_the_service_list_of_a_corporation(self):
+        response = self.get(self.leader, "corporation_service", 2002, "discord")
+
+        self.assertNotContains(response, "eos-auth-monitor-problem")
+        self.assertNotContains(response, "text-bg-danger")
+        self.assertNotContains(response, "<th>Problems</th>")
 
     def test_should_count_connections_across_the_alliance(self):
         response = self.get(self.leader, "index")
@@ -308,7 +370,8 @@ class TestPages(ViewTestCase):
         self.assertContains(response, "Connections")
 
     def test_should_make_the_tables_sortable(self):
-        for name, *args in [("account", 22), ("corporation_service", 2002, "discord"), ("service", "discord")]:
+        pages = [("account", 22), ("corporation_service", 2002, "discord"), ("service", "discord"), ("index",)]
+        for name, *args in pages:
             with self.subTest(name):
                 self.assertContains(self.get(self.leader, name, *args), "eos-auth-monitor-sortable")
 
@@ -332,13 +395,144 @@ class TestPages(ViewTestCase):
 
         response = self.get(self.leader, "corporation", 2001)
 
-        # a character Auth does not know gets the card of a main, not a table row
-        self.assertContains(response, '<h6 class="mb-1 text-truncate">Stranger</h6>', html=False)
+        # a character Auth does not know gets a line of the compact list, not a card
+        self.assertContains(response, '<span class="text-truncate">Stranger</span>', html=False)
+        self.assertNotContains(response, '<h6 class="mb-1 text-truncate">Stranger</h6>')
         self.assertContains(response, 'class="badge text-bg-danger text-wrap">Not registered in Auth</span>')
         self.assertNotContains(response, "eos-auth-monitor-sortable")
         self.assertContains(response, "Visitor main")
         self.assertContains(response, "Visitor alt")
         self.assertContains(response, "Registered in Auth")
+
+    def test_should_leave_the_members_registered_gauge_without_a_link(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["member_count"] = 3
+        snapshot.save()
+
+        response = self.get(self.leader, "index")
+
+        # it follows the Discord gauge, whose link must not carry over
+        self.assertContains(response, "Members registered")
+        self.assertNotContains(response, 'aria-label="Members registered"')
+
+    def test_should_say_which_corporation_has_how_many_problem_accounts(self):
+        response = self.get(self.leader, "index")
+
+        self.assertContains(response, 'class="fs-4 fw-bold lh-1 text-danger">1</span>')
+        self.assertContains(response, '<span class="small">account with problems</span>')
+        self.assertContains(response, '<i class="fas fa-circle-check"></i> No problems', count=1)
+
+    def test_should_count_the_problems_of_the_corporation_itself(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["checks"].append("corp_token_missing")
+        snapshot.data["corporations"][0]["problems"] = [{"check": "corp_token_missing", "detail": []}]
+        snapshot.save()
+
+        response = self.get(self.leader, "index")
+
+        self.assertContains(response, "+ 1 Corporation problem")
+
+    def test_should_show_the_overview_as_a_table_too(self):
+        response = self.get(self.leader, "index")
+        content = response.content.decode()
+
+        self.assertContains(response, 'data-eos-auth-monitor-view-pane="table"')
+        self.assertContains(response, "eos-auth-monitor-overview-table")
+        # a line per Corporation, most problems first, marked for the filter like the tiles
+        self.assertContains(response, '<tr class="eos-auth-monitor-corporation"', count=2)
+        table = content[content.index("eos-auth-monitor-overview-table"):]
+        self.assertLess(table.index("Corp 2002"), table.index("Corp 2001"))
+        self.assertRegex(content, r"eos_auth_monitor/js/view[^\"]*\.js")
+
+    def test_should_offer_to_show_only_corporations_with_problems(self):
+        response = self.get(self.leader, "index")
+
+        self.assertContains(response, 'data-eos-auth-monitor-filter-problems="#eos-auth-monitor-problems-only"')
+        self.assertContains(response, 'id="eos-auth-monitor-problems-only"')
+        # tile and table line of each Corporation
+        self.assertContains(response, 'data-eos-auth-monitor-problems="1"', count=2)
+        self.assertContains(response, 'data-eos-auth-monitor-problems="0"', count=2)
+
+    def test_should_list_what_to_do_on_the_corporation_page(self):
+        snapshot = Snapshot.objects.get()
+        row = snapshot.data["corporations"][1]
+        row["accounts"].append(account_row(33, 3301, [character_row(3301, [AUDIT_MISSING], corporation_id=2002)], {}))
+        row["accounts"].append(account_row(44, 4401, corporation_id=2002))
+        row["member_count"] = 5
+        row["unregistered"] = [{"id": 7001, "name": "Stranger A"}, {"id": 7002, "name": "Stranger B"}]
+        snapshot.save()
+
+        response = self.get(self.leader, "corporation", 2002)
+        content = response.content.decode()
+
+        todos = content[content.index("eos-auth-monitor-todos"):content.index("Mains of this Corporation")]
+        # one group per failed check, with the mains concerned and their names ready to copy
+        self.assertIn("Audit missing", todos)
+        self.assertIn('data-eos-auth-monitor-copy="Char 2201, Char 3301"', todos)
+        self.assertIn(reverse("eos_auth_monitor:account", args=[33]), todos)
+        self.assertNotIn("Char 4401", todos)
+        self.assertIn("The player adds this character in the corptools Character Audit.", todos)
+        # and the members Auth does not know
+        self.assertIn('data-eos-auth-monitor-copy="Stranger A, Stranger B"', todos)
+        self.assertRegex(content, r"eos_auth_monitor/js/copy[^\"]*\.js")
+
+    def test_should_have_nothing_to_do_where_nothing_is_wrong(self):
+        self.assertNotContains(self.get(self.leader, "corporation", 2001), "eos-auth-monitor-todos")
+
+    def test_should_give_only_the_mains_with_problems_a_card(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][1]["accounts"].append(account_row(44, 4401, corporation_id=2002))
+        snapshot.save()
+
+        response = self.get(self.leader, "corporation", 2002)
+        content = response.content.decode()
+
+        fine = content[content.index("eos-auth-monitor-problem-free"):]
+        self.assertIn("Char 4401", fine)
+        self.assertNotIn("Char 2201", fine)
+        self.assertContains(response, 'class="card h-100 border-danger"', count=1)
+
+    def test_should_put_a_hint_and_the_app_to_each_problem_of_an_account(self):
+        response = self.get(self.leader, "account", 22)
+
+        self.assertContains(response, "The player adds this character in the corptools Character Audit.")
+        url = reverse("corptools:react")
+        self.assertContains(response, f'<a href="{url}" class="text-nowrap eos-auth-monitor-fix">')
+
+    def test_should_put_a_hint_to_each_problem_of_the_corporation(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["checks"].append("corp_token_missing")
+        snapshot.data["corporations"][1]["problems"] = [{"check": "corp_token_missing", "detail": []}]
+        snapshot.save()
+
+        response = self.get(self.leader, "corporation", 2002)
+
+        self.assertContains(response, "A Director adds a Corporation token in the corptools Corporation Audit.")
+        url = reverse("corptools:corp_react")
+        self.assertContains(response, f'<a href="{url}" class="text-nowrap eos-auth-monitor-fix">')
+
+    def test_should_fold_away_the_characters_without_problems(self):
+        snapshot = Snapshot.objects.get()
+        account = snapshot.data["corporations"][1]["accounts"][0]
+        account["characters"].append(character_row(2202, corporation_id=2002))
+        snapshot.save()
+
+        response = self.get(self.leader, "account", 22)
+        content = response.content.decode()
+
+        table = content[content.index("eos-auth-monitor-sortable"):content.index("</table>")]
+        folded = content[content.index("eos-auth-monitor-problem-free"):content.index("</details>")]
+        self.assertIn("Char 2201", table)
+        self.assertNotIn("Char 2202", table)
+        self.assertIn("Char 2202", folded)
+        self.assertIn("1 character without problems", folded)
+
+    def test_should_say_when_no_character_of_an_account_has_a_problem(self):
+        response = self.get(self.leader, "account", 11)
+
+        self.assertContains(response, "No character of this account has a problem.")
+        self.assertNotContains(response, "eos-auth-monitor-sortable")
+        self.assertContains(response, "1 character without problems")
 
     def test_should_say_when_a_corporation_is_not_in_the_overview(self):
         outsider = make_user("outsider", BASIC_ACCESS, corporation_id=2999)
@@ -478,6 +672,111 @@ class TestSettings(ViewTestCase):
         self.post({"alliance": make_alliance().pk})
 
         self.assertIn("structures_no_owner", MonitorConfiguration.get_solo().disabled_checks)
+
+
+class TestOwnAccount(ViewTestCase):
+    """A member with view_own: their own account and nothing else."""
+
+    def setUp(self):
+        super().setUp()
+        self.member = make_user("member", VIEW_OWN, corporation_id=2002)
+        snapshot = Snapshot.objects.get()
+        main_id = self.member.profile.main_character.character_id
+        problem = character_row(main_id, [AUDIT_MISSING], corporation_id=2002)
+        snapshot.data["corporations"][1]["accounts"].append(
+            account_row(self.member.pk, main_id, [problem, character_row(9901, corporation_id=2002)], {})
+        )
+        snapshot.save()
+
+    def test_should_send_a_member_to_their_own_account(self):
+        response = self.get(self.member, "index")
+
+        self.assertRedirects(response, reverse("eos_auth_monitor:own_account"))
+
+    def test_should_show_the_own_problems_and_what_to_do(self):
+        response = self.get(self.member, "own_account")
+
+        self.assertContains(response, f"Char {self.member.profile.main_character.character_id}")
+        self.assertContains(response, "The player adds this character in the corptools Character Audit.")
+        self.assertContains(response, '<small class="text-muted">My account</small>')
+        self.assertContains(response, "1 character without problems")
+
+    def test_should_show_nothing_of_the_other_accounts(self):
+        response = self.get(self.member, "own_account")
+
+        # no header with the Corporation's figures, no link to its lists
+        self.assertNotContains(response, "Accounts with problems")
+        self.assertNotContains(response, "Char 2201")
+        self.assertNotContains(response, reverse("eos_auth_monitor:corporation", args=[2002]))
+        self.assertNotContains(response, reverse("eos_auth_monitor:corporation_service", args=[2002, "discord"]))
+
+    def test_should_keep_a_member_out_of_the_other_pages(self):
+        pages = [
+            ("account", 22),
+            ("corporation", 2002),
+            ("corporation_service", 2002, "discord"),
+            ("service", "discord"),
+            ("settings",),
+        ]
+        for name, *args in pages:
+            with self.subTest(name):
+                response = self.get(self.member, name, *args)
+                self.assertEqual(response.status_code, 302)
+                self.assertIn("login", response.url)
+
+    def test_should_say_when_the_own_account_is_not_in_the_overview(self):
+        outsider = make_user("outsider", VIEW_OWN, corporation_id=2999)
+
+        response = self.get(outsider, "own_account")
+
+        self.assertContains(response, "Your account is not part of the overview")
+
+    def test_should_offer_the_own_account_in_the_navigation(self):
+        response = self.get(self.member, "own_account")
+
+        self.assertContains(response, f'href="{reverse("eos_auth_monitor:own_account")}"')
+        self.assertNotContains(response, f'href="{reverse("eos_auth_monitor:index")}" class="nav-link')
+
+    def test_should_let_a_member_follow_the_progress_bar(self):
+        # every page polls it while a rebuild runs
+        self.assertEqual(self.get(self.member, "rebuild_progress").status_code, 200)
+
+    def test_should_keep_the_own_account_to_holders_of_view_own(self):
+        response = self.get(self.ceo, "own_account")
+
+        self.assertEqual(response.status_code, 302)
+
+
+class TestBrokerDown(ViewTestCase):
+    def post(self, user, name, data):
+        self.client.force_login(user)
+        with patch("eos_auth_monitor.views.update_snapshot") as task:
+            task.delay.side_effect = OperationalError("broker down")
+            return self.client.post(reverse(f"eos_auth_monitor:{name}"), data, follow=True)
+
+    def test_should_save_the_settings_and_say_the_rebuild_waits(self):
+        alliance = make_alliance(ALLIANCE_ID + 7)
+
+        response = self.post(self.admin, "settings", {"alliance": alliance.pk})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(MonitorConfiguration.get_solo().alliance, alliance)
+        self.assertContains(response, "the task queue is not reachable")
+        self.assertIsNone(progress.get()["state"])
+
+    def test_should_say_the_rebuild_could_not_start(self):
+        response = self.post(self.leader, "rebuild", {})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "The rebuild could not be started")
+        self.assertIsNone(progress.get()["state"])
+
+    def test_should_keep_a_running_bar_when_a_second_start_fails(self):
+        progress.step("members", 1, 2)
+
+        self.post(self.leader, "rebuild", {})
+
+        self.assertEqual(progress.get()["state"], progress.RUNNING)
 
 
 class TestRebuild(ViewTestCase):

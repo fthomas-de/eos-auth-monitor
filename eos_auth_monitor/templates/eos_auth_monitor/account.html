@@ -3,8 +3,18 @@
 {% load evelinks %}
 
 {% block details %}
-    {# the service buttons of the header show the Corporation's shares; this page shows the account's own links as tiles #}
-    {% include "eos_auth_monitor/partials/corporation-header.html" with hide_services=True %}
+    {% if not account %}
+        {% if own and report %}
+            <div class="alert alert-info">
+                {% translate "Your account is not part of the overview: your main is not in a Corporation of the Alliance, or the overview has not been rebuilt since it joined." %}
+            </div>
+        {% endif %}
+    {% else %}
+    {% if not own %}
+        {# the service buttons of the header show the Corporation's shares; this page shows the account's own links as tiles #}
+        {# a member on their own page sees nothing of the Corporation's other accounts #}
+        {% include "eos_auth_monitor/partials/corporation-header.html" with hide_services=True %}
+    {% endif %}
 
     {% if account.services %}
         <div class="row row-cols-2 row-cols-md-4 row-cols-xl-6 g-3 mb-3">
@@ -17,8 +27,10 @@
                             <div class="fw-bold {% if link.linked %}text-success{% else %}text-danger{% endif %}">
                                 {% if link.linked %}{% translate "linked" %}{% else %}{% translate "not linked" %}{% endif %}
                             </div>
-                            {# the list of this Corporation's characters for the service, not the Alliance-wide one #}
-                            <a href="{% url 'eos_auth_monitor:corporation_service' corporation.id link.service.key %}" class="stretched-link" aria-label="{{ link.service.label }}"></a>
+                            {# the list of this Corporation's mains for the service, not the Alliance-wide one; not for a member #}
+                            {% if not own %}
+                                <a href="{% url 'eos_auth_monitor:corporation_service' corporation.id link.service.key %}" class="stretched-link" aria-label="{{ link.service.label }}"></a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -33,40 +45,65 @@
         </div>
 
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
-                    <thead>
-                        <tr>
-                            <th>{% translate "Character" context "EVE jargon" %}</th>
-                            <th>{% translate "Corporation" context "EVE jargon" %}</th>
-                            <th class="d-none d-md-table-cell">{% translate "Alliance" context "EVE jargon" %}</th>
-                            <th>{% translate "Problems" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for character in account.characters_by_problems %}
+            {% if account.problem_characters %}
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
+                        <thead>
                             <tr>
-                                <td data-order="{% if character.problems %}0{% else %}1{% endif %}{{ character.name }}">
-                                    {% include "eos_auth_monitor/partials/character-cell.html" %}
-                                </td>
-                                <td class="text-break">{{ character.corporation_name }} [{{ character.corporation_ticker }}]</td>
-                                <td class="d-none d-md-table-cell text-break">{{ character.alliance_name }}</td>
-                                <td data-order="{{ character.problems|length }}">
-                                    {% for problem in character.problems %}
-                                        <div class="mb-1">
-                                            <span class="badge text-bg-danger text-wrap">{{ problem.check.label }}</span>
-                                            <span class="small text-body-secondary">{{ problem.check.description }}</span>
-                                            {% if problem.detail %}<div class="small text-break">{{ problem.detail }}</div>{% endif %}
-                                        </div>
-                                    {% empty %}
-                                        <span class="badge text-bg-success">{% translate "No problems" %}</span>
-                                    {% endfor %}
-                                </td>
+                                <th>{% translate "Character" context "EVE jargon" %}</th>
+                                <th>{% translate "Corporation" context "EVE jargon" %}</th>
+                                <th class="d-none d-md-table-cell">{% translate "Alliance" context "EVE jargon" %}</th>
+                                <th>{% translate "Problems" %}</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {% for character in account.problem_characters_by_problems %}
+                                <tr>
+                                    <td data-order="{{ character.name }}">
+                                        {% include "eos_auth_monitor/partials/character-cell.html" %}
+                                    </td>
+                                    <td class="text-break">{{ character.corporation_name }} [{{ character.corporation_ticker }}]</td>
+                                    <td class="d-none d-md-table-cell text-break">{{ character.alliance_name }}</td>
+                                    <td data-order="{{ character.problems|length }}">
+                                        {% for problem in character.problems %}
+                                            <div class="mb-2">
+                                                <span class="badge text-bg-danger text-wrap">{{ problem.check.label }}</span>
+                                                <span class="small text-body-secondary">{{ problem.check.description }}</span>
+                                                {% if problem.detail %}<div class="small text-break">{{ problem.detail }}</div>{% endif %}
+                                                {% include "eos_auth_monitor/partials/problem-hint.html" %}
+                                            </div>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-success fw-bold"><i class="fas fa-circle-check"></i> {% translate "No character of this account has a problem." %}</div>
+            {% endif %}
+
+            {% with fine=account.problem_free_characters %}
+                {% if fine %}
+                    {# folded away: the reader came for the problems, the rest is there to check on demand #}
+                    <details class="mt-3 eos-auth-monitor-problem-free">
+                        <summary class="small">
+                            {% blocktranslate count counter=fine|length context "EVE jargon" %}{{ counter }} character without problems{% plural %}{{ counter }} characters without problems{% endblocktranslate %}
+                        </summary>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-2 small mt-1">
+                            {% for character in fine %}
+                                <div class="col d-flex flex-wrap align-items-center gap-2">
+                                    <img src="{{ character.id|character_portrait_url:32 }}" width="24" height="24" class="rounded flex-shrink-0" alt="">
+                                    <span class="text-break">{{ character.name }}</span>
+                                    {% if character.is_main %}<span class="badge text-bg-primary">{% translate "Main" context "EVE jargon" %}</span>{% endif %}
+                                    <span class="text-body-secondary text-break">{{ character.corporation_name }} [{{ character.corporation_ticker }}]</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </details>
+                {% endif %}
+            {% endwith %}
         </div>
     </div>
+    {% endif %}
 {% endblock %}

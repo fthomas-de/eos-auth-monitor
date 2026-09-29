@@ -1,0 +1,7 @@
+{% load i18n %}
+{# Puts `names` on the clipboard, comma-separated as the recipients of an EVE mail; copy.js does the work. #}
+<button type="button" class="btn btn-sm btn-outline-secondary text-nowrap"
+        data-eos-auth-monitor-copy="{{ names }}" data-eos-auth-monitor-copied="{% translate 'Copied' %}"
+        title="{% translate 'Copy the names for an EVE mail' %}">
+    <i class="fas fa-copy"></i> <span>{% translate "Copy names" %}</span>
+</button>

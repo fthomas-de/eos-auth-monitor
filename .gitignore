@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Packaging (flit builds into dist/)
+# Packaging (hatchling builds into dist/)
 build/
 dist/
 *.egg-info/

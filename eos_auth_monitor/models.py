@@ -17,6 +17,7 @@ class General(models.Model):
             ("basic_access", "Can view the accounts of the Corporation of their own main"),
             ("view_all", "Can view all accounts and Corporations of the Alliance"),
             ("manage_settings", "Can change the Alliance and the checks"),
+            ("view_own", "Can view their own account"),
         )
 
 
@@ -86,37 +87,3 @@ class Snapshot(models.Model):
     def __str__(self):
         return f"Snapshot {self.built_at:%Y-%m-%d %H:%M}"
 
-
-class AccountProblemsFilter(models.Model):
-    """Smart filter for allianceauth-securegroups: does an account have problems?
-
-    Reads the snapshot, so it is as current as the last run of the task.
-    Same fields and methods as securegroups' own FilterBase, which is not
-    imported so the app works without securegroups.
-    """
-
-    name = models.CharField(max_length=500)
-    description = models.CharField(max_length=500)
-    reversed_logic = models.BooleanField(
-        default=False,
-        help_text=_("Pass accounts that HAVE problems instead of those without."),
-    )
-    include_corporation = models.BooleanField(
-        default=False,
-        help_text=_("Also count the problems of the Corporation of the main."),
-    )
-
-    class Meta:
-        verbose_name = _("Smart Filter: Auth Monitor problems")
-        verbose_name_plural = verbose_name
-
-    def __str__(self):
-        return f"{self.name}: {self.description}"
-
-    def process_filter(self, user) -> bool:
-        return self.audit_filter([user])[user.pk]["check"]
-
-    def audit_filter(self, users) -> dict:
-        from .smart_filters import audit_accounts
-
-        return audit_accounts(users, self.reversed_logic, self.include_corporation)

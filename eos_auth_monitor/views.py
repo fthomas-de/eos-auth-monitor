@@ -6,14 +6,18 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 
+from kombu.exceptions import OperationalError
+
 from . import __version__, progress
 from . import snapshot as snapshots
 from .forms import MonitorConfigurationForm
 from .models import MonitorConfiguration
 from .permissions import (
+    APP_PERMISSIONS,
     BASIC_ACCESS,
     MANAGE_SETTINGS,
     VIEW_ALL,
+    VIEW_OWN,
     any_permission_required,
     can_view_corporation,
     own_corporation_id,
@@ -22,8 +26,22 @@ from .report import PHASE_LABELS, Report
 from .tasks import update_snapshot
 
 
+# which page of the app this is, shown under its name; a service list is
+# named after its service instead
+LOCATIONS = {
+    "eos_auth_monitor/index.html": _("Corporation overview"),
+    "eos_auth_monitor/corporation.html": _("Corporation details"),
+    "eos_auth_monitor/account.html": _("Main details"),
+    "eos_auth_monitor/settings.html": _("Settings"),
+}
+
+
 def _render(request, template, context=None):
-    return render(request, template, {"version": __version__, **(context or {})})
+    return render(
+        request,
+        template,
+        {"version": __version__, "location": LOCATIONS.get(template, ""), **(context or {})},
+    )
 
 
 def _report() -> Report | None:
@@ -54,16 +72,19 @@ def _visible_corporation(request, report, corporation_id):
     return report.corporation(corporation_id) if report else None
 
 
-@any_permission_required(BASIC_ACCESS, VIEW_ALL, MANAGE_SETTINGS)
+@any_permission_required(*APP_PERMISSIONS)
 def index(request):
     user = request.user
     if not user.has_perm(VIEW_ALL):
         corporation_id = own_corporation_id(user)
         if user.has_perm(BASIC_ACCESS) and corporation_id:
             return redirect("eos_auth_monitor:corporation", corporation_id)
+        if user.has_perm(VIEW_OWN):
+            return redirect("eos_auth_monitor:own_account")
         return redirect("eos_auth_monitor:settings")
 
     report = _report()
+    table_columns, table_lines = report.overview_table() if report else ([], [])
     return _render(
         request,
         "eos_auth_monitor/index.html",
@@ -71,6 +92,8 @@ def index(request):
             **_state(report),
             "cockpit": report.cockpit() if report else [],
             "connections": report.connections() if report else [],
+            "table_columns": table_columns,
+            "table_lines": table_lines,
         },
     )
 
@@ -100,6 +123,18 @@ def account(request, user_id):
     )
 
 
+@any_permission_required(VIEW_OWN)
+def own_account(request):
+    """The viewer's own account, for members: their problems and what to do, nothing about others."""
+    report = _report()
+    corporation, account = report.account(request.user.pk) if report else (None, None)
+    return _render(
+        request,
+        "eos_auth_monitor/account.html",
+        {**_state(report), "corporation": corporation, "account": account, "own": True, "location": _("My account")},
+    )
+
+
 @any_permission_required(BASIC_ACCESS, VIEW_ALL)
 def corporation_service(request, corporation_id, service_key):
     report = _report()
@@ -110,7 +145,7 @@ def corporation_service(request, corporation_id, service_key):
     return _render(
         request,
         "eos_auth_monitor/corporation_service.html",
-        {**_state(report), "corporation": corporation, "service": service},
+        {**_state(report), "corporation": corporation, "service": service, "location": service.label},
     )
 
 
@@ -130,6 +165,7 @@ def service(request, service_key):
         {
             **_state(report),
             "service": service,
+            "location": service.label,
             "rows": rows,
             "linked": sum(account.is_linked(service.key) for _, account in rows),
         },
@@ -142,24 +178,38 @@ def settings(request):
 
     if request.method == "POST" and form.is_valid():
         form.save()
-        _start_rebuild()
-        messages.success(request, _("Settings saved. The overview is being rebuilt."))
+        if _start_rebuild():
+            messages.success(request, _("Settings saved. The overview is being rebuilt."))
+        else:
+            messages.warning(
+                request,
+                _("Settings saved, but the task queue is not reachable: the overview is rebuilt once it is back."),
+            )
         return redirect("eos_auth_monitor:settings")
 
     return _render(request, "eos_auth_monitor/settings.html", {**_state(_report()), "form": form})
 
 
-def _start_rebuild():
+def _start_rebuild() -> bool:
+    """Queue the task; False when the broker cannot take it."""
     # shown at once, before a worker has picked the task up
     progress.queued()
-    update_snapshot.delay()
+    try:
+        update_snapshot.delay()
+    except OperationalError:
+        # Redis or the broker is down; a 500 would hide that the settings were saved
+        progress.withdrawn()
+        return False
+    return True
 
 
 @any_permission_required(VIEW_ALL, MANAGE_SETTINGS)
 @require_POST
 def rebuild(request):
-    _start_rebuild()
-    messages.info(request, _("The overview is being rebuilt."))
+    if _start_rebuild():
+        messages.info(request, _("The overview is being rebuilt."))
+    else:
+        messages.error(request, _("The rebuild could not be started: the task queue is not reachable."))
     # back to the page the button was on; only our own pages, never elsewhere
     target = request.POST.get("next", "")
     if not url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}):
@@ -167,7 +217,7 @@ def rebuild(request):
     return redirect(target or "eos_auth_monitor:index")
 
 
-@any_permission_required(BASIC_ACCESS, VIEW_ALL, MANAGE_SETTINGS)
+@any_permission_required(*APP_PERMISSIONS)
 def rebuild_progress(request):
     """State of the task for the progress bar; polled while it runs."""
     state = progress.get()

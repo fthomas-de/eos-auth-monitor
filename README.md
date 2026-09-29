@@ -10,7 +10,8 @@ The app reads what Alliance Auth and the installed apps already hold. Its
 only ESI calls are the member list and the roles of each Corporation, which no
 installed app stores (see [ESI](#esi)). Every check can be switched off.
 
-> **Status: in development.** No release has been tagged yet.
+> **Status: in development.** Releases are tagged (`v0.0.1` is the first);
+> install a tag, not the branch.
 
 ## Features
 
@@ -22,31 +23,41 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   Character Audit, share of Corporations with a working corptools
   Corporation Audit and aa-structures owner - and a tile with the number of
   connections per service. The service tiles open their list; the Character
-  Audit, Corporation Audit and Structures tiles open Alliance Auth's services
-  page
+  Audit and Corporation Audit tiles open corptools, the Structures tile
+  aa-structures (no link where that app is not installed)
 - **Most problems first**: Corporation tiles, mains, characters and the service
   lists are ordered by the number of problems, then by name
-- **Filter** above the Corporation tiles of the overview (name or ticker)
+- **Filter** above the Corporations of the overview: name or ticker, and a
+  switch to show only the Corporations with problems
+- **Tiles or table**: the Corporations of the overview as tiles or as one
+  sortable table line each; the browser remembers the choice
 - **Service tiles** on the overview and on each Corporation page: the share of
   mains that linked Discord, Mumble, QQ or Telegram, each opening its list
-- **One tile per Corporation**: its name as the title, below it each app with
-  its share of complete entries (registered members, Character Audit,
-  Corporation Audit, Structures, every service)
-- **Corporation detail**: every member of the Corporation, reduced to mains -
-  the mains of the Corporation as tiles with keywords naming their problems,
+- **One tile per Corporation**: its name as the title, the number of
+  accounts with problems, below it each app with its share of complete
+  entries (registered members, Character Audit, Corporation Audit,
+  Structures, every service)
+- **Corporation detail**: a to-do list first - per failed check the mains it
+  concerns and what they have to do, and the members not registered in Auth,
+  each group with a button that copies the names for an EVE mail. Then every
+  member of the Corporation, reduced to mains: the mains with problems as
+  cards with keywords naming their problems, the others as a compact list,
   members whose main is in another Corporation under that main, and members
-  unknown to Auth, each counting as a main of its own
-- **Account detail**: every character of the account, with the full details
-  of each problem - which scopes are missing, which sections are stale
-- **Service lists**: per Corporation all characters of its accounts, with
-  the problem characters marked; per service every main of the Alliance and
-  whether it has linked that service
+  unknown to Auth as a compact list, each counting as a main of its own
+- **Account detail**: the characters with problems, with the full details of
+  each problem - which scopes are missing, which sections are stale - and
+  what to do about it, with a link to the app where it is done; the
+  characters without problems folded away below
+- **Service lists**: per Corporation and per service every main and whether
+  it has linked that service; per service the same for the whole Alliance
+- **Page header**: the app's name and version, below it the page - Corporation
+  overview, Corporation details, Main details, the service's name
 - **Rebuild now** with a progress bar while the task runs
 - **Build figures** in the footer for holders of `view_all` or `manage_settings`:
   duration, time per step, database queries, sizes of the Alliance and of the
   stored result
-- **Smart filter** for [allianceauth-securegroups](https://github.com/Solar-Helix-Independent-Transport/allianceauth-secure-groups):
-  does an account have problems?
+- **My account** for members: their own characters, what is wrong and what
+  to do about it - nothing about other accounts
 - **Settings page**: the Alliance, chosen from a searchable dropdown; a
   switch for every check, grouped by app, and for every service; which
   corptools sections and scopes the checks count
@@ -84,19 +95,20 @@ settings.
 | Audit missing | it has no `CharacterAudit` |
 | Scopes missing | none of its tokens carries all scopes corptools asks for (`get_character_scopes()`), minus the scopes left out in the settings; the detail names the scopes the most complete token lacks |
 | Audit inactive | a section corptools counts has not updated for longer than `CT_CHAR_MAX_INACTIVE_DAYS`, minus the sections left out in the settings; the detail names them |
-| Director token missing | corptools has read the character's roles and it is a Director, but none of its tokens carries all scopes of the Corporation audit (`CORP_REQUIRED_SCOPES` plus the roles scope), minus the Corporation scopes left out in the settings; the detail names what the most complete token lacks. A Director whose roles corptools never read is not found |
+| Director token missing | corptools has read the character's roles and it is a Director, but none of its tokens carries all scopes of the Corporation audit (`CORP_REQUIRED_SCOPES` plus the roles scope), minus the Corporation scopes left out in the settings; the detail names what the most complete token lacks. The Directors come from the roles corptools read and, with *Fetch data from ESI* on, from ESI (see [ESI](#esi)), which also names Directors without any token |
 
 A Corporation where no Director's token could read the roles (the ESI call in
-[ESI](#esi) found no token, or none worked) carries the marker *No Director
-token* on its tile and its page: the check cannot see its Directors there. The
-marker is not a problem and does not count in the percentages; it only exists
-while *Fetch data from ESI* and the check are on.
+[ESI](#esi) found no token, or none worked) carries a small info mark beside
+its name, *No Director token* as its tooltip, on the overview and its page:
+the check cannot see its Directors there. The mark is not a problem and does
+not count in the percentages; it only exists while *Fetch data from ESI* and
+the check are on.
 
 "Audit inactive" follows the conditions of corptools'
 `CharacterAudit.is_active()` - which sections count depends on corptools'
 `CT_CHAR_*_MODULE` settings and its own configuration - but is worked out by
-this app: `is_active()` saves the audit, and this app never writes to another
-app's tables.
+this app: `is_active()` saves the audit, and this app does not write to
+corptools' tables.
 
 ### corptools - Corporation Audit
 
@@ -136,12 +148,16 @@ Corporation:
 
 | Endpoint | Scope | Token |
 |---|---|---|
-| `GET /corporations/{corporation_id}/members/` | `esi-corporations.read_corporation_membership.v1` | any token corptools already holds of a character in that Corporation; corptools' Corporation audit requires the scope anyway. No in-game role needed |
+| `GET /corporations/{corporation_id}/members/` | `esi-corporations.read_corporation_membership.v1` | any token with that scope of a character in that Corporation, from django-esi's store - whichever app it was granted for; corptools' Corporation audit requires the scope anyway. No in-game role needed |
 | `GET /corporations/{corporation_id}/roles` | `esi-corporations.read_corporation_membership.v1` | a token of a character corptools knows as a Director of that Corporation (ESI lists the roles of all members to a Director, Personnel Manager or a character with grantable roles). Names every Director, also those corptools never read the roles of because they have no token - for the check *Director token missing*. Skipped where no such token exists |
 | `POST /universe/names/` | none | for members Auth has no name for |
 
 django-esi caches the responses and honours their expiry. The app asks for
-no scopes of its own and adds no login step. *Fetch data from ESI*
+no scopes of its own and adds no login step. When it uses a token, django-esi
+refreshes it and saves the new access token, as for any app. A token that
+fails (a character who left the Corporation keeps its token) is skipped and the
+next one tried, on every run; failed calls are not cached and count towards
+ESI's error limit. *Fetch data from ESI*
 in the settings switches all of these calls off; the Corporation page then
 shows the registered accounts only, and the check *Director token missing*
 knows only the Directors corptools read.
@@ -159,7 +175,9 @@ it is. The task runs once at a time (`QueueOnce`), keeps a single row and
 replaces it on every run.
 
 The task also runs after the settings are saved, and on *Rebuild now*, which
-holders of `view_all` or `manage_settings` find above every page. While it is
+holders of `view_all` or `manage_settings` find above every page once an
+Alliance is chosen. Settings saved while a run is under way apply from the
+next run. While it is
 queued or running, a progress bar shows its step; the page reloads itself
 once the task is done. The progress lives in the default cache for up to an
 hour.
@@ -169,31 +187,16 @@ duration of its database queries, and how many Corporations, accounts and
 characters it read. The figures are stored inside the snapshot and shown as a
 line at the foot of the pages to holders of `view_all` or `manage_settings`
 (the step times as its tooltip). ESI time is part of the *Reading member
-lists* step. A page view costs one query and is not part of the figures.
-
-## Smart filter
-
-With [allianceauth-securegroups](https://github.com/Solar-Helix-Independent-Transport/allianceauth-secure-groups)
-installed, *Smart Filter: Auth Monitor problems* is offered as a filter.
-Create one in the Django admin (*EOS Auth Monitor → Smart Filter: Auth
-Monitor problems*), then add it to a smart group.
-
-| Field | Meaning |
-|---|---|
-| Reversed logic | Off: accounts without problems pass. On: accounts with problems pass |
-| Include corporation | Also count the problems of the main's Corporation |
-
-The filter reads the last result of the task, so it is as current as that.
-An account outside the overview - main not in the Alliance, or no result
-yet - fails either way.
+lists* step. A page view only reads the settings and the stored result and
+is not part of the figures.
 
 ## Requirements
 
 | | |
 |---|---|
-| Alliance Auth | 5.x |
+| Alliance Auth | 5.1.4 or newer, below 6 (the migrations need `eveonline` 0025, first in 5.1.4) |
 | Python | 3.10 or newer |
-| Optional | allianceauth-corptools, aa-structures, aa-qqbot, aa-discord-telegram-bridge, allianceauth-securegroups, the Discord and Mumble services of Alliance Auth |
+| Optional | allianceauth-corptools, aa-structures, aa-qqbot, aa-discord-telegram-bridge, the Discord and Mumble services of Alliance Auth |
 
 None of the optional apps is a dependency of the package. `pip install` will
 not pull them in, nor upgrade the ones you have.
@@ -203,8 +206,10 @@ not pull them in, nor upgrade the ones you have.
 1. Install the package into the virtual environment of your Alliance Auth:
 
    ```bash
-   pip install git+https://github.com/fthomas-de/eos-auth-monitor.git
+   pip install git+https://github.com/fthomas-de/eos-auth-monitor.git@v0.0.1
    ```
+
+   Use the latest tag from the repository in place of `v0.0.1`.
 
 2. Add `"eos_auth_monitor",` to `INSTALLED_APPS` in `local.py`, and the
    periodic task below it:
@@ -242,14 +247,23 @@ by itself.
 | `eos_auth_monitor.basic_access` | CEOs, directors | The Corporation of their own main: its members, accounts and service lists; the progress bar |
 | `eos_auth_monitor.view_all` | Leadership | Cockpit and every Corporation of the Alliance, the Alliance-wide service lists, *Rebuild now* |
 | `eos_auth_monitor.manage_settings` | Admins | The settings page: Alliance, checks, services, corptools sections and scopes; *Rebuild now* |
+| `eos_auth_monitor.view_own` | Members (a state is fine) | *My account*: their own account - characters, problems, what to do, which services are linked. Nothing about other accounts or the Corporation's figures |
 
 The menu entry shows for anyone holding one of them. Only the **main
 character** counts for `basic_access`, and like every Alliance Auth app page,
 the app needs a main character. Superusers hold every permission and see
 everything.
 
-The smart filter is maintained in the Django admin with Django's own
-permissions on *Smart Filter: Auth Monitor problems*.
+`basic_access` shows every account of the Corporation with **all its alts**,
+alts outside the Alliance included, and for members whose main is elsewhere
+that main and its Corporation. Give it to a leadership group, **never to a
+state**: every member would see who plays which alt. `basic_access` follows
+the main, not in-game roles - someone who loses the CEO role keeps it until
+removed from the group.
+
+A holder of `view_own` alone is sent from the menu entry to *My account*. An
+account whose main is not in the Alliance is not part of the overview, and
+the page says so.
 
 ## Settings
 
@@ -278,10 +292,13 @@ only. Tables use the DataTables bundle Alliance Auth ships.
 The app stores its settings and the last result of the task, nothing else.
 The result holds what other apps already hold - character and Corporation
 names, whether an account has linked Discord, Mumble, QQ or Telegram, which
-checks a character fails - plus the names of Corporation members not
-registered in Auth, read from ESI. It is shown to the holders of the
-permissions above. It stores whether a service is linked, not the Discord, QQ
-or Telegram account itself.
+checks a character fails, which alts belong to which main - plus the IDs
+and names of Corporation members not registered in Auth, read from ESI:
+people who never signed in to Auth. It is shown to the holders of the
+permissions above, alts and cross-Corporation mains included (see
+[Permissions](#permissions)). It stores whether a service is linked, not the
+Discord, QQ or Telegram account itself. Every run replaces the result, so a
+member who left is gone from it after the next run; nothing is kept longer.
 
 ## Languages
 
@@ -294,7 +311,7 @@ is needed.
 ## Upgrading
 
 ```bash
-pip install -U git+https://github.com/fthomas-de/eos-auth-monitor.git
+pip install -U git+https://github.com/fthomas-de/eos-auth-monitor.git@<tag>
 ```
 
 ```bash
@@ -306,6 +323,12 @@ python manage.py collectstatic --noinput
 ```
 
 Then restart supervisor.
+
+**From 0.0.1:** the securegroups smart filter is gone, and migration 0005
+drops its table. Before upgrading, remove *Smart Filter: Auth Monitor
+problems* from every smart group and delete it in the Django admin; a
+binding left behind (*Smart Filter Catalog*) points to a table that no
+longer exists and breaks securegroups' group updates.
 
 ## Uninstalling
 
@@ -323,8 +346,20 @@ Then restart supervisor.
    pip uninstall eos-auth-monitor
    ```
 
-The data of the other apps is not touched: the app only ever reads it. A
-securegroups smart group that used the filter loses it with the tables.
+4. Remove the app's permissions and content types, by app label only, in
+   `python manage.py shell`:
+
+   ```python
+   from django.contrib.contenttypes.models import ContentType
+   ContentType.objects.filter(app_label="eos_auth_monitor").delete()
+   ```
+
+   Deleting the content types takes their permissions with them. Do not use
+   `remove_stale_contenttypes --include-stale-apps`: it also removes what
+   other uninstalled apps left behind.
+
+The data of the other apps is not touched: the app only reads it (django-esi
+refreshing a token it used aside).
 
 ## Possible extensions
 

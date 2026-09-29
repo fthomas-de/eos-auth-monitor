@@ -35,6 +35,12 @@ def queued():
         _set(state=QUEUED, percent=0, phase=None)
 
 
+def withdrawn():
+    # the task never reached the broker: no worker will pick it up, so no bar
+    if get().get("state") == QUEUED:
+        cache.delete(KEY)
+
+
 def step(phase: str, done: int = 0, total: int = 1):
     index = PHASES.index(phase)
     fraction = done / total if total else 1

@@ -33,10 +33,3 @@ def register_menu():
 def register_urls():
     return UrlHook(urls, "eos_auth_monitor", r"^eos_auth_monitor/")
 
-
-@hooks.register("secure_group_filters")
-def register_filters():
-    # read by allianceauth-securegroups; without it the hook is never asked
-    from .models import AccountProblemsFilter
-
-    return [AccountProblemsFilter]

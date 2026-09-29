@@ -29,12 +29,13 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
 ]
 dependencies = [
-    # 5.0 is the floor the code needs: page-header.html, the DataTables 2
-    # bundles and the sri/evelinks/navactive tags exist in 5.0.0, and its
-    # django-esi (>=9.0) already has ESIClientProvider(operations=...) and
-    # .result(use_etag=...). Checked by reading the tags, not by running
-    # against 5.0; raise it once something a later 5.x release introduced is used.
-    "allianceauth>=5.0,<6",
+    # 5.1.4 is the floor: migration 0002 depends on eveonline 0025, which
+    # first ships in 5.1.4 (5.0.0 to 5.1.3 fail at migrate). The code itself
+    # needs only 5.0: page-header.html, the DataTables 2 bundles, the
+    # sri/evelinks/navactive tags, and django-esi (>=9.0) with
+    # ESIClientProvider(operations=...) and .result(use_etag=...). Checked by
+    # reading the tags, not by running against 5.1.4.
+    "allianceauth>=5.1.4,<6",
     # the settings page is a singleton; AA ships django-solo, but we import it
     "django-solo",
 ]

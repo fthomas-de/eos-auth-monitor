@@ -10,6 +10,7 @@
                 <h5 class="mb-1 text-break">
                     <a href="{% url 'eos_auth_monitor:corporation' corporation.id %}" class="text-reset text-decoration-none">{{ corporation.name }}</a>
                     <span class="text-body-secondary small">[{{ corporation.ticker }}]</span>
+                    {% include "eos_auth_monitor/partials/no-director.html" %}
                 </h5>
                 <div class="small mb-2">
                     {% translate "Mains" context "EVE jargon" %}: {{ corporation.mains }} ·
@@ -19,19 +20,13 @@
                     {% endif %}
                 </div>
                 {% for problem in corporation.problems %}
-                    <div class="small mb-1">
+                    <div class="small mb-2">
                         <span class="badge text-bg-warning text-wrap">{{ problem.check.label }}</span>
                         <span class="text-body-secondary">{{ problem.check.description }}</span>
                         {% if problem.detail %}<span class="text-break">({{ problem.detail }})</span>{% endif %}
+                        {% include "eos_auth_monitor/partials/problem-hint.html" %}
                     </div>
                 {% endfor %}
-                {% if corporation.no_director_token %}
-                    {# not a problem of the Corporation: the check cannot see its Directors, which is a gap in the monitoring #}
-                    <div class="small mb-1">
-                        <span class="badge text-bg-info text-wrap">{% translate "No Director token" %}</span>
-                        <span class="text-body-secondary">{% translate "No Director of this Corporation has a token that can read its roles, so Directors without a token go unseen here." %}</span>
-                    </div>
-                {% endif %}
             </div>
         </div>
 

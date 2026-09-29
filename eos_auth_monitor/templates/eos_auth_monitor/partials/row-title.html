@@ -1,0 +1,1 @@
+{% load i18n %}{% if row.problems %}{% for problem in row.problems %}{{ problem.check.label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% elif row.total is not None %}{% blocktranslate with part=row.part total=row.total %}{{ part }} of {{ total }}{% endblocktranslate %}{% endif %}

@@ -1,0 +1,17 @@
+{% load i18n %}
+{# How many accounts of `corporation` have problems, large enough to read first; the Corporation's own problems beside it. #}
+<div class="d-flex flex-wrap align-items-baseline gap-2 eos-auth-monitor-problem-count">
+    {% if corporation.has_problems %}
+        {% with count=corporation.problem_accounts|length %}
+            <span class="fs-4 fw-bold lh-1 {% if count %}text-danger{% else %}text-body-secondary{% endif %}">{{ count }}</span>
+            <span class="small">{% blocktranslate count counter=count %}account with problems{% plural %}accounts with problems{% endblocktranslate %}</span>
+        {% endwith %}
+        {% if corporation.problems %}
+            <span class="small text-danger">
+                {% blocktranslate count counter=corporation.problems|length context "EVE jargon" %}+ {{ counter }} Corporation problem{% plural %}+ {{ counter }} Corporation problems{% endblocktranslate %}
+            </span>
+        {% endif %}
+    {% else %}
+        <span class="fw-bold text-success"><i class="fas fa-circle-check"></i> {% translate "No problems" %}</span>
+    {% endif %}
+</div>

@@ -7,8 +7,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 BASIC_ACCESS = "eos_auth_monitor.basic_access"
 VIEW_ALL = "eos_auth_monitor.view_all"
 MANAGE_SETTINGS = "eos_auth_monitor.manage_settings"
+VIEW_OWN = "eos_auth_monitor.view_own"
 
-APP_PERMISSIONS = (BASIC_ACCESS, VIEW_ALL, MANAGE_SETTINGS)
+APP_PERMISSIONS = (BASIC_ACCESS, VIEW_ALL, MANAGE_SETTINGS, VIEW_OWN)
 
 
 def has_app_access(user) -> bool:

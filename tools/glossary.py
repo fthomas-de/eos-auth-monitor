@@ -203,21 +203,6 @@ TRANSLATIONS = {
         "使用 corptools 已有的令牌读取每个 Corporation 的成员列表和 Director 角色，以显示未在 Auth 中注册的成员和没有令牌的 Director。",
     ),
     "Configuration": ("Konfiguration", "Конфигурация", "配置"),
-    "Pass accounts that HAVE problems instead of those without.": (
-        "Accounts durchlassen, die Probleme HABEN, statt solcher ohne.",
-        "Пропускать аккаунты, у которых ЕСТЬ проблемы, а не тех, у кого их нет.",
-        "放行有问题的账号，而不是没有问题的账号。",
-    ),
-    "Also count the problems of the Corporation of the main.": (
-        "Auch die Probleme der Corporation des Mains zählen.",
-        "Учитывать также проблемы Corporation основного персонажа.",
-        "同时计入该 Main 所在 Corporation 的问题。",
-    ),
-    "Smart Filter: Auth Monitor problems": (
-        "Smart Filter: Auth-Monitor-Probleme",
-        "Smart Filter: проблемы Auth Monitor",
-        "Smart Filter：Auth Monitor 问题",
-    ),
     "Corporation Audit": ("Corporation-Audit", "Аудит Corporation", "Corporation 审计"),
     "Structures": ("Structures", "Структуры", "建筑"),
     "Reading accounts": ("Accounts werden gelesen", "Чтение аккаунтов", "正在读取账号"),
@@ -236,11 +221,6 @@ TRANSLATIONS = {
         "Character 审计完整",
     ),
     "%(app)s working": ("%(app)s funktioniert", "%(app)s работает", "%(app)s 正常运行"),
-    "Not in the Auth Monitor overview": (
-        "Nicht in der Auth-Monitor-Übersicht",
-        "Нет в обзоре Auth Monitor",
-        "不在 Auth Monitor 概览中",
-    ),
     "No problems": ("Keine Probleme", "Проблем нет", "没有问题"),
     "linked": ("verknüpft", "привязано", "已关联"),
     "not linked": ("nicht verknüpft", "не привязано", "未关联"),
@@ -392,6 +372,156 @@ TRANSLATIONS = {
         "Обзор пересобирается.",
         "概览正在重建。",
     ),
+    'The player adds this character in the corptools Character Audit.': (
+        'Der Spieler fügt diesen Character im corptools-Character-Audit hinzu.',
+        'Игрок добавляет этого Character в аудит Character в corptools.',
+        '玩家在 corptools Character 审计中添加此 Character。',
+    ),
+    'The player adds this character in the corptools Character Audit again and grants every scope it asks for.': (
+        'Der Spieler fügt diesen Character im corptools-Character-Audit erneut hinzu und erteilt alle verlangten Scopes.',
+        'Игрок заново добавляет этого Character в аудит Character в corptools и выдаёт все запрошенные скоупы.',
+        '玩家在 corptools Character 审计中重新添加此 Character，并授予其要求的全部 Scope。',
+    ),
+    'The next corptools update usually clears this; if it stays, the player adds the character again.': (
+        'Meist behebt das die nächste corptools-Aktualisierung; bleibt es, fügt der Spieler den Character erneut hinzu.',
+        'Обычно это исчезает после следующего обновления corptools; если нет, игрок заново добавляет Character.',
+        '通常下一次 corptools 更新后即可恢复；如果仍然存在，玩家需重新添加该 Character。',
+    ),
+    'The Director adds a Corporation token in the corptools Corporation Audit.': (
+        'Der Director fügt im corptools-Corporation-Audit einen Corporation-Token hinzu.',
+        'Director добавляет токен Corporation в аудите Corporation в corptools.',
+        '该 Director 在 corptools Corporation 审计中添加 Corporation 令牌。',
+    ),
+    'A Director adds the Corporation in the corptools Corporation Audit.': (
+        'Ein Director fügt die Corporation im corptools-Corporation-Audit hinzu.',
+        'Один из Director добавляет Corporation в аудит Corporation в corptools.',
+        '由一名 Director 在 corptools Corporation 审计中添加该 Corporation。',
+    ),
+    'A Director adds a Corporation token in the corptools Corporation Audit.': (
+        'Ein Director fügt im corptools-Corporation-Audit einen Corporation-Token hinzu.',
+        'Один из Director добавляет токен Corporation в аудите Corporation в corptools.',
+        '由一名 Director 在 corptools Corporation 审计中添加 Corporation 令牌。',
+    ),
+    'A Director checks the Corporation token in the corptools Corporation Audit and adds a new one if it lost its roles.': (
+        'Ein Director prüft den Corporation-Token im corptools-Corporation-Audit und fügt einen neuen hinzu, falls er seine Rollen verloren hat.',
+        'Один из Director проверяет токен Corporation в аудите Corporation в corptools и добавляет новый, если тот потерял роли.',
+        '由一名 Director 在 corptools Corporation 审计中检查 Corporation 令牌，如其已失去角色则添加新令牌。',
+    ),
+    'A character with the Station Manager role adds the Corporation as an owner in aa-structures.': (
+        'Ein Character mit der Rolle Station Manager fügt die Corporation in aa-structures als Owner hinzu.',
+        'Character с ролью Station Manager добавляет Corporation как владельца в aa-structures.',
+        '由拥有 Station Manager 角色的 Character 在 aa-structures 中将该 Corporation 添加为所有者。',
+    ),
+    'An admin switches the owner on again in the aa-structures admin.': (
+        'Ein Admin schaltet den Owner in der aa-structures-Verwaltung wieder ein.',
+        'Администратор снова включает владельца в админке aa-structures.',
+        '由管理员在 aa-structures 管理后台重新启用该所有者。',
+    ),
+    'A character with the Station Manager role adds itself to the owner in aa-structures.': (
+        'Ein Character mit der Rolle Station Manager fügt sich in aa-structures dem Owner hinzu.',
+        'Character с ролью Station Manager добавляет себя к владельцу в aa-structures.',
+        '由拥有 Station Manager 角色的 Character 在 aa-structures 中将自己添加到该所有者。',
+    ),
+    'Check the owner in aa-structures: its characters may have lost the Station Manager role.': (
+        'Den Owner in aa-structures prüfen: Seine Characters haben womöglich die Rolle Station Manager verloren.',
+        'Проверьте владельца в aa-structures: его Character могли потерять роль Station Manager.',
+        '请在 aa-structures 中检查该所有者：其 Character 可能已失去 Station Manager 角色。',
+    ),
+    'Your account is not part of the overview: your main is not in a Corporation of the Alliance, or the overview has not been rebuilt since it joined.': (
+        'Dieser Account gehört nicht zur Übersicht: Sein Main ist in keiner Corporation der Alliance, oder die Übersicht wurde seit dem Beitritt nicht neu aufgebaut.',
+        'Ваш аккаунт не входит в обзор: ваш Main не состоит ни в одной Corporation этой Alliance, или обзор не пересобирался с момента его вступления.',
+        '你的账号不在概览中：你的 Main 不在该 Alliance 的任何 Corporation 中，或者自其加入以来概览尚未重建。',
+    ),
+    'No character of this account has a problem.': (
+        'Kein Character dieses Accounts hat ein Problem.',
+        'Ни у одного Character этого аккаунта нет проблем.',
+        '此账号的所有 Character 都没有问题。',
+    ),
+    'My account': (
+        'Mein Account',
+        'Мой аккаунт',
+        '我的账号',
+    ),
+    'To do': (
+        'Zu erledigen',
+        'Что сделать',
+        '待办',
+    ),
+    'These members have no account in Auth yet: they register and add their characters.': (
+        'Diese Mitglieder haben noch keinen Account in Auth: Sie registrieren sich und fügen ihre Characters hinzu.',
+        'У этих участников ещё нет аккаунта в Auth: они регистрируются и добавляют своих Character.',
+        '这些成员在 Auth 中还没有账号：他们需要注册并添加自己的 Character。',
+    ),
+    'List': (
+        'Liste',
+        'Список',
+        '列表',
+    ),
+    'Without problems': (
+        'Ohne Probleme',
+        'Без проблем',
+        '无问题',
+    ),
+    'Only with problems': (
+        'Nur mit Problemen',
+        'Только с проблемами',
+        '仅显示有问题的',
+    ),
+    'View': (
+        'Ansicht',
+        'Вид',
+        '视图',
+    ),
+    'Tiles': (
+        'Kacheln',
+        'Плитки',
+        '卡片',
+    ),
+    'Table': (
+        'Tabelle',
+        'Таблица',
+        '表格',
+    ),
+    'Copied': (
+        'Kopiert',
+        'Скопировано',
+        '已复制',
+    ),
+    'Copy the names for an EVE mail': (
+        'Namen für eine EVE-Mail kopieren',
+        'Скопировать имена для EVE-почты',
+        '复制名字用于 EVE 邮件',
+    ),
+    'Copy names': (
+        'Namen kopieren',
+        'Копировать имена',
+        '复制名字',
+    ),
+    'Corporation overview': (
+        'Corporation-Übersicht',
+        'Обзор Corporation',
+        'Corporation 概览',
+    ),
+    'Corporation details': (
+        'Corporation-Details',
+        'Сведения о Corporation',
+        'Corporation 详情',
+    ),
+    'Main details': (
+        'Main-Details',
+        'Сведения о Main',
+        'Main 详情',
+    ),
+    'Settings saved, but the task queue is not reachable: the overview is rebuilt once it is back.': (
+        'Einstellungen gespeichert, aber die Task-Warteschlange ist nicht erreichbar: Die Übersicht wird neu aufgebaut, sobald sie wieder da ist.',
+        'Настройки сохранены, но очередь задач недоступна: обзор будет пересобран, когда она снова заработает.',
+        '设置已保存，但任务队列无法访问：待其恢复后将重建概览。',
+    ),
+    'The rebuild could not be started: the task queue is not reachable.': (
+        'Der Neuaufbau konnte nicht gestartet werden: Die Task-Warteschlange ist nicht erreichbar.',
+        'Не удалось запустить пересборку: очередь задач недоступна.',
+        '无法启动重建：任务队列无法访问。',
+    ),
 }
 
 PLURALS = {
@@ -399,6 +529,21 @@ PLURALS = {
         ["%(counter)s Character", "%(counter)s Characters"],
         ["%(counter)s Character", "%(counter)s Character", "%(counter)s Character"],
         ["%(counter)s 个 Character"],
+    ),
+    '%(counter)s character without problems': (
+        ['%(counter)s Character ohne Probleme', '%(counter)s Characters ohne Probleme'],
+        ['%(counter)s Character без проблем', '%(counter)s Character без проблем', '%(counter)s Character без проблем'],
+        ['%(counter)s 个没有问题的 Character'],
+    ),
+    'account with problems': (
+        ['Account mit Problemen', 'Accounts mit Problemen'],
+        ['аккаунт с проблемами', 'аккаунта с проблемами', 'аккаунтов с проблемами'],
+        ['个账号有问题'],
+    ),
+    '+ %(counter)s Corporation problem': (
+        ['+ %(counter)s Corporation-Problem', '+ %(counter)s Corporation-Probleme'],
+        ['+ %(counter)s проблема Corporation', '+ %(counter)s проблемы Corporation', '+ %(counter)s проблем Corporation'],
+        ['+ %(counter)s 个 Corporation 问题'],
     ),
 }
 

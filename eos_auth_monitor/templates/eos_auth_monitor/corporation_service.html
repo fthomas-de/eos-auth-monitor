@@ -1,5 +1,6 @@
 {% extends "eos_auth_monitor/base.html" %}
 {% load i18n %}
+{% load evelinks %}
 {% load eos_auth_monitor %}
 
 {% block details %}
@@ -14,30 +15,22 @@
                 <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
                     <thead>
                         <tr>
-                            <th>{% translate "Character" context "EVE jargon" %}</th>
-                            <th class="d-none d-sm-table-cell">{% translate "Main" context "EVE jargon" %}</th>
+                            <th>{% translate "Main" context "EVE jargon" %}</th>
                             <th>{{ service.label }}</th>
-                            <th>{% translate "Problems" %}</th>
                         </tr>
                     </thead>
                     <tbody>
+                        {# one row per account: a service links one account, not each of its characters #}
                         {% for account in corporation.accounts_by_problems %}
-                            {% for character in account.characters_by_problems %}
-                                <tr>
-                                    <td data-order="{% if character.problems %}0{% else %}1{% endif %}{{ character.name }}">
-                                        {% include "eos_auth_monitor/partials/character-cell.html" with link_account=account %}
-                                    </td>
-                                    <td class="d-none d-sm-table-cell text-break">{{ account.main_name }}</td>
-                                    <td data-order="{% if account|is_linked:service.key %}1{% else %}0{% endif %}">{% include "eos_auth_monitor/partials/link-badge.html" %}</td>
-                                    <td data-order="{{ character.problems|length }}">
-                                        <div class="d-flex flex-wrap gap-1">
-                                            {% for problem in character.problems %}
-                                                <span class="badge text-bg-danger text-wrap" title="{{ problem.detail }}">{{ problem.check.label }}</span>
-                                            {% endfor %}
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <img src="{{ account.main_id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+                                        <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="text-break">{{ account.main_name }}</a>
+                                    </div>
+                                </td>
+                                <td data-order="{% if account|is_linked:service.key %}1{% else %}0{% endif %}">{% include "eos_auth_monitor/partials/link-badge.html" %}</td>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>

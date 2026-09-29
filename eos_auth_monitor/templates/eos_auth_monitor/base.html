@@ -12,6 +12,12 @@
         {% include "eos_auth_monitor/partials/nav-item.html" with nav_url=overview_url nav_title=overview_title nav_view="eos_auth_monitor:index eos_auth_monitor:service" %}
     {% endif %}
 
+    {% if perms.eos_auth_monitor.view_own %}
+        {% url "eos_auth_monitor:own_account" as own_url %}
+        {% translate "My account" as own_title %}
+        {% include "eos_auth_monitor/partials/nav-item.html" with nav_url=own_url nav_title=own_title nav_view="eos_auth_monitor:own_account" %}
+    {% endif %}
+
     {% if perms.eos_auth_monitor.manage_settings %}
         {% url "eos_auth_monitor:settings" as settings_url %}
         {% translate "Settings" as settings_title %}
@@ -24,8 +30,11 @@
     {% get_datatables_language_static current_language as datatables_language %}
     {# tables.js hands this to DataTables, the way Alliance Auth's own pages do #}
     <div class="eos_auth_monitor" data-eos-auth-monitor-datatables-language="{{ datatables_language }}">
-        {% translate "Auth Monitor" as page_title %}
-        {% include "framework/header/page-header.html" with title=page_title subtitle=version %}
+        {% translate "Auth Monitor" as app_name %}
+        {# the version beside the name; below it, which page of the app this is #}
+        {% with page_title=app_name|add:" ("|add:version|add:")" %}
+            {% include "framework/header/page-header.html" with title=page_title subtitle=location %}
+        {% endwith %}
 
         {% include "eos_auth_monitor/partials/state.html" %}
 
@@ -44,4 +53,6 @@
     {% sri_static "eos_auth_monitor/js/tables.js" %}
     {% sri_static "eos_auth_monitor/js/progress.js" %}
     {% sri_static "eos_auth_monitor/js/filter.js" %}
+    {% sri_static "eos_auth_monitor/js/view.js" %}
+    {% sri_static "eos_auth_monitor/js/copy.js" %}
 {% endblock %}

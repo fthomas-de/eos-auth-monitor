@@ -14,7 +14,10 @@ Last updated 2026-09-29.
   and pushed with it.
 - Migrations **0001-0004** applied in `aa_dev` (0004 only renames the ESI
   switch, a no-op in SQL).
-- 187 tests without the translation tests, 3 translation tests, all green.
+- Migration **0005** (drops the smart filter's table, adds `view_own`) is
+  written but **not applied** in `aa_dev` until the user says yes.
+- 214 tests without the translation tests (working tree after 0.0.1; 187 at
+  0.0.1), 3 translation tests, all green.
   Every check, access rule and feature was counter-checked against broken
   code (a sabotage that stays green means the test is too weak - it happened
   five times and each was fixed; the latest features went nine for nine).
@@ -26,16 +29,19 @@ Last updated 2026-09-29.
 
 | Page | Permission | What |
 |---|---|---|
-| Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares) and one tile per Corporation, most problems first, with a filter box; each tile lists mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
-| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Service tiles, then own mains as cards (most problems first) with problem keywords, members whose main is elsewhere, members not registered in Auth as cards |
-| Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), every character, each problem with description and detail |
-| Corporation service | as Corporation | All characters of the Corporation's accounts, linked yes/no, problem characters marked |
+| Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares), then the Corporations, most problems first, as tiles or as a table (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
+| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Service tiles, a to-do list (per failed character check the mains concerned with the check's hint, plus the unregistered members; each with a copy button for an EVE mail), mains with problems as cards, the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
+| Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to the app), the others folded away in a `<details>` |
+| Corporation service | as Corporation | One row per main of the Corporation, linked yes/no, no problems |
 | Service | `view_all` | Every main of the Alliance, linked yes/no |
+| My account (`own_account`) | `view_own` | The viewer's own account on `account.html` with `own=True`: service tiles without links, no Corporation header, the problems with hints; a notice when the account is not in the snapshot. `view_own` alone is sent here from the index |
 | Settings | `manage_settings` | Alliance (Tom Select), stale limit, ESI member lists on/off (also switches the roles call), check and service switches, corptools sections and scopes |
 | Rebuild (POST) / progress (JSON) | `view_all` or `manage_settings` / any app permission | Start the task / state for the progress bar |
 
 Every page has a footer with the cost of the last rebuild (`view_all` or
-`manage_settings` only).
+`manage_settings` only). The header reads "Auth Monitor (version)" with the
+page's name below it (`views.LOCATIONS`, by template; the service lists
+show the service's label instead).
 
 Code layout: `checks.py` (registry of checks, groups, services),
 `sources/` (one reader per foreign app, read only; `members.py` holds the two
@@ -43,11 +49,15 @@ ESI calls: member list and roles), `snapshot.py` (builds the JSON, run by
 `tasks.update_snapshot`), `metrics.py` (times and counts a build, stored under
 `metrics` in the snapshot), `progress.py` (task state in the cache),
 `report.py` (labels, counts, percentages, sort orders for the templates),
-`smart_filters.py` + `models.AccountProblemsFilter` (securegroups),
 `views.py`, `forms.py`. JS: `tables.js` (DataTables), `progress.js`,
-`searchable.js` (Tom Select), `filter.js` (live filter of the overview tiles).
-Partials: `gauge.html` (a statistic tile), `corporation-rows.html`,
-`metrics.html`. Translations: `tools/glossary.py`, `tools/translate.py`.
+`searchable.js` (Tom Select), `filter.js` (live filter and problems switch of
+the overview), `view.js` (tiles or table), `copy.js` (copy buttons, with an
+`execCommand` fallback for plain HTTP). Partials: `gauge.html` (a statistic
+tile), `corporation-rows.html`, `metrics.html`, `problem-count.html`,
+`no-director.html`, `problem-hint.html`, `copy-button.html`,
+`service-icons.html`, `row-title.html` (tooltip of a tile row or table cell).
+The hint of each check is `Check.hint` with `Check.fix_url` (a URL name,
+dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.py`, `tools/translate.py`.
 
 ## Decisions the user made
 
@@ -92,15 +102,32 @@ Partials: `gauge.html` (a statistic tile), `corporation-rows.html`,
 - The account page shows the account's own service links as green/red tiles
   and no longer the Corporation's shares in the header.
 - Translations in de, ru, zh_Hans at every `/commit`, like eos-invoices.
-- **Cockpit tiles without a page of their own** (Character Audit, Corporation
-  Audit, Structures) link to Auth's `/services/`. The Members registered tile
-  and the Corporation tile rows have no link of their own.
+- **Cockpit tiles without a page of their own** link to the app they count:
+  Character Audit to `corptools:react`, Corporation Audit to
+  `corptools:corp_react`, Structures to `structures:index` (no longer Auth's
+  `/services/`, changed 2026-09-29). A URL that does not resolve leaves the
+  tile unlinked. The Members registered tile and the Corporation tile rows
+  have no link of their own.
+- **Service lists show mains only** (one link per account), without problem
+  badges; all table columns are left-aligned.
 - **"No Director token"** marks a Corporation where no Director's token could
-  read the roles: a badge on the overview tile and the Corporation page, *not*
+  read the roles: a small info icon with the explanation as tooltip beside the
+  name (tile, table line, Corporation page; a badge until 2026-09-29), *not*
   a problem - no percentage, sorting or border colour changes. Set only while
   the ESI switch and the Director check are on; a Corporation of the Alliance
   without any account in Auth is asked as well.
 - The ESI switch is called **Fetch data from ESI** (it also covers the roles).
+- **Readability** (the aim: a compact overview for the Alliance's leadership
+  and for each CEO): overview as tiles or table, *Only with problems*,
+  problem count per tile; on the Corporation page a to-do list with copy
+  buttons, cards only for mains with problems, compact lists for the rest and
+  the unregistered; on the account page a hint per problem and the
+  characters without problems folded away. The Connections tile stays.
+- **Page header**: "Auth Monitor (version)", below it the page; a service
+  list is named after its service.
+- **Smart filter removed** ("erstmal streichen"): it failed every account
+  without a snapshot. It may come back later, then without that failure.
+- **Members** get `view_own` and *My account* - their own account only.
 
 ## Pitfalls found
 
@@ -137,22 +164,29 @@ Partials: `gauge.html` (a statistic tile), `corporation-rows.html`,
 
 ## Open points / next steps
 
-- Nothing was looked at in a browser: the pages need a login. `filter.js`, the
-  tiles and the footer are covered by tests of the rendered HTML only.
+- Nothing was looked at in a browser: the pages need a login. The JS files
+  (`filter.js`, `view.js`, `copy.js`), the tiles, the table and the footer are
+  covered by tests of the rendered HTML only.
 - The service lists behind a tile show the registered mains only, while the
   tile's total also counts unknown members.
 - A Director whose roles neither corptools nor ESI (no Director token in the
   Corporation) could read is not found; such Corporations carry the marker
-  "No Director token". In the dev instance 31 of 32 Corporations have it, so
-  the badge is nearly everywhere there - the user has not yet judged whether
-  it should be quieter (e.g. only where Auth knows mains).
+  "No Director token". In the dev instance 31 of 32 Corporations have it; the
+  user chose a quiet info icon over a badge (2026-09-29).
 - Performance with a large Alliance is untested; the footer with the build
   figures is there to measure it. The character check reads all tokens with
   their scopes in one query; the member lists and roles cost up to two ESI
   calls per Corporation per run (cached by django-esi).
-- The `allianceauth>=5.0` bound was checked by reading the tags, never run
-  against 5.0 itself.
+- The `allianceauth>=5.1.4` bound (migration 0002 needs `eveonline` 0025,
+  first in 5.1.4) was checked by reading the tags, never run against 5.1.4.
 - The translations are machine-generated: a native speaker should read them.
+- Checklist review of 2026-09-29 (working tree after 0.0.1): README
+  mismatches, the AA floor, the Members registered link, the broker outage
+  (now a message, `progress.withdrawn()`), the member tier (`view_own`) and the
+  smart filter (removed) are done. Still open, the user chose not to do them
+  for now: failed ESI tokens are retried every run and spend the error limit,
+  roles are asked for every Corporation any alt is in; no CI; the
+  token-by-scope query and per-Corporation queries at scale.
 
 ## Dev instance
 

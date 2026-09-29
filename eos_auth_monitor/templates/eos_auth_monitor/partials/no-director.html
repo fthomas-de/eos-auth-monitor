@@ -1,0 +1,9 @@
+{% load i18n %}
+{# Not a problem of the Corporation: the check cannot see its Directors, a gap in the monitoring - so a quiet mark, not a badge. #}
+{# z-2 lifts it above a tile's stretched link, or the tooltip would never show. #}
+{% if corporation.no_director_token %}
+    {% translate "No Director token" as marker_label %}
+    {% translate "No Director of this Corporation has a token that can read its roles, so Directors without a token go unseen here." as marker_text %}
+    <i class="fas fa-circle-info text-info position-relative z-2 eos-auth-monitor-no-director" role="img"
+       title="{{ marker_label }}: {{ marker_text }}" aria-label="{{ marker_label }}: {{ marker_text }}"></i>
+{% endif %}

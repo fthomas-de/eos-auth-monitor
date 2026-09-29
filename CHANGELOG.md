@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The page header names the page under the app's name: Corporation overview,
+  Corporation details, Main details, the settings; a service list is named
+  after its service (Discord, Mumble, QQ, Telegram).
+- The overview shows the Corporations as tiles or as a sortable table, one
+  line per Corporation; the browser remembers the choice.
+- A switch above the overview shows only the Corporations with problems.
+- Each Corporation tile shows the number of accounts with problems, and the
+  Corporation's own problems beside it.
+- The Corporation page starts with a to-do list: per failed check the mains
+  it concerns and what they have to do, and the members not registered in
+  Auth. A button per group copies the names for an EVE mail.
+- Every check has a hint what to do about it, with a link to the app where it
+  is done, on the account page and for the Corporation's own problems.
+- Permission `view_own` and the page *My account*: a member sees their own
+  account - characters, problems, what to do - and nothing about others.
+- Saving the settings or *Rebuild now* while the task queue is unreachable
+  says so instead of failing with an error page; the progress bar is not left
+  waiting.
+
+### Changed
+
+- On the Corporation page only the mains with problems get a card; the
+  others, and the members not registered in Auth, are a compact list.
+- The account page lists the characters with problems; those without are
+  folded away below it.
+- *No Director token* is a small info mark with a tooltip beside the name
+  instead of a badge.
+- Alliance Auth 5.1.4 is the minimum: migration 0002 needs `eveonline` 0025,
+  which 5.0.0 to 5.1.3 lack.
+- The README describes what the ESI calls use and cost, what `basic_access`
+  reveals, installing a tag, and a complete uninstall.
+
+### Removed
+
+- The smart filter for allianceauth-securegroups. Without a result every
+  account failed it, and a smart group would have removed all its members.
+  Migration 0005 drops its table: remove the filter from every smart group and
+  delete it before upgrading.
+
+- The cockpit tiles Character Audit complete and Corporation Audit working
+  link to corptools, Structures working to aa-structures, instead of Auth's
+  services page. A tile whose app is not installed has no link.
+- The version stands in brackets beside the app's name.
+- The service list of a Corporation shows one row per main, as a service
+  links an account and not each character, and no longer shows problems.
+- Every table column is left-aligned; DataTables put the service and
+  problem columns to the right.
+
+### Fixed
+
+- The Members registered tile of the cockpit linked to the list of the
+  service tile before it.
+
 ## [0.0.1] - 2026-09-29
 
 ### Added

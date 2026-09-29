@@ -31,10 +31,17 @@ class Check:
     scope: str
     label: str
     description: str
+    # what someone has to do about it, and the page of the app where it is done
+    hint: str = ""
+    fix_url: str | None = None
 
     @property
     def is_installed(self) -> bool:
         return GROUPS_BY_KEY[self.group].is_installed
+
+    @property
+    def app_title(self) -> str:
+        return GROUPS_BY_KEY[self.group].title
 
 
 @dataclass(frozen=True)
@@ -73,6 +80,8 @@ CHECKS = (
         CHARACTER,
         _("Audit missing"),
         _("The character has no corptools Character Audit."),
+        hint=_("The player adds this character in the corptools Character Audit."),
+        fix_url="corptools:react",
     ),
     Check(
         "char_scopes_missing",
@@ -80,6 +89,11 @@ CHECKS = (
         CHARACTER,
         _("Scopes missing"),
         _("None of the character's tokens carries all scopes corptools asks for."),
+        hint=_(
+            "The player adds this character in the corptools Character Audit again "
+            "and grants every scope it asks for."
+        ),
+        fix_url="corptools:react",
     ),
     Check(
         "char_audit_inactive",
@@ -87,6 +101,8 @@ CHECKS = (
         CHARACTER,
         _("Audit inactive"),
         _("corptools marks the audit inactive: a section has not updated for too long."),
+        hint=_("The next corptools update usually clears this; if it stays, the player adds the character again."),
+        fix_url="corptools:react",
     ),
     Check(
         "char_director_token_missing",
@@ -97,6 +113,8 @@ CHECKS = (
             "The character is a Director of its Corporation, but none of its tokens carries "
             "all scopes corptools needs for the Corporation audit."
         ),
+        hint=_("The Director adds a Corporation token in the corptools Corporation Audit."),
+        fix_url="corptools:corp_react",
     ),
     Check(
         "corp_audit_missing",
@@ -104,6 +122,8 @@ CHECKS = (
         CORPORATION,
         _("Corporation audit missing"),
         _("The Corporation has no corptools Corporation Audit."),
+        hint=_("A Director adds the Corporation in the corptools Corporation Audit."),
+        fix_url="corptools:corp_react",
     ),
     Check(
         "corp_token_missing",
@@ -111,6 +131,8 @@ CHECKS = (
         CORPORATION,
         _("Corporation token missing"),
         _("No character of the Corporation has a token with the scopes the Corporation audit needs."),
+        hint=_("A Director adds a Corporation token in the corptools Corporation Audit."),
+        fix_url="corptools:corp_react",
     ),
     Check(
         "corp_data_stale",
@@ -118,6 +140,11 @@ CHECKS = (
         CORPORATION,
         _("Corporation data stale"),
         _("A section of the Corporation audit has not updated within the limit."),
+        hint=_(
+            "A Director checks the Corporation token in the corptools Corporation Audit "
+            "and adds a new one if it lost its roles."
+        ),
+        fix_url="corptools:corp_react",
     ),
     Check(
         "structures_no_owner",
@@ -125,6 +152,8 @@ CHECKS = (
         CORPORATION,
         _("No structure owner"),
         _("The Corporation is not set up as an owner in aa-structures."),
+        hint=_("A character with the Station Manager role adds the Corporation as an owner in aa-structures."),
+        fix_url="structures:index",
     ),
     Check(
         "structures_owner_inactive",
@@ -132,6 +161,7 @@ CHECKS = (
         CORPORATION,
         _("Structure owner inactive"),
         _("The aa-structures owner of the Corporation is switched off."),
+        hint=_("An admin switches the owner on again in the aa-structures admin."),
     ),
     Check(
         "structures_no_character",
@@ -139,6 +169,8 @@ CHECKS = (
         CORPORATION,
         _("No structure owner character"),
         _("The aa-structures owner has no enabled character left to fetch data with."),
+        hint=_("A character with the Station Manager role adds itself to the owner in aa-structures."),
+        fix_url="structures:index",
     ),
     Check(
         "structures_sync_failing",
@@ -146,6 +178,8 @@ CHECKS = (
         CORPORATION,
         _("Structure sync failing"),
         _("aa-structures reports a sync that is not up to date."),
+        hint=_("Check the owner in aa-structures: its characters may have lost the Station Manager role."),
+        fix_url="structures:index",
     ),
 )
 CHECKS_BY_KEY = {check.key: check for check in CHECKS}

@@ -13,6 +13,7 @@ urlpatterns = [
         name="corporation_service",
     ),
     path("account/<int:user_id>/", views.account, name="account"),
+    path("account/own/", views.own_account, name="own_account"),
     path("service/<str:service_key>/", views.service, name="service"),
     path("settings/", views.settings, name="settings"),
     path("rebuild/", views.rebuild, name="rebuild"),

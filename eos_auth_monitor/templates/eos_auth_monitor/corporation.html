@@ -20,43 +20,95 @@
                 </div>
             {% endif %}
 
+            {% if corporation.todos or corporation.unregistered %}
+                {# what the leadership can chase, grouped so that one EVE mail reaches everyone concerned #}
+                <div class="card border-danger mb-4 eos-auth-monitor-todos">
+                    <div class="card-header">
+                        <div class="card-title mb-0"><i class="fas fa-list-check"></i> {% translate "To do" %}</div>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for todo in corporation.todos %}
+                            <li class="list-group-item">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                    <span class="badge text-bg-danger text-wrap" title="{{ todo.check.description }}">{{ todo.check.label }}</span>
+                                    <span class="badge text-bg-secondary">{{ todo.accounts|length }}</span>
+                                    <span class="small text-body-secondary me-auto">{{ todo.check.hint }}</span>
+                                    {% include "eos_auth_monitor/partials/copy-button.html" with names=todo.names %}
+                                </div>
+                                <div class="small text-break">
+                                    {% for account in todo.accounts %}<a href="{% url 'eos_auth_monitor:account' account.user_id %}">{{ account.main_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                        {% if corporation.unregistered %}
+                            <li class="list-group-item">
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <span class="badge text-bg-danger text-wrap">{% translate "Not registered in Auth" %}</span>
+                                    <span class="badge text-bg-secondary">{{ corporation.unregistered|length }}</span>
+                                    <span class="small text-body-secondary me-auto">
+                                        {% translate "These members have no account in Auth yet: they register and add their characters." %}
+                                        <a href="#eos-auth-monitor-unregistered" class="text-nowrap">{% translate "List" %}</a>
+                                    </span>
+                                    {% include "eos_auth_monitor/partials/copy-button.html" with names=corporation.unregistered_names %}
+                                </div>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endif %}
+
             <h6>{% translate "Mains of this Corporation" %} <span class="badge text-bg-secondary">{{ corporation.mains }}</span></h6>
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3 mb-4">
-                {% for account in corporation.accounts_by_problems %}
-                    <div class="col">
-                        <div class="card h-100 {% if account.has_problems %}border-danger{% endif %}">
-                            <div class="card-body position-relative d-flex align-items-start gap-3">
-                                <img src="{{ account.main_id|character_portrait_url:64 }}" width="48" height="48" class="rounded flex-shrink-0" alt="">
-                                <div class="flex-grow-1 overflow-hidden">
-                                    <h6 class="mb-1 text-truncate">
-                                        <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="stretched-link text-reset text-decoration-none">{{ account.main_name }}</a>
-                                    </h6>
-                                    <div class="small text-body-secondary mb-1">
-                                        {% blocktranslate count counter=account.characters|length context "EVE jargon" %}{{ counter }} character{% plural %}{{ counter }} characters{% endblocktranslate %}
-                                    </div>
-                                    <div class="d-flex flex-wrap gap-1">
-                                        {% for check in account.keywords %}
-                                            <span class="badge text-bg-danger text-wrap">{{ check.label }}</span>
-                                        {% empty %}
-                                            <span class="badge text-bg-success">{% translate "No problems" %}</span>
-                                        {% endfor %}
-                                    </div>
-                                    {% if account.services %}
-                                        <div class="mt-2">
-                                            {% for link in account.services %}
-                                                <i class="{{ link.service.icon }} me-1 {% if link.linked %}text-success{% else %}text-body-tertiary{% endif %}"
-                                                   title="{{ link.service.label }}: {% if link.linked %}{% translate 'linked' %}{% else %}{% translate 'not linked' %}{% endif %}"></i>
-                                            {% endfor %}
+            {% if corporation.problem_accounts %}
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3 mb-3">
+                    {% for account in corporation.accounts_by_problems %}
+                        {% if account.has_problems %}
+                            <div class="col">
+                                <div class="card h-100 border-danger">
+                                    <div class="card-body position-relative d-flex align-items-start gap-3">
+                                        <img src="{{ account.main_id|character_portrait_url:64 }}" width="48" height="48" class="rounded flex-shrink-0" alt="">
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <h6 class="mb-1 text-truncate">
+                                                <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="stretched-link text-reset text-decoration-none">{{ account.main_name }}</a>
+                                            </h6>
+                                            <div class="small text-body-secondary mb-1">
+                                                {% blocktranslate count counter=account.characters|length context "EVE jargon" %}{{ counter }} character{% plural %}{{ counter }} characters{% endblocktranslate %}
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                {% for check in account.keywords %}
+                                                    <span class="badge text-bg-danger text-wrap">{{ check.label }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            {% include "eos_auth_monitor/partials/service-icons.html" %}
                                         </div>
-                                    {% endif %}
+                                    </div>
                                 </div>
                             </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if corporation.problem_free_accounts %}
+                {# a line each: only the mains with problems need the room of a card #}
+                <div class="card mb-4 eos-auth-monitor-problem-free">
+                    <div class="card-header small">
+                        <i class="fas fa-circle-check text-success"></i> {% translate "Without problems" %}
+                        <span class="badge text-bg-secondary">{{ corporation.problem_free_accounts|length }}</span>
+                    </div>
+                    <div class="card-body py-2">
+                        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-2 small">
+                            {% for account in corporation.problem_free_accounts %}
+                                <div class="col d-flex align-items-center gap-2">
+                                    <img src="{{ account.main_id|character_portrait_url:32 }}" width="24" height="24" class="rounded flex-shrink-0" alt="">
+                                    <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="text-truncate">{{ account.main_name }}</a>
+                                    <span class="ms-auto text-nowrap">{% include "eos_auth_monitor/partials/service-icons.html" with inline=True %}</span>
+                                </div>
+                            {% endfor %}
                         </div>
                     </div>
-                {% empty %}
-                    <div class="col"><div class="alert alert-info mb-0">{% translate "No main of this Corporation is registered in Auth." %}</div></div>
-                {% endfor %}
-            </div>
+                </div>
+            {% elif not corporation.accounts %}
+                <div class="alert alert-info mb-4">{% translate "No main of this Corporation is registered in Auth." %}</div>
+            {% endif %}
 
             {% if corporation.other_mains %}
                 <h6>{% translate "Members whose main is in another Corporation" %} <span class="badge text-bg-secondary">{{ corporation.other_mains|length }}</span></h6>
@@ -87,23 +139,25 @@
                     </div>
                 {% endif %}
             {% else %}
-                <h6>{% translate "Not registered in Auth" %} <span class="badge {% if corporation.unregistered %}text-bg-danger{% else %}text-bg-success{% endif %}">{{ corporation.unregistered|length }}</span></h6>
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-2" id="eos-auth-monitor-unregistered">
+                    <h6 class="mb-0 me-auto">{% translate "Not registered in Auth" %} <span class="badge {% if corporation.unregistered %}text-bg-danger{% else %}text-bg-success{% endif %}">{{ corporation.unregistered|length }}</span></h6>
+                    {% if corporation.unregistered %}
+                        {% include "eos_auth_monitor/partials/copy-button.html" with names=corporation.unregistered_names %}
+                    {% endif %}
+                </div>
                 {% if corporation.unregistered %}
-                    {# each one counts as a main of its own, so it gets the card of a main #}
-                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3">
-                        {% for character in corporation.unregistered %}
-                            <div class="col">
-                                <div class="card h-100 border-danger">
-                                    <div class="card-body d-flex align-items-start gap-3">
-                                        <img src="{{ character.id|character_portrait_url:64 }}" width="48" height="48" class="rounded flex-shrink-0" alt="">
-                                        <div class="flex-grow-1 overflow-hidden">
-                                            <h6 class="mb-1 text-truncate">{{ character.name }}</h6>
-                                            <span class="badge text-bg-danger text-wrap">{% translate "Not registered in Auth" %}</span>
-                                        </div>
+                    {# each one counts as a main of its own; a line each keeps a large Corporation readable #}
+                    <div class="card border-danger eos-auth-monitor-unregistered">
+                        <div class="card-body py-2">
+                            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-2 small">
+                                {% for character in corporation.unregistered %}
+                                    <div class="col d-flex align-items-center gap-2">
+                                        <img src="{{ character.id|character_portrait_url:32 }}" width="24" height="24" class="rounded flex-shrink-0" alt="">
+                                        <span class="text-truncate">{{ character.name }}</span>
                                     </div>
-                                </div>
+                                {% endfor %}
                             </div>
-                        {% endfor %}
+                        </div>
                     </div>
                 {% endif %}
             {% endif %}
