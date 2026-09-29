@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-09-29
+
 ### Added
 
 - With *Only characters in the Alliance* on, the account page and *My
