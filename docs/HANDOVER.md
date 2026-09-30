@@ -8,32 +8,34 @@ Last updated 2026-09-30.
 
 ## Release
 
-- Version **0.0.8** of 2026-09-30, tagged `v0.0.8` on the release commit and
-  pushed with it together with 0.0.7 and `v0.0.7`: the 0.0.7 release commit
-  and tag had stayed local (`origin/main` was still at 0.0.6) and went out
-  with this push. New in 0.0.8, see `CHANGELOG.md`:
-  - **Dashboard widgets named** *My account* and *My Corporation*, the
-    msgids of the navbar tabs.
-  - **Scope lists cut after two** (`Check.lists_scopes`, `report.shorten`,
-    `Problem.full_detail` as tooltip on the account pages).
-  - **Notice to members** (`MonitorConfiguration.member_notice`, migration
-    0008, `partials/member-notice.html`, a card on the settings page).
-  Migration 0008, no new permission, no new static file.
-- New in 0.0.7: the smart filter `CharacterProblemsFilter` (migration 0007),
-  the Corporation header linking to aa-charlink, the check tiles of the
+- Version **0.0.9** of 2026-09-30, tagged `v0.0.9` (annotated, like every
+  release tag) on the release commit and pushed with it. New in 0.0.9, see
+  `CHANGELOG.md`:
+  - **Sovereignty scope to corptools**: a *Director token missing* problem
+    lacking `esi-structures.read_corporation.v1` shows the corptools hint
+    (*Add Token*, every box ticked) and links to the Corporation Audit
+    instead of CharLink (`Check.beyond_charlink`, `Problem.beyond_charlink`,
+    `Todo.beyond_charlink`); the link without CharLink reads *corptools -
+    Corporation Audit* (`Check.fix_group`).
+  - **Dashboard widgets green or red** (`border-success` / `border-danger`).
+  No migration, no new permission, no new static file.
+- New in 0.0.8: dashboard widgets named *My account* and *My Corporation*,
+  scope lists cut after two, the notice to members (migration 0008). New in
+  0.0.7: the smart filter `CharacterProblemsFilter` (migration 0007), the
+  Corporation header linking to aa-charlink, the check tiles of the
   Corporation page, character names linking to the Character Audit, Discord,
   QQ and Telegram voluntary.
 - Migrations **0001-0008** applied in `aa_dev` (0008 adds `member_notice`; 0007 adds
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 329 tests without the translation tests, 4 translation tests, all green;
+- 335 tests without the translation tests, 4 translation tests, all green;
   one of them (`test_should_find_the_page_of_the_installed_charlink`) runs
   only with aa-charlink installed. Every check, access rule and feature was
   counter-checked against broken code (a sabotage that stays green means the
   test is too weak - it happened six times and each was fixed; 0.0.2 went 34
   for 34, 0.0.3 31 for 31, 0.0.4 3 for 3, 0.0.5 11 for 11, 0.0.6 41 for 41,
-  0.0.7 11 for 11, 0.0.8 16 for 16).
+  0.0.7 11 for 11, 0.0.8 16 for 16, 0.0.9 7 for 7).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -51,7 +53,7 @@ Last updated 2026-09-30.
 | Character Audit list (`character_audit`) | `view_all` | Every main of the Alliance with a tag per failed character check (`Account.keyword_counts`, "×n" for n characters), most problems first; 404 without character checks |
 | Director list (`directors/<group>`) | `view_all` | For `corptools_corporations` and `structures`: every Director of the Alliance's Corporations with Corporation, main (linked where the account is in the overview, *not in Auth* tag otherwise) and token yes/no, those without first; a notice without ESI (corptools' Directors only) or where roles were unreadable; 404 when no check of the group ran |
 | My account (`own_account`) | `view_own` | The viewer's own account on `account.html` with `own=True`: service tiles linking to Alliance Auth's `services:services`, no Corporation header, the problems with hints linking to aa-charlink (the check's app without it), the left-out count; a notice when the account is not in the snapshot. `view_own` alone is sent here from the index |
-| Dashboard widgets (`views.dashboard_own`, `views.dashboard_corporation`) | `view_own` / `basic_access` | On Alliance Auth's dashboard, order 4 like eos-invoices, own before Corporation (registration order). Own: failed checks with the number of characters (`Account.keyword_counts`), service icons, link to My account. Corporation: its own problems, each to-do group with the number of mains, the unregistered count, link to the Corporation page. `""` without the permission or when the snapshot has nothing about the viewer |
+| Dashboard widgets (`views.dashboard_own`, `views.dashboard_corporation`) | `view_own` / `basic_access` | On Alliance Auth's dashboard, order 4 like eos-invoices, own before Corporation (registration order). Own: failed checks with the number of characters (`Account.keyword_counts`), service icons, link to My account. Corporation: its own problems, each to-do group with the number of mains, the unregistered count, link to the Corporation page. Red border with anything to do, green without. `""` without the permission or when the snapshot has nothing about the viewer |
 | Settings | `manage_settings` | Alliance (Tom Select), stale limit, ESI member lists on/off (also switches the roles call), only characters in the Alliance on/off, check and service switches, corptools sections and scopes, the notice to members (saving only a changed notice starts no rebuild: `form.changed_data`) |
 | Rebuild (POST) / progress (JSON) | `view_all` or `manage_settings` / any app permission | Start the task / state for the progress bar |
 
@@ -397,16 +399,31 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 
 ## Open points / next steps
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.8 are to be deployed, with
+- Production still runs 0.0.5: 0.0.6 to 0.0.9 are to be deployed, with
   migrations 0007 and 0008. After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
   without a snapshot it fails everyone.
+- **A CEO does not see the *My Corporation* widget** (reported for
+  production, cause not found). The dev instance renders it (for `E_o`, a
+  superuser). The widget hides silently, with no error, when the viewer lacks
+  `basic_access` - with `view_all` alone the navbar tab shows but the widget
+  does not -, has no main, or the main's Corporation is not in the snapshot
+  (not in the Alliance, or joined after the last rebuild). Next step: ask how
+  that CEO gets their permissions and whether the tab and the Corporation page
+  work for them, or run a diagnosis for that user in production.
+- BigBlackout C (2115475367, Ether Element, account 2) was added through
+  CharLink at 10:32 UTC: token 19 has 48 scopes, all but
+  `esi-structures.read_corporation.v1`. The stored snapshot is older, so the
+  page does not show it yet. Next step: *Rebuild now*, check that the problem
+  links to the Corporation Audit, then add the token there with *Add Token*
+  and every box ticked, and rebuild again.
+- The two corptools bugs under *Pitfalls found* (two `CORP_REQUIRED_SCOPES`,
+  `_corp_scopes_base` grown in place) are not reported upstream; the user
+  may want an issue text.
 - The smart filter was never created in the admin nor bound to a smart group,
   in dev or production; only its `audit_filter`/`process_filter` are tested.
-- The Director lists were never seen with real data: the dev snapshot is of
-  2026-09-29 19:32 UTC, from before them (no beat runs in the dev instance,
-  see below). Next step: *Rebuild now* in the dev instance and look at
-  `directors/corptools_corporations` for Ether Element (14 Directors by ESI).
+- The Director lists have data now (dev snapshot of 2026-09-30 10:07 UTC: E
+  'o with both tokens) but were never looked at in a browser.
 - The CharLink hints name the boxes as CharLink labels them. "Character
   Audit" is corptools' default `CORPTOOLS_APP_NAME` (an installation that
   renames it sees another box). CharLink shows *Corporation Audit* only to
@@ -416,8 +433,8 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - Nothing was looked at in a browser: the pages need a login. The JS files
   (`filter.js`, `view.js`, `copy.js`), the tiles (the new check tiles
   included), the table, the footer, the navbar tabs, the two dashboard
-  widgets, the CSV download, the audit lists, the visiting cards, the notice
-  box and the scope tooltip are covered by tests of the rendered HTML (and of
+  widgets and their borders, the CSV download, the audit lists, the visiting
+  cards, the notice box, the scope tooltip and the sovereignty hint are covered by tests of the rendered HTML (and of
   the CSV bytes) only.
 - The notice to members was never filled in, in dev or production: the
   settings card is empty, so no box shows yet.
@@ -444,13 +461,14 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
   Comes), nothing switched off, ESI on, *Only characters in the Alliance*
   off, the notice empty. The Celery worker runs the 0.0.8 code since
-  2026-09-30 (restarted after migration 0008), started detached by a script (`setsid nohup
+  2026-09-30 (restarted after migration 0008, not after 0.0.9: its changes
+  are rendering only and build the same snapshot - restart it before the
+  next change to the build), started detached by a script (`setsid nohup
   ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo` in
   `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`); one worker, check
   `ps` before the next restart. **No Celery beat runs** in the dev instance,
-  so the beat entry never fires and the stored snapshot (2026-09-29 19:32 UTC)
-  stays until *Rebuild now*: it has no `directors` yet, the alts rule applies
-  to it anyway (worked out when rendering). `runserver` reloads by itself.
+  so the beat entry never fires and the stored snapshot (2026-09-30 10:07 UTC,
+  with `directors`) stays until *Rebuild now*. `runserver` reloads by itself.
   Rendered against `aa_dev`, the account's 3 problem links on *My account* go
   to `/charlink/`. Ether Element: 279 in the member list,
   290 in Auth's count, 14 Directors named by ESI; Nah vi is one of them and
