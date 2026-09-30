@@ -396,10 +396,10 @@ TRANSLATIONS = {
         'Обычно это исчезает после следующего обновления corptools; если нет, игрок заново добавляет Character.',
         '通常下一次 corptools 更新后即可恢复；如果仍然存在，玩家需重新添加该 Character。',
     ),
-    'The Director adds a Corporation token in the corptools Corporation Audit.': (
-        'Der Director fügt im corptools-Corporation-Audit einen Corporation-Token hinzu.',
-        'Director добавляет токен Corporation в аудите Corporation в corptools.',
-        '该 Director 在 corptools Corporation 审计中添加 Corporation 令牌。',
+    'The Director clicks Add Token in the corptools Corporation Audit, ticks every box and logs in with this character.': (
+        'Der Director klickt im corptools-Corporation-Audit auf Add Token, setzt alle Häkchen und loggt sich mit diesem Character ein.',
+        'Director нажимает Add Token в аудите Corporation в corptools, отмечает все флажки и входит этим Character.',
+        '该 Director 在 corptools Corporation 审计中点击 Add Token，勾选所有选项，并用此 Character 登录。',
     ),
     'A Director adds the Corporation in the corptools Corporation Audit.': (
         'Ein Director fügt die Corporation im corptools-Corporation-Audit hinzu.',
@@ -640,10 +640,10 @@ TRANSLATIONS = {
         "Нет в обзоре Auth Monitor",
         "不在 Auth Monitor 概览中",
     ),
-    'Add a Corporation token in the corptools Corporation Audit with this character.': (
-        'Füge mit diesem Character im corptools-Corporation-Audit einen Corporation-Token hinzu.',
-        'Добавь этим Character токен Corporation в аудите Corporation в corptools.',
-        '请用此 Character 在 corptools Corporation 审计中添加 Corporation 令牌。',
+    'Click Add Token in the corptools Corporation Audit, tick every box and log in with this character.': (
+        'Klicke im corptools-Corporation-Audit auf Add Token, setze alle Häkchen und logge dich mit diesem Character ein.',
+        'Нажми Add Token в аудите Corporation в corptools, отметь все флажки и войди этим Character.',
+        '请在 corptools Corporation 审计中点击 Add Token，勾选所有选项，并用此 Character 登录。',
     ),
     # My account, to the member
     'None of your characters has a problem.': (

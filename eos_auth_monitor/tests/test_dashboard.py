@@ -88,6 +88,7 @@ class TestOwnWidget(DashboardTestCase):
         self.assertRegex(html, r"Audit missing</span>\s*<span[^>]*>\s*2 characters")
         self.assertRegex(html, r"Scopes missing</span>\s*<span[^>]*>\s*1 character\s*<")
         self.assertIn("border-danger", html)
+        self.assertNotIn("border-success", html)
         # none of the other accounts of the Corporation
         self.assertNotIn("Char 3301", html)
 
@@ -111,6 +112,7 @@ class TestOwnWidget(DashboardTestCase):
 
         self.assertIn("No character of this account has a problem.", html)
         self.assertNotIn("border-danger", html)
+        self.assertIn('class="card h-100 border-success"', html)
 
     def test_should_need_view_own(self):
         # in the snapshot, so only the missing permission can hide the widget
@@ -146,6 +148,8 @@ class TestCorporationWidget(DashboardTestCase):
         # counts only, no names
         self.assertNotIn("Char 3301", html)
         self.assertNotIn("Stranger A", html)
+        self.assertIn('class="card h-100 border-danger"', html)
+        self.assertNotIn("border-success", html)
 
     def test_should_be_named_after_my_corporation(self):
         self.assertRegex(render(dashboard_corporation, self.ceo), r"<h4[^>]*>\s*My Corporation\s*</h4>")
@@ -168,6 +172,7 @@ class TestCorporationWidget(DashboardTestCase):
 
         self.assertIn("Nothing to do.", html)
         self.assertNotIn("border-danger", html)
+        self.assertIn('class="card h-100 border-success"', html)
 
     def test_should_need_basic_access(self):
         self.assertEqual(render(dashboard_corporation, self.member), "")

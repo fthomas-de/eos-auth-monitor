@@ -12,6 +12,8 @@ from django.utils.translation import gettext_lazy as _
 CHARACTER = "character"
 CORPORATION = "corporation"
 
+SOVEREIGNTY_SCOPE = "esi-structures.read_corporation.v1"
+
 
 @dataclass(frozen=True)
 class Group:
@@ -34,6 +36,8 @@ class Check:
     # what someone has to do about it, and the page of the app where it is done
     hint: str = ""
     fix_url: str | None = None
+    # the group whose page `fix_url` opens, where it is not the check's own
+    fix_group: str = ""
     # where a problem links to aa-charlink: the hint about the player (account and Corporation
     # pages) and the one for the player on My account; a check without it keeps its app
     charlink_hint: str = ""
@@ -42,6 +46,8 @@ class Check:
     own_app_hint: str = ""
     # the detail is a list of scopes: the pages name the first ones and count the rest
     lists_scopes: bool = False
+    # scopes aa-charlink never asks for: a problem missing one keeps the check's app
+    beyond_charlink: tuple[str, ...] = ()
 
     @property
     def is_installed(self) -> bool:
@@ -49,7 +55,7 @@ class Check:
 
     @property
     def app_title(self) -> str:
-        return GROUPS_BY_KEY[self.group].title
+        return GROUPS_BY_KEY[self.fix_group or self.group].title
 
 
 @dataclass(frozen=True)
@@ -149,12 +155,21 @@ CHECKS = (
             "The character is a Director of its Corporation, but none of its tokens carries "
             "all scopes corptools needs for the Corporation audit."
         ),
-        hint=_("The Director adds a Corporation token in the corptools Corporation Audit."),
+        hint=_(
+            "The Director clicks Add Token in the corptools Corporation Audit, ticks every box "
+            "and logs in with this character."
+        ),
         fix_url="corptools:corp_react",
+        fix_group="corptools_corporations",
         charlink_hint=_("The Director ticks Corporation Audit in CharLink and logs in with this character."),
         own_hint=_("Tick Corporation Audit in CharLink and log in with this character."),
-        own_app_hint=_("Add a Corporation token in the corptools Corporation Audit with this character."),
+        own_app_hint=_(
+            "Click Add Token in the corptools Corporation Audit, tick every box and log in with this character."
+        ),
         lists_scopes=True,
+        # CharLink asks for corptools' fixed list, without the sovereignty scope; only corptools'
+        # own Add Token asks for it, with Sovereignty ticked
+        beyond_charlink=(SOVEREIGNTY_SCOPE,),
     ),
     Check(
         "corp_audit_missing",

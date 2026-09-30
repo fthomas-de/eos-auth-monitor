@@ -63,11 +63,15 @@ class Problem:
     detail: str
     # the whole detail where `detail` was shortened, for the tooltip; empty otherwise
     full_detail: str = ""
+    # it lacks a scope aa-charlink never asks for: the pages send it to the check's app instead
+    beyond_charlink: bool = False
 
 
 def _problem(item: dict) -> Problem:
+    check = CHECKS_BY_KEY[item["check"]]
     detail, full = shorten(item), describe(item)
-    return Problem(CHECKS_BY_KEY[item["check"]], detail, full if full != detail else "")
+    beyond = bool(set(check.beyond_charlink) & set(item["detail"]))
+    return Problem(check, detail, full if full != detail else "", beyond)
 
 
 def _problems(items) -> list[Problem]:
@@ -209,6 +213,17 @@ class Todo:
     @property
     def names(self) -> str:
         return ", ".join(account.main_name for account in self.accounts)
+
+    @property
+    def beyond_charlink(self) -> bool:
+        """One of the group's problems needs the check's app; its way does for the others too."""
+        return any(
+            problem.beyond_charlink
+            for account in self.accounts
+            for character in account.characters
+            for problem in character.problems
+            if problem.check.key == self.check.key
+        )
 
 
 # the to-do group of the members Auth does not know; the others are check keys

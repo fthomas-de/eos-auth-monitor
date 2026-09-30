@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- *Director token missing* sends the Director to *Add Token* in the corptools
+  Corporation Audit, with every box ticked, where the token lacks
+  `esi-structures.read_corporation.v1`: aa-charlink asks for corptools' fixed
+  list of Corporation scopes, which leaves it out. Other missing scopes keep
+  the link to aa-charlink; the to-do list on the Corporation page follows the
+  same rule.
+- Both dashboard widgets have a green border when nothing is wrong, and keep
+  the red one otherwise; before, a widget without problems had none.
+
+### Fixed
+
+- Without aa-charlink, the link of *Director token missing* is labelled
+  *corptools - Corporation Audit*, the page it opens, instead of *Character
+  Audit*.
+
 ## [0.0.8] - 2026-09-30
 
 ### Added

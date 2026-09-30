@@ -2,7 +2,7 @@
 {% load evelinks %}
 {# The viewer's own account in short on Alliance Auth's dashboard, laid out like eos-invoices' widget; the details are on My account. #}
 <div id="eos-auth-monitor-dashboard-own" class="col-12 col-xl-4 mb-3">
-    <div class="card h-100 {% if account.has_problems %}border-danger{% endif %}">
+    <div class="card h-100 {% if account.has_problems %}border-danger{% else %}border-success{% endif %}">
         <div class="card-body d-flex flex-column">
             {# named after the tab it links to, so it tells itself apart from the Corporation widget beside it #}
             {% translate "My account" as widget_title %}

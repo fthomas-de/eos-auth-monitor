@@ -42,8 +42,8 @@
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                                     <span class="badge text-bg-danger text-wrap" title="{{ todo.check.description }}">{{ todo.check.label }}</span>
                                     <span class="badge text-bg-secondary">{{ todo.accounts|length }}</span>
-                                    {# the players add their characters in aa-charlink where it is installed #}
-                                    <span class="small text-body-secondary me-auto">{% if charlink_url %}{% firstof todo.check.charlink_hint todo.check.hint %}{% else %}{{ todo.check.hint }}{% endif %}</span>
+                                    {# the players add their characters in aa-charlink where it is installed - unless one of them lacks a scope CharLink never asks for #}
+                                    <span class="small text-body-secondary me-auto">{% if charlink_url and not todo.beyond_charlink %}{% firstof todo.check.charlink_hint todo.check.hint %}{% else %}{{ todo.check.hint }}{% endif %}</span>
                                     {% include "eos_auth_monitor/partials/copy-button.html" with names=todo.names %}
                                     {% include "eos_auth_monitor/partials/csv-button.html" with group=todo.check.key %}
                                 </div>

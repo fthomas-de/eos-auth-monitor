@@ -282,6 +282,25 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   snapshot) and on the Corporation page only when it is *My Corporation*
   (`nav == "corporation"`), not on the account or service pages of that
   Corporation. Empty or blanks only: no box.
+- **Members cannot rebuild** (asked and settled: "kann so bleiben"): *Rebuild
+  now* stays with `view_all` and `manage_settings`; `view_own` and
+  `basic_access` wait for the beat run or an admin's rebuild. Only the
+  progress poll is open to every app permission.
+- **Sovereignty scope goes to corptools, not CharLink** ("wenn das scope fehlt
+  soll corp audit angezeigt werden, sonst charlink ... mit allen checkmarks
+  bei add token"): a *Director token missing* problem whose scopes include
+  `esi-structures.read_corporation.v1` (`checks.SOVEREIGNTY_SCOPE`,
+  `Check.beyond_charlink`, `Problem.beyond_charlink`) shows the corptools hint
+  ("clicks Add Token ..., ticks every box") and links to
+  `corptools:corp_react`, labelled *corptools - Corporation Audit*
+  (`Check.fix_group`). Other scopes keep CharLink. The to-do group turns to
+  corptools as soon as one of its problems lacks the scope
+  (`Todo.beyond_charlink`), since that way fixes the others too. The monitor
+  keeps demanding the scope (the user: "erstmal nichts ändern").
+- **Dashboard widgets green or red** ("grünen rahmen im dashboard, wenn alles
+  passt und einen roten sonst"): `border-success` without problems,
+  `border-danger` otherwise, by the same rule as before (own: any character
+  problem; Corporation: its problems, a to-do or an unregistered member).
 
 ## Pitfalls found
 
@@ -364,6 +383,17 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   (`TestSettings.unchanged`).
 - `eos-test ... | tail -4` can end on the system-check lines printed after
   the result: grep for `^(Ran|OK|FAILED)` instead.
+- corptools 3.5.0 has **two `CORP_REQUIRED_SCOPES`**: `corptools.views`
+  (its plain *add_corp* and CharLink's *Corporation Audit* box; no
+  `esi-structures.read_corporation.v1`, with `read_starbases`) and
+  `corptools.app_settings` (used by nobody in corptools but by this app's
+  `sources.corptools.corporation_scopes()`; with the sovereignty scope,
+  without `read_starbases`). Only *Add Token* with options
+  (`add_corp_options`, Sovereignty ticked) asks for the sovereignty scope.
+  `add_corp_section` also grows `_corp_scopes_base` in place with `+=` - an
+  upstream bug, not reported yet.
+- django-esi's `Token.created` is overwritten on every refresh: a token
+  refreshed by the rebuild looks newer than the snapshot that used it.
 
 ## Open points / next steps
 

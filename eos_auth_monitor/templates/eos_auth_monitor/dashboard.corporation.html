@@ -2,7 +2,7 @@
 {% load evelinks %}
 {# The own main's Corporation in short on Alliance Auth's dashboard, for its CEO: the to-do groups of the Corporation page, counted. #}
 <div id="eos-auth-monitor-dashboard-corporation" class="col-12 col-xl-4 mb-3">
-    <div class="card h-100 {% if corporation.has_problems or corporation.unregistered %}border-danger{% endif %}">
+    <div class="card h-100 {% if corporation.has_problems or corporation.unregistered %}border-danger{% else %}border-success{% endif %}">
         <div class="card-body d-flex flex-column">
             {# named after the tab it links to, so it tells itself apart from the account widget beside it #}
             {% translate "My Corporation" as widget_title %}

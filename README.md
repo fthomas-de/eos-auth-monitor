@@ -59,7 +59,9 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   the whole list as a tooltip), which sections are stale - and
   what to do about it, with a link to
   [aa-charlink](https://github.com/Maestro-Zacht/aa-charlink) where it is
-  installed (otherwise to the app where it is done), the Corporation's own
+  installed (otherwise to the app where it is done; a Director token lacking
+  `esi-structures.read_corporation.v1`, which aa-charlink never asks for,
+  links to *Add Token* in the corptools Corporation Audit), the Corporation's own
   problems in the header as well; each character's name links to its
   corptools Character Audit; the characters without problems folded away
   below
