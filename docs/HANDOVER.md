@@ -8,20 +8,19 @@ Last updated 2026-09-30.
 
 ## Release
 
-- Version **0.0.9** of 2026-09-30, tagged `v0.0.9` (annotated, like every
-  release tag) on the release commit and pushed with it. New in 0.0.9, see
+- Version **0.0.10** of 2026-09-30, tagged `v0.0.10` (annotated, like every
+  release tag) on the release commit and pushed with it. New in 0.0.10, see
   `CHANGELOG.md`:
-  - **Sovereignty scope to corptools**: a *Director token missing* problem
-    lacking `esi-structures.read_corporation.v1` shows the corptools hint
-    (*Add Token*, every box ticked) and links to the Corporation Audit
-    instead of CharLink (`Check.beyond_charlink`, `Problem.beyond_charlink`,
-    `Todo.beyond_charlink`); the link without CharLink reads *corptools -
-    Corporation Audit* (`Check.fix_group`).
-  - **Dashboard widgets green or red** (`border-success` / `border-danger`).
-  No migration, no new permission, no new static file.
-- New in 0.0.8: dashboard widgets named *My account* and *My Corporation*,
-  scope lists cut after two, the notice to members (migration 0008). New in
-  0.0.7: the smart filter `CharacterProblemsFilter` (migration 0007), the
+  - **My account greys out unlinked QQ and Telegram** (`Service.
+    grey_when_missing`, filter `link_colour`); Discord, Mumble and the
+    account page others see stay red.
+  No migration, no new permission, no new static file, no new message.
+- New in 0.0.9: a *Director token missing* problem lacking the sovereignty
+  scope links to *Add Token* in the corptools Corporation Audit instead of
+  CharLink (`Check.beyond_charlink`), dashboard widgets green or red. New in
+  0.0.8: dashboard widgets named *My account* and *My Corporation*, scope
+  lists cut after two, the notice to members (migration 0008). New in 0.0.7:
+  the smart filter `CharacterProblemsFilter` (migration 0007), the
   Corporation header linking to aa-charlink, the check tiles of the
   Corporation page, character names linking to the Character Audit, Discord,
   QQ and Telegram voluntary.
@@ -29,13 +28,13 @@ Last updated 2026-09-30.
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 335 tests without the translation tests, 4 translation tests, all green;
+- 338 tests without the translation tests, 3 translation tests, all green;
   one of them (`test_should_find_the_page_of_the_installed_charlink`) runs
   only with aa-charlink installed. Every check, access rule and feature was
   counter-checked against broken code (a sabotage that stays green means the
   test is too weak - it happened six times and each was fixed; 0.0.2 went 34
   for 34, 0.0.3 31 for 31, 0.0.4 3 for 3, 0.0.5 11 for 11, 0.0.6 41 for 41,
-  0.0.7 11 for 11, 0.0.8 16 for 16, 0.0.9 7 for 7).
+  0.0.7 11 for 11, 0.0.8 16 for 16, 0.0.9 7 for 7, 0.0.10 4 for 4).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -406,7 +405,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 
 ## Open points / next steps
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.9 are to be deployed, with
+- Production still runs 0.0.5: 0.0.6 to 0.0.10 are to be deployed, with
   migrations 0007 and 0008. After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
   without a snapshot it fails everyone.
@@ -443,6 +442,9 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   widgets and their borders, the CSV download, the audit lists, the visiting
   cards, the notice box, the scope tooltip and the sovereignty hint are covered by tests of the rendered HTML (and of
   the CSV bytes) only.
+- Discord is voluntary like QQ and Telegram but stays red on *My account*:
+  the user named only QQ and Telegram. Asked after 0.0.10 whether Discord
+  should go grey as well, not answered yet (one flag in `checks.SERVICES`).
 - The notice to members was never filled in, in dev or production: the
   settings card is empty, so no box shows yet.
 - Checklist review of 2026-09-29 (working tree after 0.0.1): README
@@ -468,8 +470,8 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
   Comes), nothing switched off, ESI on, *Only characters in the Alliance*
   off, the notice empty. The Celery worker runs the 0.0.8 code since
-  2026-09-30 (restarted after migration 0008, not after 0.0.9: its changes
-  are rendering only and build the same snapshot - restart it before the
+  2026-09-30 (restarted after migration 0008, not after 0.0.9 or 0.0.10:
+  their changes are rendering only and build the same snapshot - restart it before the
   next change to the build), started detached by a script (`setsid nohup
   ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo` in
   `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`); one worker, check
