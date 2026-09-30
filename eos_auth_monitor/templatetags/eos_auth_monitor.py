@@ -18,3 +18,11 @@ def percent_class(percent) -> str:
     if percent >= 60:
         return "text-warning"
     return "text-danger"
+
+
+@register.filter
+def row_class(row) -> str:
+    """Text colour for a row of the overview: a voluntary service's share is shown, not rated."""
+    if row.service is not None and row.service.voluntary:
+        return "text-body-secondary"
+    return percent_class(row.percent)

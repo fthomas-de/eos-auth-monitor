@@ -95,3 +95,36 @@ class Snapshot(models.Model):
     def __str__(self):
         return f"Snapshot {self.built_at:%Y-%m-%d %H:%M}"
 
+
+class CharacterProblemsFilter(models.Model):
+    """Smart filter for allianceauth-securegroups: has any character of the account a problem?
+
+    Reads the snapshot, so it is as current as the last run of the task.
+    Same fields and methods as securegroups' own FilterBase, which is not
+    imported so the app works without securegroups. A new name rather than
+    the AccountProblemsFilter that 0005 dropped: a binding left behind from
+    0.0.1 must not come back to life on a new filter.
+    """
+
+    name = models.CharField(max_length=500)
+    description = models.CharField(max_length=500)
+    reversed_logic = models.BooleanField(
+        default=False,
+        help_text=_("Pass accounts whose characters HAVE problems instead of those without."),
+    )
+
+    class Meta:
+        verbose_name = _("Smart Filter: Auth Monitor character problems")
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return f"{self.name}: {self.description}"
+
+    def process_filter(self, user) -> bool:
+        return self.audit_filter([user])[user.pk]["check"]
+
+    def audit_filter(self, users) -> dict:
+        from .smart_filters import audit_accounts
+
+        return audit_accounts(users, self.reversed_logic)
+

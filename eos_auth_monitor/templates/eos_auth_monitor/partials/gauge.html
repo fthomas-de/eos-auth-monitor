@@ -9,7 +9,14 @@
         </div>
         <div class="small">{{ gauge.label }}</div>
         <div class="small text-body-secondary">
-            {% blocktranslate with part=gauge.part total=gauge.total %}{{ part }} of {{ total }}{% endblocktranslate %}
+            {% if gauge.problems is None %}
+                {% blocktranslate with part=gauge.part total=gauge.total %}{{ part }} of {{ total }}{% endblocktranslate %}
+            {% elif gauge.problems %}
+                {# a Corporation-level check: which of its checks failed #}
+                {% for problem in gauge.problems %}{{ problem.check.label }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            {% else %}
+                {% translate "No problems" %}
+            {% endif %}
         </div>
         {% if link %}
             <a href="{{ link }}" class="stretched-link" aria-label="{{ gauge.label }}"></a>

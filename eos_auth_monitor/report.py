@@ -329,6 +329,11 @@ class Corporation:
         return [Gauge(row.label, row.part, row.total, row.icon, row.service) for row in self.service_counts]
 
     @property
+    def check_gauges(self) -> list["Gauge"]:
+        """The apps whose checks ran as tiles, before the service tiles of the Corporation page."""
+        return [Gauge(row.label, row.part, row.total, row.icon, problems=row.problems) for row in self.check_rows]
+
+    @property
     def rows(self) -> list[Row]:
         """What the tile lists: every app that ran, with its share of complete entries."""
         return self.check_rows + self.service_counts
@@ -371,9 +376,13 @@ class Gauge:
     # the list behind a tile that is not a service's: a URL name and its arguments
     url_name: str | None = None
     url_args: tuple = ()
+    # a Corporation-level check passes or fails as a whole: None, or the problems, as on a Row
+    problems: list[Problem] | None = None
 
     @property
     def percent(self) -> int | None:
+        if self.problems is not None:
+            return 0 if self.problems else 100
         return percent(self.part, self.total)
 
     @property

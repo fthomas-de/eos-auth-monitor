@@ -31,7 +31,9 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
 - **Tiles or table**: the Corporations of the overview as tiles or as one
   sortable table line each; the browser remembers the choice
 - **Service tiles** on the overview and on each Corporation page: the share of
-  mains that linked Discord, Mumble, QQ or Telegram, each opening its list
+  mains that linked Discord, Mumble, QQ or Telegram, each opening its list;
+  on the Corporation page preceded by a tile per checked app (registered
+  members, Character Audit, Corporation Audit, Structures)
 - **One tile per Corporation**: its name as the title, the number of
   accounts with problems, below it each app with its share of complete
   entries (registered members, Character Audit, Corporation Audit,
@@ -56,9 +58,10 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   each problem - which scopes are missing, which sections are stale - and
   what to do about it, with a link to
   [aa-charlink](https://github.com/Maestro-Zacht/aa-charlink) where it is
-  installed (otherwise to the app where it is done); the Corporation's own
-  problems in the header keep the link to their app; the characters without
-  problems folded away below
+  installed (otherwise to the app where it is done), the Corporation's own
+  problems in the header as well; each character's name links to its
+  corptools Character Audit; the characters without problems folded away
+  below
 - **Service lists**: per Corporation and per service every main and whether
   it has linked that service; per service the same for the whole Alliance
 - **Audit lists** behind the cockpit tiles, for the whole Alliance: *Character
@@ -92,6 +95,9 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
 - **Settings page**: the Alliance, chosen from a searchable dropdown; a
   switch for every check, grouped by app, and for every service; which
   corptools sections and scopes the checks count
+- **Smart filter** for
+  [allianceauth-securegroups](https://github.com/Solar-Helix-Independent-Transport/allianceauth-secure-groups),
+  see [Smart filter](#smart-filter)
 - Sortable tables; the pages work on a phone
 - Checks and services of an app that is not installed are hidden
   automatically
@@ -378,11 +384,30 @@ Then restart supervisor.
 drops its table. Before upgrading, remove *Smart Filter: Auth Monitor
 problems* from every smart group and delete it in the Django admin; a
 binding left behind (*Smart Filter Catalog*) points to a table that no
-longer exists and breaks securegroups' group updates.
+longer exists and breaks securegroups' group updates. The smart filter of
+today, *Auth Monitor character problems*, is a new one with a table of its
+own (migration 0007).
+
+## Smart filter
+
+With allianceauth-securegroups installed, the Django admin offers *Smart
+Filter: Auth Monitor character problems*. It passes an account none of
+whose characters has a problem - the character checks, not the
+Corporation's own problems; alts in other Corporations count, as far as
+*Only characters in the Alliance* keeps them. *Reversed logic* passes the
+accounts that have problems instead. The group audit names the failed
+checks.
+
+The filter reads the last stored result, so it is as current as the last
+rebuild. An account the overview does not know - main outside the
+Alliance - fails either way. **Before the first result is stored,
+everyone fails**: a smart group using the filter would lose its members
+until the next rebuild, so run *Rebuild now* before binding it to a group.
 
 ## Uninstalling
 
-1. Remove the app's tables:
+1. Remove *Smart Filter: Auth Monitor character problems* from every smart
+   group and delete it in the Django admin, then remove the app's tables:
 
    ```bash
    python manage.py migrate eos_auth_monitor zero

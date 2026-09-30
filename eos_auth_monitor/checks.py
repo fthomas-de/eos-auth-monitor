@@ -34,8 +34,8 @@ class Check:
     # what someone has to do about it, and the page of the app where it is done
     hint: str = ""
     fix_url: str | None = None
-    # where a character's problem links to aa-charlink: the hint about the player (account page)
-    # and the one for the player on My account
+    # where a problem links to aa-charlink: the hint about the player (account and Corporation
+    # pages) and the one for the player on My account; a check without it keeps its app
     charlink_hint: str = ""
     own_hint: str = ""
     # My account without aa-charlink: the hint to the player, naming the check's app
@@ -56,6 +56,8 @@ class Service:
     app_label: str
     label: str
     icon: str
+    # a member may leave it out: the overview shows its share without rating it
+    voluntary: bool = False
 
     @property
     def is_installed(self) -> bool:
@@ -158,6 +160,7 @@ CHECKS = (
         _("The Corporation has no corptools Corporation Audit."),
         hint=_("A Director adds the Corporation in the corptools Corporation Audit."),
         fix_url="corptools:corp_react",
+        charlink_hint=_("A Director ticks Corporation Audit in CharLink and logs in with the Director character."),
     ),
     Check(
         "corp_token_missing",
@@ -167,6 +170,7 @@ CHECKS = (
         _("No character of the Corporation has a token with the scopes the Corporation audit needs."),
         hint=_("A Director adds a Corporation token in the corptools Corporation Audit."),
         fix_url="corptools:corp_react",
+        charlink_hint=_("A Director ticks Corporation Audit in CharLink and logs in with the Director character."),
     ),
     Check(
         "corp_data_stale",
@@ -179,6 +183,10 @@ CHECKS = (
             "and adds a new one if it lost its roles."
         ),
         fix_url="corptools:corp_react",
+        charlink_hint=_(
+            "A Director ticks Corporation Audit in CharLink and logs in again with the Director character; "
+            "the old token may have lost its roles."
+        ),
     ),
     Check(
         "structures_no_owner",
@@ -188,6 +196,7 @@ CHECKS = (
         _("The Corporation is not set up as an owner in aa-structures."),
         hint=_("A character with the Station Manager role adds the Corporation as an owner in aa-structures."),
         fix_url="structures:index",
+        charlink_hint=_("A character with the Station Manager role ticks Structures in CharLink and logs in."),
     ),
     Check(
         "structures_owner_inactive",
@@ -205,6 +214,7 @@ CHECKS = (
         _("The aa-structures owner has no enabled character left to fetch data with."),
         hint=_("A character with the Station Manager role adds itself to the owner in aa-structures."),
         fix_url="structures:index",
+        charlink_hint=_("A character with the Station Manager role ticks Structures in CharLink and logs in."),
     ),
     Check(
         "structures_sync_failing",
@@ -214,15 +224,19 @@ CHECKS = (
         _("aa-structures reports a sync that is not up to date."),
         hint=_("Check the owner in aa-structures: its characters may have lost the Station Manager role."),
         fix_url="structures:index",
+        charlink_hint=_(
+            "A character with the Station Manager role ticks Structures in CharLink and logs in again; "
+            "the owner's characters may have lost the role."
+        ),
     ),
 )
 CHECKS_BY_KEY = {check.key: check for check in CHECKS}
 
 SERVICES = (
-    Service("discord", "discord", _("Discord"), "fab fa-discord"),
+    Service("discord", "discord", _("Discord"), "fab fa-discord", voluntary=True),
     Service("mumble", "mumble", _("Mumble"), "fas fa-headset"),
-    Service("qq", "qqbot", _("QQ"), "fab fa-qq"),
-    Service("telegram", "aa_discord_telegram_bridge", _("Telegram"), "fab fa-telegram"),
+    Service("qq", "qqbot", _("QQ"), "fab fa-qq", voluntary=True),
+    Service("telegram", "aa_discord_telegram_bridge", _("Telegram"), "fab fa-telegram", voluntary=True),
 )
 SERVICES_BY_KEY = {service.key: service for service in SERVICES}
 

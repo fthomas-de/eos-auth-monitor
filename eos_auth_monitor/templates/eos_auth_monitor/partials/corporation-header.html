@@ -24,14 +24,16 @@
                         <span class="badge text-bg-warning text-wrap">{{ problem.check.label }}</span>
                         <span class="text-body-secondary">{{ problem.check.description }}</span>
                         {% if problem.detail %}<span class="text-break">({{ problem.detail }})</span>{% endif %}
-                        {% include "eos_auth_monitor/partials/problem-hint.html" %}
+                        {% include "eos_auth_monitor/partials/problem-hint.html" with charlink=charlink_url %}
                     </div>
                 {% endfor %}
             </div>
         </div>
 
-        {# the Corporation page shows the services as tiles below; every other page keeps the buttons to switch lists #}
-        {% if hide_services %}
+        {# the Corporation page shows the apps and the services as tiles below; the account page the services; #}
+        {# the service lists keep the buttons to switch lists #}
+        {% if hide_rows %}
+        {% elif hide_services %}
             {% include "eos_auth_monitor/partials/corporation-rows.html" with rows=corporation.check_rows %}
         {% else %}
             {% include "eos_auth_monitor/partials/corporation-rows.html" with rows=corporation.rows %}

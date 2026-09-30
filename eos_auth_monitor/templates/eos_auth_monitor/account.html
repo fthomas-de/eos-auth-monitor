@@ -98,7 +98,7 @@
                             {% for character in fine %}
                                 <div class="col d-flex flex-wrap align-items-center gap-2">
                                     <img src="{{ character.id|character_portrait_url:32 }}" width="24" height="24" class="rounded flex-shrink-0" alt="">
-                                    <span class="text-break">{{ character.name }}</span>
+                                    {% include "eos_auth_monitor/partials/character-name.html" %}
                                     {% if character.is_main %}<span class="badge text-bg-primary">{% translate "Main" context "EVE jargon" %}</span>{% endif %}
                                     <span class="text-body-secondary text-break">{{ character.corporation_name }} [{{ character.corporation_ticker }}]</span>
                                 </div>

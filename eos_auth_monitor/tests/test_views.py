@@ -517,11 +517,90 @@ class TestPages(ViewTestCase):
         snapshot.data["corporations"][1]["problems"] = [{"check": "corp_token_missing", "detail": []}]
         snapshot.save()
 
-        response = self.get(self.leader, "corporation", 2002)
+        # without aa-charlink, whether or not this instance has it
+        with patch("eos_auth_monitor.views._charlink_url", return_value=None):
+            response = self.get(self.leader, "corporation", 2002)
 
         self.assertContains(response, "A Director adds a Corporation token in the corptools Corporation Audit.")
         url = reverse("corptools:corp_react")
         self.assertContains(response, f'<a href="{url}" class="text-nowrap eos-auth-monitor-fix">')
+
+    CORPORATION_PROBLEMS = ["corp_token_missing", "structures_no_owner", "structures_owner_inactive"]
+
+    def header(self, name, *args, charlink):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["checks"] += self.CORPORATION_PROBLEMS
+        snapshot.data["corporations"][1]["problems"] = [{"check": key, "detail": []} for key in self.CORPORATION_PROBLEMS]
+        snapshot.save()
+        with patch("eos_auth_monitor.views._charlink_url", return_value=charlink):
+            content = self.get(self.leader, name, *args).content.decode()
+        header = content[content.index('<div class="card mb-3">'):content.index("row row-cols-1 row-cols-sm-2")]
+        links = re.findall(r'<a href="([^"]*)" class="text-nowrap eos-auth-monitor-fix">\s*([^<]*?)\s*<', header)
+        return header, links
+
+    def test_should_link_the_corporations_problems_to_charlink(self):
+        for name, *args in [("corporation", 2002), ("corporation_service", 2002, "discord"), ("account", 22)]:
+            with self.subTest(name):
+                header, links = self.header(name, *args, charlink="/charlink/")
+
+                # the owner an admin switched off is nothing CharLink can do: its hint stays, without a link
+                self.assertEqual(links, [("/charlink/", "CharLink"), ("/charlink/", "CharLink")])
+                self.assertIn(
+                    "A Director ticks Corporation Audit in CharLink and logs in with the Director character.", header
+                )
+                self.assertIn(
+                    "A character with the Station Manager role ticks Structures in CharLink and logs in.", header
+                )
+                self.assertIn("An admin switches the owner on again in the aa-structures admin.", header)
+                self.assertNotIn("in the corptools Corporation Audit.", header)
+                self.assertNotIn("adds the Corporation as an owner in aa-structures.", header)
+
+    def test_should_link_the_corporations_problems_to_their_apps_without_charlink(self):
+        # whether or not this instance has aa-charlink
+        header, links = self.header("corporation", 2002, charlink=None)
+
+        self.assertEqual(
+            links,
+            [
+                (reverse("corptools:corp_react"), "corptools - Corporation Audit"),
+                (reverse("structures:index"), "aa-structures"),
+            ],
+        )
+        self.assertNotIn("CharLink", header)
+
+    def gauge(self, content, icon, label):
+        """Percentage and the line below it of the statistic tile with `icon` and `label`."""
+        match = re.search(
+            rf'<i class="{icon} fa-lg mb-2"></i>\s*<div class="fs-3 fw-bold [^"]+">\s*(\S+)&nbsp;%\s*</div>\s*'
+            rf'<div class="small">{label}</div>\s*<div class="small text-body-secondary">\s*(.*?)\s*</div>',
+            content,
+            re.DOTALL,
+        )
+        return match.groups() if match else None
+
+    def test_should_show_the_checks_apps_as_tiles_on_the_corporation_page(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["checks"] += ["corp_token_missing", "structures_no_owner"]
+        snapshot.data["corporations"][1]["problems"] = [{"check": "corp_token_missing", "detail": []}]
+        snapshot.save()
+
+        content = self.get(self.leader, "corporation", 2002).content.decode()
+
+        self.assertEqual(self.gauge(content, "fas fa-user-check", "Character Audit"), ("0", "0 of 1"))
+        self.assertEqual(
+            self.gauge(content, "fas fa-building-circle-check", "Corporation Audit"), ("0", "Corporation token missing")
+        )
+        self.assertEqual(self.gauge(content, "fas fa-tower-broadcast", "Structures"), ("100", "No problems"))
+        # the apps come before the services, and no longer as lines in the header
+        self.assertLess(content.index('<div class="small">Structures</div>'), content.index('<div class="small">Discord</div>'))
+        header = content[content.index('<div class="card mb-3">'):content.index("row row-cols-2 row-cols-md-4")]
+        self.assertNotIn("fas fa-user-check", header)
+
+    def test_should_keep_the_checks_apps_as_lines_on_the_account_page(self):
+        content = self.get(self.leader, "account", 22).content.decode()
+
+        self.assertIsNone(self.gauge(content, "fas fa-user-check", "Character Audit"))
+        self.assertIn('<span class="text-truncate"><i class="fas fa-user-check fa-fw"></i> Character Audit</span>', content)
 
     def test_should_fold_away_the_characters_without_problems(self):
         snapshot = Snapshot.objects.get()
@@ -538,6 +617,22 @@ class TestPages(ViewTestCase):
         self.assertNotIn("Char 2202", table)
         self.assertIn("Char 2202", folded)
         self.assertIn("1 character without problems", folded)
+
+    def test_should_link_each_character_to_its_character_audit(self):
+        snapshot = Snapshot.objects.get()
+        account = snapshot.data["corporations"][1]["accounts"][0]
+        account["characters"].append(character_row(2202, corporation_id=2002))
+        snapshot.save()
+
+        response = self.get(self.leader, "account", 22)
+        content = response.content.decode()
+
+        table = content[content.index("eos-auth-monitor-sortable"):content.index("</table>")]
+        folded = content[content.index("eos-auth-monitor-problem-free"):content.index("</details>")]
+        problem_url = reverse("corptools:reactmain", args=[2201])
+        fine_url = reverse("corptools:reactmain", args=[2202])
+        self.assertIn(f'<a href="{problem_url}" class="text-break">Char 2201</a>', table)
+        self.assertIn(f'<a href="{fine_url}" class="text-break">Char 2202</a>', folded)
 
     def test_should_say_when_no_character_of_an_account_has_a_problem(self):
         response = self.get(self.leader, "account", 11)
@@ -836,7 +931,7 @@ class TestOwnAccount(ViewTestCase):
         self.assertNotContains(response, self.CHARLINK_HINT)
         self.assertNotContains(response, self.CORPTOOLS_HINT)
 
-    def test_should_keep_the_checks_app_for_the_corporations_problems_on_an_account(self):
+    def test_should_link_the_corporations_problems_to_charlink_on_an_account(self):
         snapshot = Snapshot.objects.get()
         snapshot.data["checks"].append("corp_token_missing")
         snapshot.data["corporations"][1]["problems"] = [{"check": "corp_token_missing", "detail": []}]
@@ -845,10 +940,7 @@ class TestOwnAccount(ViewTestCase):
         with patch("eos_auth_monitor.views._charlink_url", return_value="/charlink/"):
             response = self.get(self.leader, "account", self.member.pk)
 
-        self.assertEqual(
-            self.fix_links(response),
-            [(reverse("corptools:corp_react"), "corptools - Corporation Audit"), ("/charlink/", "CharLink")],
-        )
+        self.assertEqual(self.fix_links(response), [("/charlink/", "CharLink"), ("/charlink/", "CharLink")])
 
     def test_should_show_nothing_of_the_other_accounts(self):
         response = self.get(self.member, "own_account")
@@ -1314,3 +1406,41 @@ class TestDirectorList(ViewTestCase):
     def test_should_keep_everyone_but_leadership_out(self):
         self.assertEqual(self.get(self.ceo, "directors", "corptools_corporations").status_code, 302)
         self.assertEqual(self.get(self.leader, "directors", "corptools_corporations").status_code, 200)
+
+
+class TestVoluntaryServices(ViewTestCase):
+    """Discord, QQ and Telegram are up to the member: the overview's Corporations show their share without rating it."""
+
+    def setUp(self):
+        super().setUp()
+        snapshot = Snapshot.objects.get()
+        snapshot.data = snapshot_data([corporation_row(2001, [account_row(11, 1101)])], services=["discord", "mumble"])
+        snapshot.save()
+
+    def test_should_show_a_voluntary_share_uncoloured_on_the_tile(self):
+        content = self.get(self.leader, "index").content.decode()
+
+        def tile_class(icon, label):
+            match = re.search(
+                rf'<i class="{icon} fa-fw"></i> {label}</span>\s*<span class="text-nowrap fw-semibold ([^"]+)">', content
+            )
+            return match.group(1)
+
+        self.assertEqual(tile_class("fab fa-discord", "Discord"), "text-body-secondary")
+        self.assertEqual(tile_class("fas fa-headset", "Mumble"), "text-danger")
+
+    def test_should_show_a_voluntary_share_uncoloured_in_the_table(self):
+        content = self.get(self.leader, "index").content.decode()
+
+        table = content[content.index("eos-auth-monitor-overview-table"):]
+        table = table[:table.index("</table>")]
+        # the columns in service order: Discord, then Mumble
+        self.assertEqual(
+            re.findall(r'class="fw-semibold text-nowrap ([^"]+)"', table), ["text-body-secondary", "text-danger"]
+        )
+
+    def test_should_keep_the_cockpit_coloured(self):
+        content = self.get(self.leader, "index").content.decode()
+
+        match = re.search(r'<i class="fab fa-discord fa-lg mb-2"></i>\s*<div class="fs-3 fw-bold ([^"]+)">', content)
+        self.assertEqual(match.group(1), "text-danger")

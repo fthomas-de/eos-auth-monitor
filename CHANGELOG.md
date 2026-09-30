@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- On the account page and on *My account* each character's name links to its
+  corptools Character Audit.
+- Smart filter for allianceauth-securegroups, *Smart Filter: Auth Monitor
+  character problems*: passes an account none of whose characters has a
+  problem, or with *Reversed logic* one that has; the audit names the failed
+  checks. It reads the last result: an account outside the overview fails
+  either way, and so does everyone before the first result is stored.
+  Created in the Django admin; migration 0007 adds its table.
+
+### Changed
+
+- Discord, QQ and Telegram are voluntary: on the overview's Corporation tiles
+  and in its table their share is shown in grey instead of green, yellow or
+  red. Mumble keeps its colours, and so do the cockpit, the Corporation page
+  and the account page. None of the services ever counted as a problem.
+- The Corporation's own problems in the header of the Corporation pages and
+  the account page link to aa-charlink where it is installed, with a hint
+  saying which box a Director or Station Manager ticks, instead of to
+  corptools or aa-structures. *Structure owner inactive* keeps its hint
+  without a link: an admin switches the owner on in aa-structures.
+- On the Corporation page *Registered in Auth*, *Character Audit*,
+  *Corporation Audit* and *Structures* are tiles with their percentage, before
+  the service tiles, instead of lines in the header. A Corporation-level tile
+  names the failed checks below its percentage.
+
 ## [0.0.6] - 2026-09-30
 
 ### Added

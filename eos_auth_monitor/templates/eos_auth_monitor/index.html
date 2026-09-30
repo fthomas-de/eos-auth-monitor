@@ -140,7 +140,7 @@
                                         {% for row in cells %}
                                             {% if row %}
                                                 <td data-order="{% if row.percent is None %}-1{% else %}{{ row.percent }}{% endif %}"
-                                                    class="fw-semibold text-nowrap {{ row.percent|percent_class }}"
+                                                    class="fw-semibold text-nowrap {{ row|row_class }}"
                                                     title="{% include 'eos_auth_monitor/partials/row-title.html' %}">
                                                     {% if row.percent is None %}-{% else %}{{ row.percent }}&nbsp;%{% endif %}
                                                 </td>

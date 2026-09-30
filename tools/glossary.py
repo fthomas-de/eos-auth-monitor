@@ -598,6 +598,48 @@ TRANSLATIONS = {
         'Отметь Corporation Audit в CharLink и войди этим Character.',
         '请在 CharLink 中勾选 Corporation Audit，并用此 Character 登录。',
     ),
+    # CharLink hints of the Corporation's own problems (Corporation header); the box names stay as CharLink shows them
+    'A Director ticks Corporation Audit in CharLink and logs in with the Director character.': (
+        'Ein Director setzt in CharLink den Haken bei Corporation Audit und loggt sich mit dem Director-Character ein.',
+        'Director отмечает Corporation Audit в CharLink и входит своим Character-Director.',
+        '由一名 Director 在 CharLink 中勾选 Corporation Audit，并用该 Director 的 Character 登录。',
+    ),
+    'A Director ticks Corporation Audit in CharLink and logs in again with the Director character; the old token may have lost its roles.': (
+        'Ein Director setzt in CharLink den Haken bei Corporation Audit und loggt sich erneut mit dem Director-Character ein; der alte Token hat womöglich seine Rollen verloren.',
+        'Director отмечает Corporation Audit в CharLink и заново входит своим Character-Director; старый токен мог потерять роли.',
+        '由一名 Director 在 CharLink 中勾选 Corporation Audit，并重新用该 Director 的 Character 登录；旧令牌可能已失去其角色。',
+    ),
+    'A character with the Station Manager role ticks Structures in CharLink and logs in.': (
+        'Ein Character mit der Rolle Station Manager setzt in CharLink den Haken bei Structures und loggt sich ein.',
+        'Character с ролью Station Manager отмечает Structures в CharLink и входит.',
+        '由拥有 Station Manager 角色的 Character 在 CharLink 中勾选 Structures 并登录。',
+    ),
+    "A character with the Station Manager role ticks Structures in CharLink and logs in again; the owner's characters may have lost the role.": (
+        'Ein Character mit der Rolle Station Manager setzt in CharLink den Haken bei Structures und loggt sich erneut ein; die Characters des Owners haben womöglich die Rolle verloren.',
+        'Character с ролью Station Manager отмечает Structures в CharLink и заново входит; Character владельца могли потерять эту роль.',
+        '由拥有 Station Manager 角色的 Character 在 CharLink 中勾选 Structures 并重新登录；该所有者的 Character 可能已失去该角色。',
+    ),
+    # the securegroups smart filter
+    "Smart Filter: Auth Monitor character problems": (
+        "Smart Filter: Auth-Monitor-Character-Probleme",
+        "Smart Filter: проблемы Character в Auth Monitor",
+        "Smart Filter：Auth Monitor Character 问题",
+    ),
+    "Pass accounts whose characters HAVE problems instead of those without.": (
+        "Accounts durchlassen, deren Characters Probleme HABEN, statt solcher ohne.",
+        "Пропускать аккаунты, у Character которых ЕСТЬ проблемы, а не тех, у кого их нет.",
+        "放行其 Character 有问题的账号，而不是没有问题的账号。",
+    ),
+    "No Auth Monitor result yet": (
+        "Noch kein Ergebnis des Auth Monitors",
+        "Результатов Auth Monitor пока нет",
+        "Auth Monitor 尚无结果",
+    ),
+    "Not in the Auth Monitor overview": (
+        "Nicht in der Auth-Monitor-Übersicht",
+        "Нет в обзоре Auth Monitor",
+        "不在 Auth Monitor 概览中",
+    ),
     'Add a Corporation token in the corptools Corporation Audit with this character.': (
         'Füge mit diesem Character im corptools-Corporation-Audit einen Corporation-Token hinzu.',
         'Добавь этим Character токен Corporation в аудите Corporation в corptools.',

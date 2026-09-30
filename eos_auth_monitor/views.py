@@ -195,7 +195,7 @@ def account(request, user_id):
             **_state(report),
             "corporation": corporation,
             "account": account,
-            # the player fixes their characters in aa-charlink; the Corporation's own problems keep their app
+            # the player fixes their characters and the Director the Corporation's tokens in aa-charlink
             "charlink_url": _charlink_url(),
         },
         _corporation_nav(request.user, corporation.id),
@@ -241,7 +241,14 @@ def corporation_service(request, corporation_id, service_key):
     return _render(
         request,
         "eos_auth_monitor/corporation_service.html",
-        {**_state(report), "corporation": corporation, "service": service, "location": service.label},
+        {
+            **_state(report),
+            "corporation": corporation,
+            "service": service,
+            "location": service.label,
+            # the Corporation header links its problems to aa-charlink, as on the Corporation page
+            "charlink_url": _charlink_url(),
+        },
         _corporation_nav(request.user, corporation_id),
     )
 

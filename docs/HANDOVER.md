@@ -26,7 +26,8 @@ Last updated 2026-09-30.
     `Check.own_app_hint` without, German with *du*) and asks whether a
     character is missing (`partials/missing-characters.html`).
   No migration, no new permission, no new static file.
-- Migrations **0001-0006** applied in `aa_dev` (0006 adds
+- Migrations **0001-0007** applied in `aa_dev` (0007 adds
+  `CharacterProblemsFilter`, unreleased; 0006 adds
   `alliance_characters_only`; 0005 dropped the empty smart filter table - no
   filter rows, no securegroups bindings - and added `view_own`).
 - 300 tests without the translation tests, 4 translation tests, all green;
@@ -44,9 +45,9 @@ Last updated 2026-09-30.
 | Page | Permission | What |
 |---|---|---|
 | Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares), then the Corporations, most problems first, as tiles or as a table (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
-| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Service tiles, a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems as cards (a visiting main marked "Main in ...", linked only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
+| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_gauges`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems as cards (a visiting main marked "Main in ...", linked only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
-| Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems keep their app), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
+| Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
 | Corporation service | as Corporation | One row per main of the Corporation, linked yes/no, no problems |
 | Service | `view_all` | Every main of the Alliance, linked yes/no |
 | Character Audit list (`character_audit`) | `view_all` | Every main of the Alliance with a tag per failed character check (`Account.keyword_counts`, "×n" for n characters), most problems first; 404 without character checks |
@@ -70,6 +71,7 @@ gives *My Corporation* for the own Corporation and *Alliance overview* for
 any other. The sidebar keeps its one *Auth Monitor* entry.
 
 Code layout: `checks.py` (registry of checks, groups, services),
+`smart_filters.py` + `models.CharacterProblemsFilter` (securegroups),
 `sources/` (one reader per foreign app, read only; `members.py` holds the two
 ESI calls: member list and roles), `snapshot.py` (builds the JSON, run by
 `tasks.update_snapshot`), `metrics.py` (times and counts a build, stored under
@@ -194,7 +196,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - **Page header**: "Auth Monitor (version)", below it the page; a service
   list is named after its service.
 - **Smart filter removed** ("erstmal streichen"): it failed every account
-  without a snapshot. It may come back later, then without that failure.
+  without a snapshot. Back on 2026-09-30, see there.
 - **Members** get `view_own` and *My account* - their own account only.
 - **Navbar**: one tab each for the own main, the own Corporation and the
   Alliance, in that order (main > Corporation > Alliance), then Settings.
@@ -222,11 +224,51 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   the check's app stays.
 - **The account page links character problems to aa-charlink** too
   (2026-09-29, after 0.0.5), with hints about the player in the third person
-  ("The player ticks Character Audit in CharLink ..."); the Corporation
-  header's problems keep their app there and on the Corporation page. The
-  Corporation page's to-do list names CharLink as well (see below).
+  ("The player ticks Character Audit in CharLink ..."). The Corporation
+  page's to-do list names CharLink as well (see below). The Corporation
+  header kept its apps until 2026-09-30, see there.
 - Claude may apply this app's migrations to `aa_dev` and restart the dev
   Celery worker without asking.
+
+2026-09-30:
+
+- **Character names link to their corptools Character Audit** on the account
+  page and *My account* (`partials/character-name.html`,
+  `corptools:reactmain`; plain text without corptools), both in the problem
+  table and in the folded list.
+- **Discord, QQ and Telegram are voluntary** (`Service.voluntary`): on the
+  overview's Corporation tiles and in its table their share is grey
+  (`row_class` filter) instead of green/yellow/red. The user chose *only
+  there*: the cockpit, the Corporation page and the account page keep their
+  colours. **Mumble is mandatory, colour only**: it keeps its colours but, like
+  every service, is no problem (no red border, problem count or sorting).
+- **The Corporation header links its problems to aa-charlink** ("verlinke
+  charlink in corporation details und nicht structures oder corp tools"),
+  on every page that shows it (Corporation, Corporation service, account),
+  with a `Check.charlink_hint` per Corporation check: Director ticks
+  *Corporation Audit*, Station Manager ticks *Structures*. `problem-hint.html`
+  takes CharLink only for a check with a `charlink_hint`: *Structure owner
+  inactive* has none (an admin switches the owner on) and keeps its hint
+  without a link. Without aa-charlink the apps stay the links.
+- **Corporation page: the checks' apps as tiles** ("mache aus den drei
+  buttons char audit corp audit und structures, jeweils mit prozentzahl eine
+  kachel"): `Corporation.check_gauges` before the service tiles, in the same
+  grid; *Registered in Auth* goes along, being a line of the same kind. The
+  tiles have no link (the Alliance-wide lists need `view_all`). The account
+  page and the service lists keep the lines in the header.
+- **Smart filter back** ("erstelle einen smartfilter, der prüft, ob man
+  probleme auf seinem char hat"): `models.CharacterProblemsFilter` +
+  `smart_filters.audit_accounts`, hook `secure_group_filters`, admin in
+  `admin.py`, migration 0007. A new name, not the `AccountProblemsFilter`
+  0005 dropped, so a leftover 0.0.1 binding cannot attach to it. Passes an
+  account without character problems (`Account.keywords` of the whole
+  account from `Report.account()`, alts elsewhere included), *Reversed
+  logic* those with; Corporation problems do not count (the old
+  `include_corporation` is gone: the user asked about the characters).
+  **Unknown fails always**, asked and chosen by the user knowing the cost:
+  outside the overview fails either way, and without a snapshot everyone
+  fails ("No Auth Monitor result yet") - a smart group empties until the
+  next rebuild. The README says to rebuild before binding it.
 
 ## Pitfalls found
 
@@ -297,6 +339,11 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   names corptools too: assert on the hint text itself, not on "corptools".
 
 ## Open points / next steps
+
+- CharLink shows its *Structures* box only to holders of
+  `structures.add_structure_owner`, and *Corporation Audit* only to holders
+  of one of corptools' Corporation permissions: a Station Manager or Director
+  without them follows the header's link and finds no box.
 
 - Production still runs 0.0.5 until this release is deployed there: the
   corptools links on its account page, which the user reported, go away with
