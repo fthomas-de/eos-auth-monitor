@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-09-30
+
 ### Added
 
 - Lists behind the audit tiles of the cockpit: *Character Audit* shows every
