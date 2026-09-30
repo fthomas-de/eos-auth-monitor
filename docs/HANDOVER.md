@@ -8,34 +8,34 @@ Last updated 2026-09-30.
 
 ## Release
 
-- Version **0.0.6** of 2026-09-30, tagged `v0.0.6` on the release commit and
-  pushed with it, like `v0.0.1` to `v0.0.5`. New in 0.0.6, see
+- Version **0.0.7** of 2026-09-30, tagged `v0.0.7` on the release commit and
+  pushed with it, like `v0.0.1` to `v0.0.6`. New in 0.0.7, see
   `CHANGELOG.md`:
-  - **Audit lists** behind the cockpit tiles: `character_audit` (every main
-    with its failed character checks) and `directors/<group>` for
-    `corptools_corporations` and `structures` (every Director with or without
-    the app's token, *not in Auth* included). The snapshot stores
-    `directors` per Corporation (`snapshot._directors`); the roles are asked
-    when the Director check *or* a Director list needs them.
-  - **Each character counts in the Corporation it is in**
-    (`Report._characters_by_corporation`, `Corporation.visiting`), worked out
-    from the snapshot as it is.
-  - **CharLink hints** on the account page (`Check.charlink_hint`, third
-    person) and in the Corporation page's to-do list.
-  - **My account speaks to the member** (`Check.own_hint` with aa-charlink,
-    `Check.own_app_hint` without, German with *du*) and asks whether a
-    character is missing (`partials/missing-characters.html`).
-  No migration, no new permission, no new static file.
+  - **Smart filter** `CharacterProblemsFilter` for securegroups
+    (`smart_filters.py`, `admin.py`, hook `secure_group_filters`, migration
+    0007): passes an account without character problems, *Reversed logic*
+    one with; unknown accounts fail either way (see the decisions).
+  - **Corporation header links to aa-charlink** for the Corporation's own
+    problems (`Check.charlink_hint` on the Corporation checks; a check
+    without one keeps its app).
+  - **Corporation page: the checks' apps as tiles** (`Corporation.check_gauges`,
+    `Gauge.problems`), the header without rows there (`hide_rows`).
+  - **Character names link to the corptools Character Audit** on the account
+    pages (`partials/character-name.html`).
+  - **Discord, QQ and Telegram voluntary** (`Service.voluntary`, `row_class`):
+    grey on the overview's Corporation tiles and table.
+  Migration 0007, no new permission, no new static file.
 - Migrations **0001-0007** applied in `aa_dev` (0007 adds
-  `CharacterProblemsFilter`, unreleased; 0006 adds
-  `alliance_characters_only`; 0005 dropped the empty smart filter table - no
-  filter rows, no securegroups bindings - and added `view_own`).
-- 300 tests without the translation tests, 4 translation tests, all green;
+  `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
+  dropped the empty old smart filter table - no filter rows, no securegroups
+  bindings - and added `view_own`).
+- 314 tests without the translation tests, 4 translation tests, all green;
   one of them (`test_should_find_the_page_of_the_installed_charlink`) runs
   only with aa-charlink installed. Every check, access rule and feature was
   counter-checked against broken code (a sabotage that stays green means the
   test is too weak - it happened six times and each was fixed; 0.0.2 went 34
-  for 34, 0.0.3 31 for 31, 0.0.4 3 for 3, 0.0.5 11 for 11, 0.0.6 41 for 41).
+  for 34, 0.0.3 31 for 31, 0.0.4 3 for 3, 0.0.5 11 for 11, 0.0.6 41 for 41,
+  0.0.7 11 for 11).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -337,38 +337,41 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   Corporation's account needs its `corporation_id`, or it moves to 2001.
 - The Corporation page's to-do tooltips carry the check's description, which
   names corptools too: assert on the hint text itself, not on "corptools".
+- A test that cuts a page into parts must end each part at a marker that
+  is there on that page: the Corporation page's header has no rows since
+  0.0.7, so a slice up to them runs far past the header. And a check's
+  description can hold the words of its old hint ("not set up as an owner
+  in aa-structures"): assert on the hint's own sentence.
 
 ## Open points / next steps
 
-- CharLink shows its *Structures* box only to holders of
-  `structures.add_structure_owner`, and *Corporation Audit* only to holders
-  of one of corptools' Corporation permissions: a Station Manager or Director
-  without them follows the header's link and finds no box.
-
-- Production still runs 0.0.5 until this release is deployed there: the
-  corptools links on its account page, which the user reported, go away with
-  0.0.6. After deploying, *Rebuild now* (or the beat run) fills the Director
-  lists; until then they are empty.
+- Production still runs 0.0.5: 0.0.6 and 0.0.7 are to be deployed, with
+  migration 0007. After deploying, *Rebuild now* (or the beat run) fills the
+  Director lists, and only then should the smart filter be bound to a group:
+  without a snapshot it fails everyone.
+- The smart filter was never created in the admin nor bound to a smart group,
+  in dev or production; only its `audit_filter`/`process_filter` are tested.
 - The Director lists were never seen with real data: the dev snapshot is of
   2026-09-29 19:32 UTC, from before them (no beat runs in the dev instance,
   see below). Next step: *Rebuild now* in the dev instance and look at
   `directors/corptools_corporations` for Ether Element (14 Directors by ESI).
-- The CharLink hints name the boxes "Character Audit" and "Corporation
-  Audit" as CharLink labels them: the first is corptools' default
-  `CORPTOOLS_APP_NAME` (an installation that renames it sees another box),
-  the second CharLink only shows to holders of one of corptools' Corporation
-  permissions - a Director without one finds no such box.
+- The CharLink hints name the boxes as CharLink labels them. "Character
+  Audit" is corptools' default `CORPTOOLS_APP_NAME` (an installation that
+  renames it sees another box). CharLink shows *Corporation Audit* only to
+  holders of one of corptools' Corporation permissions and *Structures* only
+  to holders of `structures.add_structure_owner`: a Director or Station
+  Manager without them follows the link and finds no box.
 - Nothing was looked at in a browser: the pages need a login. The JS files
-  (`filter.js`, `view.js`, `copy.js`), the tiles, the table, the footer, the
-  navbar tabs, the two dashboard widgets, the CSV download, the audit lists
-  and the visiting cards are covered by tests of the rendered HTML (and of
-  the CSV bytes) only.
+  (`filter.js`, `view.js`, `copy.js`), the tiles (the new check tiles
+  included), the table, the footer, the navbar tabs, the two dashboard
+  widgets, the CSV download, the audit lists and the visiting cards are
+  covered by tests of the rendered HTML (and of the CSV bytes) only.
 - Checklist review of 2026-09-29 (working tree after 0.0.1): README
   mismatches, the AA floor, the Members registered link, the broker outage
-  (now a message, `progress.withdrawn()`), the member tier (`view_own`) and the
-  smart filter (removed) are done. Still open, the user chose not to do them
-  for now: failed ESI tokens are retried every run and spend the error limit.
-  (Roles for every Corporation any alt is in are gone with the Director fix.)
+  (now a message, `progress.withdrawn()`) and the member tier (`view_own`)
+  are done; the smart filter came back in 0.0.7 with the user's choice to
+  fail unknown accounts. Still open, the user chose not to do it for now:
+  failed ESI tokens are retried every run and spend the error limit.
 
 ## Dev instance
 
@@ -385,7 +388,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   The dev DB has one account and no service links: every service number is 0.
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
   Comes), nothing switched off, ESI on, *Only characters in the Alliance*
-  off. The Celery worker runs the 0.0.6 code since 2026-09-29 22:43 (WSL
+  off. The Celery worker runs the 0.0.7 code since 2026-09-30 10:25 (WSL
   clock), started detached by a script (`setsid nohup
   ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo` in
   `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`); one worker, check
