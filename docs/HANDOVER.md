@@ -303,6 +303,13 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   passt und einen roten sonst"): `border-success` without problems,
   `border-danger` otherwise, by the same rule as before (own: any character
   problem; Corporation: its problems, a to-do or an unregistered member).
+- **My account greys out unlinked QQ and Telegram** ("in my account färbe qq
+  und telegram nicht rot, wenn sie fehlen sondern grau"): `Service.
+  grey_when_missing`, filter `link_colour` (`border-secondary`,
+  `text-secondary`). Only *My account* (`own`; the account view passes
+  `own=False` explicitly, a filter argument must exist); Discord - voluntary
+  too, but not named - and Mumble stay red, and so does every tile on the
+  account page others see. The dashboard widget's icons were grey already.
 
 ## Pitfalls found
 

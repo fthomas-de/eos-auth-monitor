@@ -195,6 +195,7 @@ def account(request, user_id):
             **_state(report),
             "corporation": corporation,
             "account": account,
+            "own": False,
             # the player fixes their characters and the Director the Corporation's tokens in aa-charlink
             "charlink_url": _charlink_url(),
         },

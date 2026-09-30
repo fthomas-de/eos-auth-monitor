@@ -83,7 +83,8 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   stored result
 - **My account** for members: their own characters, what is wrong and what
   to do about it - nothing about other accounts; the service tiles open
-  Alliance Auth's services page, and each problem links to aa-charlink where
+  Alliance Auth's services page (an unlinked QQ or Telegram tile is grey, not
+  red: nobody has to use them), and each problem links to aa-charlink where
   it is installed, with a hint which app to tick there (otherwise to the app
   of the check, with that app's hint)
 - **Navbar tabs** from the narrowest view to the widest: *My account*, *My

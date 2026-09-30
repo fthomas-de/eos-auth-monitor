@@ -1349,6 +1349,47 @@ class TestOwnAccountServices(ViewTestCase):
             response, f'<a href="{reverse("eos_auth_monitor:corporation_service", args=[2001, "discord"])}"'
         )
 
+    def tile_colours(self, user, name, *args):
+        """Service key -> colour of its tile (border, icon and text agree, or it fails)."""
+        content = self.get(user, name, *args).content.decode()
+        tiles = re.findall(
+            r'<div class="card h-100 text-center border-(\w+)">\s*<div class="card-body position-relative">\s*'
+            r'<i class="fa[bs] fa-(\w+) fa-lg mb-2 text-(\w+)"></i>\s*<div class="small">[^<]*</div>\s*'
+            r'<div class="fw-bold text-(\w+)">',
+            content,
+        )
+        self.assertTrue(all(border == icon == text for border, _, icon, text in tiles), tiles)
+        return {icon_name: border for border, icon_name, _, _ in tiles}
+
+    def with_all_services(self, user_id, main_id, **linked):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["services"] = ["discord", "mumble", "qq", "telegram"]
+        snapshot.data["corporations"][0]["accounts"] = [account_row(user_id, main_id, services=linked)]
+        snapshot.save()
+
+    def test_should_grey_out_unlinked_qq_and_telegram_on_my_account(self):
+        member = make_user("member", VIEW_OWN, corporation_id=2001)
+        self.with_all_services(member.pk, member.profile.main_character.character_id)
+
+        self.assertEqual(
+            self.tile_colours(member, "own_account"),
+            {"discord": "danger", "headset": "danger", "qq": "secondary", "telegram": "secondary"},
+        )
+
+    def test_should_keep_a_linked_telegram_green_on_my_account(self):
+        member = make_user("member", VIEW_OWN, corporation_id=2001)
+        self.with_all_services(member.pk, member.profile.main_character.character_id, telegram=True)
+
+        self.assertEqual(self.tile_colours(member, "own_account")["telegram"], "success")
+
+    def test_should_keep_unlinked_qq_red_on_someone_elses_account(self):
+        self.with_all_services(11, 1101, telegram=True)
+
+        self.assertEqual(
+            self.tile_colours(self.ceo, "account", 11),
+            {"discord": "danger", "headset": "danger", "qq": "danger", "telegram": "success"},
+        )
+
 
 class TestCorporationExport(ViewTestCase):
     """The to-do list of 2002 as CSV: two mains without an audit, two members Auth does not know."""

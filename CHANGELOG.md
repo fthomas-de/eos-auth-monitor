@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- *My account* shows an unlinked QQ or Telegram tile in grey instead of red:
+  nobody has to use them. Discord and Mumble stay red, and the account page
+  seen by a CEO or the Alliance's leadership keeps every service red.
+
 ## [0.0.9] - 2026-09-30
 
 ### Changed

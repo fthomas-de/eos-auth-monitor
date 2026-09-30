@@ -26,3 +26,13 @@ def row_class(row) -> str:
     if row.service is not None and row.service.voluntary:
         return "text-body-secondary"
     return percent_class(row.percent)
+
+
+@register.filter
+def link_colour(link, own) -> str:
+    """Bootstrap colour of an account's service tile: on My account some services stay grey when unlinked."""
+    if link.linked:
+        return "success"
+    if own and link.service.grey_when_missing:
+        return "secondary"
+    return "danger"

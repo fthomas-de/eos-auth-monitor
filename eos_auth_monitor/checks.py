@@ -66,6 +66,8 @@ class Service:
     icon: str
     # a member may leave it out: the overview shows its share without rating it
     voluntary: bool = False
+    # My account shows it unlinked in grey, not red: the member links it only if they use it
+    grey_when_missing: bool = False
 
     @property
     def is_installed(self) -> bool:
@@ -254,8 +256,15 @@ CHECKS_BY_KEY = {check.key: check for check in CHECKS}
 SERVICES = (
     Service("discord", "discord", _("Discord"), "fab fa-discord", voluntary=True),
     Service("mumble", "mumble", _("Mumble"), "fas fa-headset"),
-    Service("qq", "qqbot", _("QQ"), "fab fa-qq", voluntary=True),
-    Service("telegram", "aa_discord_telegram_bridge", _("Telegram"), "fab fa-telegram", voluntary=True),
+    Service("qq", "qqbot", _("QQ"), "fab fa-qq", voluntary=True, grey_when_missing=True),
+    Service(
+        "telegram",
+        "aa_discord_telegram_bridge",
+        _("Telegram"),
+        "fab fa-telegram",
+        voluntary=True,
+        grey_when_missing=True,
+    ),
 )
 SERVICES_BY_KEY = {service.key: service for service in SERVICES}
 

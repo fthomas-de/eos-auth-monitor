@@ -1,6 +1,7 @@
 {% extends "eos_auth_monitor/base.html" %}
 {% load i18n %}
 {% load evelinks %}
+{% load eos_auth_monitor %}
 
 {% block details %}
     {% if own %}
@@ -24,12 +25,13 @@
     {% if account.services %}
         <div class="row row-cols-2 row-cols-md-4 row-cols-xl-6 g-3 mb-3">
             {% for link in account.services %}
+                {% with colour=link|link_colour:own %}
                 <div class="col">
-                    <div class="card h-100 text-center {% if link.linked %}border-success{% else %}border-danger{% endif %}">
+                    <div class="card h-100 text-center border-{{ colour }}">
                         <div class="card-body position-relative">
-                            <i class="{{ link.service.icon }} fa-lg mb-2 {% if link.linked %}text-success{% else %}text-danger{% endif %}"></i>
+                            <i class="{{ link.service.icon }} fa-lg mb-2 text-{{ colour }}"></i>
                             <div class="small">{{ link.service.label }}</div>
-                            <div class="fw-bold {% if link.linked %}text-success{% else %}text-danger{% endif %}">
+                            <div class="fw-bold text-{{ colour }}">
                                 {% if link.linked %}{% translate "linked" %}{% else %}{% translate "not linked" %}{% endif %}
                             </div>
                             {# a member goes to Alliance Auth's services page to link it; everyone else to this Corporation's list of it #}
@@ -41,6 +43,7 @@
                         </div>
                     </div>
                 </div>
+                {% endwith %}
             {% endfor %}
         </div>
     {% endif %}
