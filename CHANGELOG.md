@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.8] - 2026-09-30
+
 ### Added
 
 - *Notice to members* on the settings page: a text shown as an info box on

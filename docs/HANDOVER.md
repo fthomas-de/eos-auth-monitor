@@ -8,41 +8,32 @@ Last updated 2026-09-30.
 
 ## Release
 
-- Version **0.0.7** of 2026-09-30, tagged `v0.0.7` on the release commit and
-  pushed with it, like `v0.0.1` to `v0.0.6`. New in 0.0.7, see
-  `CHANGELOG.md`:
-  - **Smart filter** `CharacterProblemsFilter` for securegroups
-    (`smart_filters.py`, `admin.py`, hook `secure_group_filters`, migration
-    0007): passes an account without character problems, *Reversed logic*
-    one with; unknown accounts fail either way (see the decisions).
-  - **Corporation header links to aa-charlink** for the Corporation's own
-    problems (`Check.charlink_hint` on the Corporation checks; a check
-    without one keeps its app).
-  - **Corporation page: the checks' apps as tiles** (`Corporation.check_gauges`,
-    `Gauge.problems`), the header without rows there (`hide_rows`).
-  - **Character names link to the corptools Character Audit** on the account
-    pages (`partials/character-name.html`).
-  - **Discord, QQ and Telegram voluntary** (`Service.voluntary`, `row_class`):
-    grey on the overview's Corporation tiles and table.
-  Migration 0007, no new permission, no new static file.
-- **Working tree after 0.0.7, not committed** (see `[Unreleased]`): the
-  dashboard widgets named *My account* / *My Corporation*;
-  scope lists cut after two (`Check.lists_scopes`, `report.shorten`,
-  `Problem.full_detail` as tooltip); *Notice to members*
-  (`MonitorConfiguration.member_notice`, migration 0008,
-  `partials/member-notice.html`). Translations of the new messages still to
-  do at `/commit`.
+- Version **0.0.8** of 2026-09-30, tagged `v0.0.8` on the release commit and
+  pushed with it together with 0.0.7 and `v0.0.7`: the 0.0.7 release commit
+  and tag had stayed local (`origin/main` was still at 0.0.6) and went out
+  with this push. New in 0.0.8, see `CHANGELOG.md`:
+  - **Dashboard widgets named** *My account* and *My Corporation*, the
+    msgids of the navbar tabs.
+  - **Scope lists cut after two** (`Check.lists_scopes`, `report.shorten`,
+    `Problem.full_detail` as tooltip on the account pages).
+  - **Notice to members** (`MonitorConfiguration.member_notice`, migration
+    0008, `partials/member-notice.html`, a card on the settings page).
+  Migration 0008, no new permission, no new static file.
+- New in 0.0.7: the smart filter `CharacterProblemsFilter` (migration 0007),
+  the Corporation header linking to aa-charlink, the check tiles of the
+  Corporation page, character names linking to the Character Audit, Discord,
+  QQ and Telegram voluntary.
 - Migrations **0001-0008** applied in `aa_dev` (0008 adds `member_notice`; 0007 adds
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 314 tests without the translation tests, 4 translation tests, all green;
+- 329 tests without the translation tests, 4 translation tests, all green;
   one of them (`test_should_find_the_page_of_the_installed_charlink`) runs
   only with aa-charlink installed. Every check, access rule and feature was
   counter-checked against broken code (a sabotage that stays green means the
   test is too weak - it happened six times and each was fixed; 0.0.2 went 34
   for 34, 0.0.3 31 for 31, 0.0.4 3 for 3, 0.0.5 11 for 11, 0.0.6 41 for 41,
-  0.0.7 11 for 11).
+  0.0.7 11 for 11, 0.0.8 16 for 16).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -364,11 +355,20 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   0.0.7, so a slice up to them runs far past the header. And a check's
   description can hold the words of its old hint ("not set up as an owner
   in aa-structures"): assert on the hint's own sentence.
+- A release can stay local: 0.0.7 was committed and tagged, the handover
+  said "pushed", and `origin/main` was still at 0.0.6. Before a push, compare
+  `git ls-remote origin main` with `@{u}` rather than trust the handover.
+- The settings form's `changed_data` compares with the form's initial
+  values, so a test that posts only some fields changes every check and
+  service switch it leaves out: post the whole form as the page does
+  (`TestSettings.unchanged`).
+- `eos-test ... | tail -4` can end on the system-check lines printed after
+  the result: grep for `^(Ran|OK|FAILED)` instead.
 
 ## Open points / next steps
 
-- Production still runs 0.0.5: 0.0.6 and 0.0.7 are to be deployed, with
-  migration 0007. After deploying, *Rebuild now* (or the beat run) fills the
+- Production still runs 0.0.5: 0.0.6 to 0.0.8 are to be deployed, with
+  migrations 0007 and 0008. After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
   without a snapshot it fails everyone.
 - The smart filter was never created in the admin nor bound to a smart group,
@@ -386,8 +386,11 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - Nothing was looked at in a browser: the pages need a login. The JS files
   (`filter.js`, `view.js`, `copy.js`), the tiles (the new check tiles
   included), the table, the footer, the navbar tabs, the two dashboard
-  widgets, the CSV download, the audit lists and the visiting cards are
-  covered by tests of the rendered HTML (and of the CSV bytes) only.
+  widgets, the CSV download, the audit lists, the visiting cards, the notice
+  box and the scope tooltip are covered by tests of the rendered HTML (and of
+  the CSV bytes) only.
+- The notice to members was never filled in, in dev or production: the
+  settings card is empty, so no box shows yet.
 - Checklist review of 2026-09-29 (working tree after 0.0.1): README
   mismatches, the AA floor, the Members registered link, the broker outage
   (now a message, `progress.withdrawn()`) and the member tier (`view_own`)
@@ -410,8 +413,8 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   The dev DB has one account and no service links: every service number is 0.
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
   Comes), nothing switched off, ESI on, *Only characters in the Alliance*
-  off. The Celery worker runs the 0.0.7 code since 2026-09-30 10:25 (WSL
-  clock), started detached by a script (`setsid nohup
+  off, the notice empty. The Celery worker runs the 0.0.8 code since
+  2026-09-30 (restarted after migration 0008), started detached by a script (`setsid nohup
   ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo` in
   `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`); one worker, check
   `ps` before the next restart. **No Celery beat runs** in the dev instance,
