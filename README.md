@@ -54,8 +54,9 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   here have problems too, marked "Main in ..."), the others as a compact list,
   members whose main is in another Corporation under that main, and members
   unknown to Auth as a compact list, each counting as a main of its own
-- **Account detail**: the characters with problems, with the full details of
-  each problem - which scopes are missing, which sections are stale - and
+- **Account detail**: the characters with problems, with the details of
+  each problem - which scopes are missing (the first two and how many more,
+  the whole list as a tooltip), which sections are stale - and
   what to do about it, with a link to
   [aa-charlink](https://github.com/Maestro-Zacht/aa-charlink) where it is
   installed (otherwise to the app where it is done), the Corporation's own
@@ -86,15 +87,17 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
 - **Navbar tabs** from the narrowest view to the widest: *My account*, *My
   Corporation* (the Corporation of the own main), *Alliance overview*, then
   *Settings* - each only for those who may open it
-- **Dashboard widgets** on Alliance Auth's dashboard: the own account in short
-  (failed checks with the number of characters, linked services) for holders
-  of `view_own`, and the own main's Corporation in short (its problems, each
+- **Dashboard widgets** on Alliance Auth's dashboard: *My account*, the
+  own account in short (failed checks with the number of characters, linked
+  services) for holders of `view_own`, and *My Corporation*, the own main's Corporation in short (its problems, each
   to-do group with the number of mains, the unregistered members) for holders
   of `basic_access`; each links to its page in the app and is hidden while the
   overview has nothing about the viewer
+- **Notice to members**: a text from the settings page, shown as an info box
+  on *My account* and *My Corporation*; no box while it is empty
 - **Settings page**: the Alliance, chosen from a searchable dropdown; a
   switch for every check, grouped by app, and for every service; which
-  corptools sections and scopes the checks count
+  corptools sections and scopes the checks count; the notice to members
 - **Smart filter** for
   [allianceauth-securegroups](https://github.com/Solar-Helix-Independent-Transport/allianceauth-secure-groups),
   see [Smart filter](#smart-filter)
@@ -334,6 +337,7 @@ put in `local.py`.
 | Checks | One switch per check, grouped by app |
 | Services | One switch per service, to hide a service the Alliance does not use |
 | corptools: what the checks count | Four lists - Character Audit sections and scopes, Corporation Audit sections and scopes. Untick what the Alliance does not use, e.g. *Moon Observations* and `esi-industry.read_corporation_mining.v1` for an Alliance without moons; a section and its scope are separate entries |
+| Notice to members | Plain text, shown as an info box on *My account* and on *My Corporation* (the Corporation page of the viewer's own main, not other Corporations); line breaks are kept and web addresses become links. Empty (the default): no box. Changing only the notice starts no rebuild |
 
 A check, section or scope added in a later release starts switched on.
 

@@ -681,6 +681,15 @@ TRANSLATIONS = {
     'token': ('Token', 'токен', '令牌'),
     'no token': ('kein Token', 'нет токена', '无令牌'),
     'not in Auth': ('nicht in Auth', 'нет в Auth', '不在 Auth 中'),
+    # the notice to members on the settings page
+    'Notice to members': ('Hinweis an die Mitglieder', 'Объявление для участников', '致成员的通知'),
+    'Shown as an info box on My account and My Corporation. Leave it empty to show none.': (
+        'Wird als Infobox auf Mein Account und Meine Corporation angezeigt. Leer lassen, um keine anzuzeigen.',
+        'Показывается как информационный блок на страницах «Мой аккаунт» и «Моя Corporation». '
+        'Оставьте пустым, чтобы ничего не показывать.',
+        '在“我的账号”和“我的 Corporation”页面上以信息框显示。留空则不显示。',
+    ),
+    'Settings saved.': ('Einstellungen gespeichert.', 'Настройки сохранены.', '设置已保存。'),
 }
 
 PLURALS = {
@@ -739,6 +748,12 @@ PLURALS = {
             'Ни один токен Director не смог прочитать роли %(counter)s Corporation, поэтому их Director без токена здесь отсутствуют.',
         ],
         ['没有任何 Director 令牌能读取 %(counter)s 个 Corporation 的角色，因此这里缺少其中没有令牌的 Director。'],
+    ),
+    # a list of scopes cut after the first two: "a, b and 3 more"
+    'and %(count)d more': (
+        ['und %(count)d weiterer', 'und %(count)d weitere'],
+        ['и ещё %(count)d', 'и ещё %(count)d', 'и ещё %(count)d'],
+        ['等另外 %(count)d 个'],
     ),
 }
 

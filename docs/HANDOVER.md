@@ -25,7 +25,14 @@ Last updated 2026-09-30.
   - **Discord, QQ and Telegram voluntary** (`Service.voluntary`, `row_class`):
     grey on the overview's Corporation tiles and table.
   Migration 0007, no new permission, no new static file.
-- Migrations **0001-0007** applied in `aa_dev` (0007 adds
+- **Working tree after 0.0.7, not committed** (see `[Unreleased]`): the
+  dashboard widgets named *My account* / *My Corporation*;
+  scope lists cut after two (`Check.lists_scopes`, `report.shorten`,
+  `Problem.full_detail` as tooltip); *Notice to members*
+  (`MonitorConfiguration.member_notice`, migration 0008,
+  `partials/member-notice.html`). Translations of the new messages still to
+  do at `/commit`.
+- Migrations **0001-0008** applied in `aa_dev` (0008 adds `member_notice`; 0007 adds
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
@@ -54,7 +61,7 @@ Last updated 2026-09-30.
 | Director list (`directors/<group>`) | `view_all` | For `corptools_corporations` and `structures`: every Director of the Alliance's Corporations with Corporation, main (linked where the account is in the overview, *not in Auth* tag otherwise) and token yes/no, those without first; a notice without ESI (corptools' Directors only) or where roles were unreadable; 404 when no check of the group ran |
 | My account (`own_account`) | `view_own` | The viewer's own account on `account.html` with `own=True`: service tiles linking to Alliance Auth's `services:services`, no Corporation header, the problems with hints linking to aa-charlink (the check's app without it), the left-out count; a notice when the account is not in the snapshot. `view_own` alone is sent here from the index |
 | Dashboard widgets (`views.dashboard_own`, `views.dashboard_corporation`) | `view_own` / `basic_access` | On Alliance Auth's dashboard, order 4 like eos-invoices, own before Corporation (registration order). Own: failed checks with the number of characters (`Account.keyword_counts`), service icons, link to My account. Corporation: its own problems, each to-do group with the number of mains, the unregistered count, link to the Corporation page. `""` without the permission or when the snapshot has nothing about the viewer |
-| Settings | `manage_settings` | Alliance (Tom Select), stale limit, ESI member lists on/off (also switches the roles call), only characters in the Alliance on/off, check and service switches, corptools sections and scopes |
+| Settings | `manage_settings` | Alliance (Tom Select), stale limit, ESI member lists on/off (also switches the roles call), only characters in the Alliance on/off, check and service switches, corptools sections and scopes, the notice to members (saving only a changed notice starts no rebuild: `form.changed_data`) |
 | Rebuild (POST) / progress (JSON) | `view_all` or `manage_settings` / any app permission | Start the task / state for the progress bar |
 
 Every page has a footer with the cost of the last rebuild (`view_all` or
@@ -269,6 +276,21 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   outside the overview fails either way, and without a snapshot everyone
   fails ("No Auth Monitor result yet") - a smart group empties until the
   next rebuild. The README says to rebuild before binding it.
+- **Dashboard widgets named after their tabs** ("benenne die main account und
+  corp kachel auf dem dashboard mit passenden namen um"): *My account* and
+  *My Corporation*, the msgids of the navbar tabs. First "Auth Monitor - ..."
+  in front; the user struck that ("streiche das auth monitor vor den
+  kacheln").
+- **Scope lists cut after two** ("überall wo scopes gelistet sind, kürze nach
+  zwei scopes ab"): the details of *Scopes missing* and *Director token
+  missing* read "a, b and N more", the whole list as tooltip. The settings
+  page's scope checkboxes are a choice, not a listing, and stay whole.
+- **Notice to members** ("textbox in den settings ... als infomeldung in my
+  account und my corp"): plain text, escaped, line breaks kept, addresses
+  linked (`urlize`); on *My account* (with or without an account in the
+  snapshot) and on the Corporation page only when it is *My Corporation*
+  (`nav == "corporation"`), not on the account or service pages of that
+  Corporation. Empty or blanks only: no box.
 
 ## Pitfalls found
 

@@ -3,6 +3,10 @@
 {% load evelinks %}
 
 {% block details %}
+    {% if own %}
+        {% include "eos_auth_monitor/partials/member-notice.html" %}
+    {% endif %}
+
     {% if not account %}
         {% if own and report %}
             <div class="alert alert-info">
@@ -72,7 +76,7 @@
                                             <div class="mb-2">
                                                 <span class="badge text-bg-danger text-wrap">{{ problem.check.label }}</span>
                                                 <span class="small text-body-secondary">{{ problem.check.description }}</span>
-                                                {% if problem.detail %}<div class="small text-break">{{ problem.detail }}</div>{% endif %}
+                                                {% if problem.detail %}<div class="small text-break"{% if problem.full_detail %} title="{{ problem.full_detail }}"{% endif %}>{{ problem.detail }}</div>{% endif %}
                                                 {# character problems only: the Corporation header keeps the links to the apps #}
                                                 {% include "eos_auth_monitor/partials/problem-hint.html" with charlink=charlink_url %}
                                             </div>

@@ -321,7 +321,10 @@ def settings(request):
 
     if request.method == "POST" and form.is_valid():
         form.save()
-        if _start_rebuild():
+        # the pages read the notice straight from the settings: it alone is no reason to spend ESI calls
+        if form.changed_data == ["member_notice"]:
+            messages.success(request, _("Settings saved."))
+        elif _start_rebuild():
             messages.success(request, _("Settings saved. The overview is being rebuilt."))
         else:
             messages.warning(

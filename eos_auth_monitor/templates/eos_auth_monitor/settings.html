@@ -20,6 +20,15 @@
             </div>
         </div>
 
+        <div class="card mb-3">
+            <div class="card-header">
+                <div class="card-title mb-0">{% translate "Notice to members" %}</div>
+            </div>
+            <div class="card-body">
+                {% bootstrap_field form.member_notice show_label=False %}
+            </div>
+        </div>
+
         <div class="row row-cols-1 row-cols-lg-2 g-3 mb-3">
             {% for group, fields in form.check_groups %}
                 <div class="col">

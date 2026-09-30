@@ -1,6 +1,6 @@
 from django.urls import reverse
 
-from eos_auth_monitor.report import Gauge, Report, describe
+from eos_auth_monitor.report import Gauge, Report, _problems, describe, shorten
 
 from .base import MonitorTestCase, account_row, character_row, corporation_row, snapshot_data, store_snapshot
 
@@ -222,6 +222,30 @@ class TestDescribe(MonitorTestCase):
 
     def test_should_say_when_corporation_data_never_updated(self):
         self.assertEqual(describe({"check": "corp_data_stale", "detail": []}), "never updated")
+
+
+class TestShorten(MonitorTestCase):
+    FIVE = ["a", "b", "c", "d", "e"]
+
+    def test_should_name_two_scopes_and_count_the_rest(self):
+        for key in ("char_scopes_missing", "char_director_token_missing"):
+            with self.subTest(key):
+                self.assertEqual(shorten({"check": key, "detail": self.FIVE}), "a, b and 3 more")
+
+    def test_should_count_a_single_scope_left(self):
+        self.assertEqual(shorten({"check": "char_scopes_missing", "detail": ["a", "b", "c"]}), "a, b and 1 more")
+
+    def test_should_keep_two_scopes_whole(self):
+        self.assertEqual(shorten(SCOPES_MISSING), "a, b")
+
+    def test_should_keep_a_list_of_sections_whole(self):
+        self.assertEqual(shorten({"check": "char_audit_inactive", "detail": self.FIVE}), "a, b, c, d, e")
+
+    def test_should_keep_the_whole_list_for_the_tooltip(self):
+        cut, whole = _problems([{"check": "char_scopes_missing", "detail": self.FIVE}, SCOPES_MISSING])
+
+        self.assertEqual((cut.detail, cut.full_detail), ("a, b and 3 more", "a, b, c, d, e"))
+        self.assertEqual((whole.detail, whole.full_detail), ("a, b", ""))
 
 
 class TestMetrics(MonitorTestCase):

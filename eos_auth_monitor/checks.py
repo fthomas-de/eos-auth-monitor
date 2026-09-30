@@ -40,6 +40,8 @@ class Check:
     own_hint: str = ""
     # My account without aa-charlink: the hint to the player, naming the check's app
     own_app_hint: str = ""
+    # the detail is a list of scopes: the pages name the first ones and count the rest
+    lists_scopes: bool = False
 
     @property
     def is_installed(self) -> bool:
@@ -118,6 +120,7 @@ CHECKS = (
         own_app_hint=_(
             "Add this character in the corptools Character Audit again and grant every scope it asks for."
         ),
+        lists_scopes=True,
     ),
     Check(
         "char_audit_inactive",
@@ -151,6 +154,7 @@ CHECKS = (
         charlink_hint=_("The Director ticks Corporation Audit in CharLink and logs in with this character."),
         own_hint=_("Tick Corporation Audit in CharLink and log in with this character."),
         own_app_hint=_("Add a Corporation token in the corptools Corporation Audit with this character."),
+        lists_scopes=True,
     ),
     Check(
         "corp_audit_missing",

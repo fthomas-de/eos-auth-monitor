@@ -97,6 +97,9 @@ class TestOwnWidget(DashboardTestCase):
     def test_should_link_to_my_account(self):
         self.assertIn(f'href="{reverse("eos_auth_monitor:own_account")}"', render(dashboard_own, self.member))
 
+    def test_should_be_named_after_my_account(self):
+        self.assertRegex(render(dashboard_own, self.member), r"<h4[^>]*>\s*My account\s*</h4>")
+
     def test_should_say_when_there_is_no_problem(self):
         fine = make_user("fine", VIEW_OWN, corporation_id=2002)
         self.snapshot.data["corporations"][1]["accounts"].append(
@@ -143,6 +146,9 @@ class TestCorporationWidget(DashboardTestCase):
         # counts only, no names
         self.assertNotIn("Char 3301", html)
         self.assertNotIn("Stranger A", html)
+
+    def test_should_be_named_after_my_corporation(self):
+        self.assertRegex(render(dashboard_corporation, self.ceo), r"<h4[^>]*>\s*My Corporation\s*</h4>")
 
     def test_should_show_the_problems_of_the_corporation_itself(self):
         self.snapshot.data["corporations"][0]["problems"] = [{"check": "corp_audit_missing", "detail": []}]

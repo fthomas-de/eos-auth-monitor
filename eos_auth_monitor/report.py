@@ -8,7 +8,7 @@ from dataclasses import dataclass, field, replace
 
 from django.urls import NoReverseMatch, reverse
 from django.utils.translation import gettext_lazy as _
-from django.utils.translation import pgettext_lazy
+from django.utils.translation import ngettext, pgettext_lazy
 
 from .checks import CHARACTER, CHECKS_BY_KEY, SERVICES_BY_KEY, Check, Service
 
@@ -37,6 +37,20 @@ def describe(item: dict) -> str:
     return ", ".join(item["detail"])
 
 
+# a token can lack a dozen scopes: the pages name this many, count the rest and keep the whole list as a tooltip
+SCOPES_SHOWN = 2
+
+
+def shorten(item: dict) -> str:
+    """The detail as the pages show it: a list of scopes cut after the first ones."""
+    detail = item["detail"]
+    if not CHECKS_BY_KEY[item["check"]].lists_scopes or len(detail) <= SCOPES_SHOWN:
+        return describe(item)
+    rest = len(detail) - SCOPES_SHOWN
+    more = ngettext("and %(count)d more", "and %(count)d more", rest) % {"count": rest}
+    return f"{', '.join(detail[:SCOPES_SHOWN])} {more}"
+
+
 def percent(part: int, total: int) -> int | None:
     if not total:
         return None
@@ -47,11 +61,18 @@ def percent(part: int, total: int) -> int | None:
 class Problem:
     check: Check
     detail: str
+    # the whole detail where `detail` was shortened, for the tooltip; empty otherwise
+    full_detail: str = ""
+
+
+def _problem(item: dict) -> Problem:
+    detail, full = shorten(item), describe(item)
+    return Problem(CHECKS_BY_KEY[item["check"]], detail, full if full != detail else "")
 
 
 def _problems(items) -> list[Problem]:
     # a check a later release dropped may still sit in an old snapshot
-    return [Problem(CHECKS_BY_KEY[item["check"]], describe(item)) for item in items if item["check"] in CHECKS_BY_KEY]
+    return [_problem(item) for item in items if item["check"] in CHECKS_BY_KEY]
 
 
 @dataclass

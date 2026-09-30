@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- *Notice to members* on the settings page: a text shown as an info box on
+  *My account* and *My Corporation*; while it is empty no box is shown.
+  Saving only a changed notice starts no rebuild. Migration 0008.
+
+### Changed
+
+- The two dashboard widgets are named *My account* and *My Corporation*
+  instead of both *Auth Monitor*.
+- A list of missing scopes (*Scopes missing*, *Director token missing*) names
+  the first two and how many more; the whole list is the tooltip.
+
 ## [0.0.7] - 2026-09-30
 
 ### Added

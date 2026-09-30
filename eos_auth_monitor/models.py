@@ -70,6 +70,11 @@ class MonitorConfiguration(SingletonModel):
             "alts elsewhere are left out."
         ),
     )
+    member_notice = models.TextField(
+        blank=True,
+        verbose_name=_("Notice to members"),
+        help_text=_("Shown as an info box on My account and My Corporation. Leave it empty to show none."),
+    )
 
     class Meta:
         default_permissions = ()

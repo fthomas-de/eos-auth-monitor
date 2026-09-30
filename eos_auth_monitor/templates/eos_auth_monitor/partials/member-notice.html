@@ -1,0 +1,8 @@
+{% load i18n %}
+{# The admin's notice from the settings, on My account and My Corporation; nothing when it is empty. #}
+{% if config.member_notice %}
+    <div class="alert alert-info d-flex gap-2 eos-auth-monitor-notice" role="note">
+        <i class="fas fa-circle-info mt-1 flex-shrink-0"></i>
+        <div class="text-break">{{ config.member_notice|urlize|linebreaksbr }}</div>
+    </div>
+{% endif %}

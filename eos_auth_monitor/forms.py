@@ -63,7 +63,9 @@ class MonitorConfigurationForm(forms.ModelForm):
 
     class Meta:
         model = MonitorConfiguration
-        fields = ["alliance", "stale_after_days", "fetch_members", "alliance_characters_only"]
+        fields = ["alliance", "stale_after_days", "fetch_members", "alliance_characters_only", "member_notice"]
+        # the form field strips the text, so a notice of blanks is stored empty and shows no box
+        widgets = {"member_notice": forms.Textarea(attrs={"rows": 3})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

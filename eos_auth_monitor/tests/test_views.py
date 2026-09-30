@@ -14,6 +14,7 @@ import eos_auth_monitor
 from eos_auth_monitor import progress
 from eos_auth_monitor.auth_hooks import AuthMonitorMenuItem
 from eos_auth_monitor.checks import is_app_installed
+from eos_auth_monitor.forms import MonitorConfigurationForm
 from eos_auth_monitor.models import MonitorConfiguration, Snapshot
 from eos_auth_monitor.permissions import APP_PERMISSIONS, BASIC_ACCESS, MANAGE_SETTINGS, VIEW_ALL, VIEW_OWN
 
@@ -803,6 +804,91 @@ class TestSettings(ViewTestCase):
         self.post({"alliance": make_alliance().pk})
 
         self.assertIn("structures_no_owner", MonitorConfiguration.get_solo().disabled_checks)
+
+    def unchanged(self, **changes):
+        """The settings form as the page posts it untouched, with `changes` on top."""
+        form = MonitorConfigurationForm(instance=MonitorConfiguration.get_solo())
+        data = {name: form[name].value() for name in form.fields}
+        data.update(changes)
+        # the test client cannot send None; an empty field is left out by the browser too
+        return {name: value for name, value in data.items() if value is not None}
+
+    def test_should_store_the_notice_without_a_rebuild(self):
+        response, task = self.post(self.unchanged(member_notice="  Read the wiki.  "))
+
+        self.assertRedirects(response, reverse("eos_auth_monitor:settings"))
+        self.assertEqual(MonitorConfiguration.get_solo().member_notice, "Read the wiki.")
+        task.delay.assert_not_called()
+
+    def test_should_rebuild_when_more_than_the_notice_changed(self):
+        _response, task = self.post(self.unchanged(member_notice="Read the wiki.", alliance_characters_only=True))
+
+        task.delay.assert_called_once_with()
+
+    def test_should_store_a_notice_of_blanks_empty(self):
+        configure(member_notice="Old")
+
+        self.post(self.unchanged(member_notice="  \n "))
+
+        self.assertEqual(MonitorConfiguration.get_solo().member_notice, "")
+
+
+class TestMemberNotice(ViewTestCase):
+    """The notice from the settings on My account and My Corporation, and nowhere else."""
+
+    NOTICE = "Read the wiki.\n<b>Now</b>"
+    BOX = "eos-auth-monitor-notice"
+
+    def setUp(self):
+        super().setUp()
+        self.member = make_user("member", VIEW_OWN, corporation_id=2002)
+        configure(member_notice=self.NOTICE)
+
+    def test_should_show_the_notice_on_my_account(self):
+        response = self.get(self.member, "own_account")
+
+        self.assertContains(response, self.BOX)
+        # line breaks kept, markup escaped
+        self.assertContains(response, "Read the wiki.<br>&lt;b&gt;Now&lt;/b&gt;")
+
+    def test_should_show_the_notice_on_my_corporation(self):
+        for user in (self.ceo, self.leader):
+            with self.subTest(user.username):
+                self.assertContains(self.get(user, "corporation", 2001), self.BOX)
+
+    def test_should_not_show_the_notice_elsewhere(self):
+        pages = [
+            (self.leader, "corporation", 2002),
+            (self.leader, "index"),
+            (self.ceo, "account", 11),
+            (self.ceo, "corporation_service", 2001, "discord"),
+            (self.admin, "settings"),
+        ]
+        for user, name, *args in pages:
+            with self.subTest(name):
+                self.assertNotContains(self.get(user, name, *args), self.BOX)
+
+    def test_should_show_no_box_while_the_notice_is_empty(self):
+        configure(member_notice="")
+
+        self.assertNotContains(self.get(self.member, "own_account"), self.BOX)
+        self.assertNotContains(self.get(self.ceo, "corporation", 2001), self.BOX)
+
+
+class TestScopeDetail(ViewTestCase):
+    def test_should_name_two_scopes_and_keep_the_list_as_tooltip(self):
+        scopes = ["esi-a.v1", "esi-b.v1", "esi-c.v1", "esi-d.v1"]
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["accounts"][0]["characters"] = [
+            character_row(1101, [{"check": "char_scopes_missing", "detail": scopes}])
+        ]
+        snapshot.save()
+
+        response = self.get(self.leader, "account", 11)
+
+        self.assertContains(
+            response, 'title="esi-a.v1, esi-b.v1, esi-c.v1, esi-d.v1">esi-a.v1, esi-b.v1 and 2 more</div>'
+        )
 
 
 class TestOwnAccount(ViewTestCase):

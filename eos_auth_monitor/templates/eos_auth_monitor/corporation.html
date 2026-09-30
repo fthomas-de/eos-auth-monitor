@@ -3,6 +3,11 @@
 {% load evelinks %}
 
 {% block details %}
+    {# only on the viewer's own Corporation: leadership looking at another one came from the Alliance overview #}
+    {% if nav == "corporation" %}
+        {% include "eos_auth_monitor/partials/member-notice.html" %}
+    {% endif %}
+
     {% if report %}
         {% if not corporation %}
             <div class="alert alert-info">{% translate "This Corporation is not part of the overview." %}</div>
