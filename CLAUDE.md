@@ -85,6 +85,10 @@ texts are English.
   commits the catalogues describe the last commit, not the code.
 - Every new message must be a plain string in the source: xgettext does not
   look inside an f-string.
+- *My account* speaks to the member: its own texts (`Check.own_hint`,
+  `Check.own_app_hint`, "your ...") address the reader - German with *du*,
+  never *Sie* and never the third person. The other pages speak about the
+  player in the third person (`Check.hint`, `Check.charlink_hint`).
 
 ## The database is irreplaceable
 

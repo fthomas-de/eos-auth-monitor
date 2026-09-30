@@ -8,6 +8,7 @@
             <div class="alert alert-info">
                 {% translate "Your account is not part of the overview: your main is not in a Corporation of the Alliance, or the overview has not been rebuilt since it joined." %}
             </div>
+            {% include "eos_auth_monitor/partials/missing-characters.html" %}
         {% endif %}
     {% else %}
     {% if not own %}
@@ -72,7 +73,8 @@
                                                 <span class="badge text-bg-danger text-wrap">{{ problem.check.label }}</span>
                                                 <span class="small text-body-secondary">{{ problem.check.description }}</span>
                                                 {% if problem.detail %}<div class="small text-break">{{ problem.detail }}</div>{% endif %}
-                                                {% include "eos_auth_monitor/partials/problem-hint.html" %}
+                                                {# character problems only: the Corporation header keeps the links to the apps #}
+                                                {% include "eos_auth_monitor/partials/problem-hint.html" with charlink=charlink_url %}
                                             </div>
                                         {% endfor %}
                                     </td>
@@ -82,7 +84,7 @@
                     </table>
                 </div>
             {% else %}
-                <div class="text-success fw-bold"><i class="fas fa-circle-check"></i> {% translate "No character of this account has a problem." %}</div>
+                <div class="text-success fw-bold"><i class="fas fa-circle-check"></i> {% if own %}{% translate "None of your characters has a problem." %}{% else %}{% translate "No character of this account has a problem." %}{% endif %}</div>
             {% endif %}
 
             {% with fine=account.problem_free_characters %}
@@ -110,8 +112,16 @@
                 {# without it, "no problem" would read as if the alts elsewhere were fine too #}
                 <div class="small text-body-secondary mt-3 eos-auth-monitor-left-out">
                     <i class="fas fa-circle-info"></i>
-                    {% blocktranslate count counter=account.left_out context "EVE jargon" %}{{ counter }} character outside the Alliance is neither shown nor checked here.{% plural %}{{ counter }} characters outside the Alliance are neither shown nor checked here.{% endblocktranslate %}
+                    {% if own %}
+                        {% blocktranslate count counter=account.left_out context "EVE jargon" %}{{ counter }} of your characters is outside the Alliance and neither shown nor checked here.{% plural %}{{ counter }} of your characters are outside the Alliance and neither shown nor checked here.{% endblocktranslate %}
+                    {% else %}
+                        {% blocktranslate count counter=account.left_out context "EVE jargon" %}{{ counter }} character outside the Alliance is neither shown nor checked here.{% plural %}{{ counter }} characters outside the Alliance are neither shown nor checked here.{% endblocktranslate %}
+                    {% endif %}
                 </div>
+            {% endif %}
+
+            {% if own %}
+                {% include "eos_auth_monitor/partials/missing-characters.html" %}
             {% endif %}
         </div>
     </div>

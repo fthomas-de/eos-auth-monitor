@@ -224,6 +224,36 @@ class TestCharacterSections(MonitorTestCase):
         self.assertNotIn("assets", self.sections())
 
 
+class TestDirectors(MonitorTestCase):
+    def setUp(self):
+        super().setUp()
+        make_corporation(2001)
+        self.user = make_user("director", corporation_id=2001)
+        self.main = self.user.profile.main_character
+
+    def roles(self, character, director=True):
+        CharacterRoles.objects.create(character=CharacterAudit.objects.create(character=character), director=director)
+
+    def test_should_know_the_directors_it_read_the_roles_of(self):
+        self.roles(self.main)
+        self.roles(add_alt(self.user, 5001, "Plain member", corporation_id=2001), director=False)
+        self.roles(add_alt(self.user, 5002, "Director elsewhere", corporation_id=2002))
+
+        self.assertEqual(corptools.known_directors([2001]), {2001: {self.main.character_id}})
+
+    def test_should_find_the_characters_with_a_complete_corporation_token(self):
+        complete = add_alt(self.user, 5003, "Complete", corporation_id=2001)
+        make_token(complete, corptools.corporation_scopes())
+        make_token(self.main, corptools.corporation_scopes()[:-1])
+        ids = EveCharacter.objects.values_list("character_id", flat=True)
+
+        self.assertEqual(corptools.corporation_token_holders(ids), {5003})
+        self.assertEqual(
+            corptools.corporation_token_holders(ids, corptools.corporation_scopes()[-1:]),
+            {5003, self.main.character_id},
+        )
+
+
 class TestCorporationProblems(MonitorTestCase):
     def setUp(self):
         super().setUp()

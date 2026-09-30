@@ -10,10 +10,26 @@ from allianceauth.eveonline.models import EveCorporationInfo
 from allianceauth.tests.auth_utils import AuthUtils
 
 from eos_auth_monitor import progress, snapshot
-from eos_auth_monitor.checks import CHECKS, SERVICES_BY_KEY, installed_checks
+from eos_auth_monitor.checks import CHECKS, DIRECTOR_GROUPS, SERVICES_BY_KEY, installed_checks
 from eos_auth_monitor.models import MonitorConfiguration, Snapshot
+from eos_auth_monitor.sources import corptools as corptools_source
 
-from .base import ALLIANCE_ID, OTHER_ALLIANCE_ID, MonitorTestCase, add_alt, configure, make_corporation, make_user
+from .base import (
+    ALLIANCE_ID,
+    OTHER_ALLIANCE_ID,
+    MonitorTestCase,
+    add_alt,
+    configure,
+    make_corporation,
+    make_token,
+    make_user,
+)
+
+
+# every check that needs the Directors: the Director check and the groups with a Director list
+NO_DIRECTOR_CHECKS = ["char_director_token_missing"] + [
+    check.key for check in CHECKS if check.group in DIRECTOR_GROUPS
+]
 
 
 def build(**config):
@@ -61,7 +77,8 @@ class TestAccounts(MonitorTestCase):
 
         main_id = self.pilot.profile.main_character.character_id
         self.assertEqual([character["id"] for character in account["characters"]], [main_id, inside.character_id])
-        self.assertEqual(sorted(characters.call_args.args[0]), [main_id, inside.character_id])
+        # both sides sorted: the main's ID comes from the user's pk, which grows with a kept test database
+        self.assertEqual(sorted(characters.call_args.args[0]), sorted([main_id, inside.character_id]))
         self.assertNotIn(other_alliance.character_id, characters.call_args.args[0])
         # the alt without an Alliance and the one in another Alliance
         self.assertEqual(account["left_out"], 2)
@@ -281,10 +298,17 @@ class TestDirectorsFromEsi(MonitorTestCase):
         ask.assert_not_called()
         self.assertEqual(characters.call_args.args[-1], set())
 
-    def test_should_not_ask_esi_for_roles_when_the_director_check_is_off(self):
-        ask, _ = self.handed_over(fetch_members=True, disabled_checks=["char_director_token_missing"])
+    def test_should_not_ask_esi_for_roles_when_nothing_needs_the_directors(self):
+        ask, _ = self.handed_over(fetch_members=True, disabled_checks=NO_DIRECTOR_CHECKS)
 
         ask.assert_not_called()
+
+    def test_should_ask_esi_for_roles_for_a_director_list_without_the_director_check(self):
+        ask, _ = self.handed_over(
+            fetch_members=True, disabled_checks=[key for key in NO_DIRECTOR_CHECKS if key != "corp_token_missing"]
+        )
+
+        ask.assert_called_once_with(2001)
 
     def test_should_ask_once_per_corporation_the_accounts_have_characters_in(self):
         add_alt(self.pilot, 5001, "Alt", corporation_id=2001)
@@ -331,7 +355,7 @@ class TestDirectorsFromEsi(MonitorTestCase):
         self.assertFalse(self.marker(set()))
 
     def test_should_not_mark_anything_when_the_roles_were_never_asked_for(self):
-        self.assertFalse(self.marker(None, disabled_checks=["char_director_token_missing"]))
+        self.assertFalse(self.marker(None, disabled_checks=NO_DIRECTOR_CHECKS))
 
     def test_should_not_mark_anything_when_esi_is_switched_off(self):
         with patch("eos_auth_monitor.snapshot.members_source.corporation_directors", return_value=None) as ask:
@@ -359,6 +383,98 @@ class TestDirectorsFromEsi(MonitorTestCase):
             patch("eos_auth_monitor.snapshot.members_source.corporation_members", return_value=None),
         ):
             self.assertIsNotNone(build(fetch_members=True))
+
+
+class TestDirectorLists(MonitorTestCase):
+    """The Directors of each Corporation, for the lists behind the Corporation Audit and Structures tiles."""
+
+    def setUp(self):
+        super().setUp()
+        make_corporation(2001)
+        self.pilot = make_user("pilot", corporation_id=2001)
+        self.main_id = self.pilot.profile.main_character.character_id
+        # an account whose main is outside the Alliance, with a Director alt in it
+        self.outsider = make_user("outsider", corporation_id=5005, alliance_id=OTHER_ALLIANCE_ID)
+        self.outsider_alt = add_alt(self.outsider, 5101, "Outsider alt", corporation_id=2001)
+
+    def directors(self, from_esi, groups=("corptools_corporations",), names=None, **config):
+        with patch("eos_auth_monitor.snapshot.members_source.names", return_value=names or {}) as lookup:
+            found = snapshot._directors([2001], from_esi, {self.pilot.pk}, list(groups), configure(**config))
+        self.lookup = lookup
+        return {row["id"]: row for row in found.get(2001, [])}
+
+    def test_should_list_the_directors_esi_names_with_their_accounts(self):
+        found = self.directors(
+            {2001: {self.main_id, self.outsider_alt.character_id, 9001}},
+            names={self.main_id: "pilot main", self.outsider_alt.character_id: "Outsider alt", 9001: "Stranger"},
+        )
+
+        self.assertEqual(
+            {key: (row["name"], row["in_auth"], row["user_id"], row["main_name"]) for key, row in found.items()},
+            {
+                self.main_id: ("pilot main", True, self.pilot.pk, "pilot main"),
+                # in Auth, but its account is not in the overview: no page to link to
+                self.outsider_alt.character_id: ("Outsider alt", True, None, "outsider main"),
+                9001: ("Stranger", False, None, None),
+            },
+        )
+
+    def test_should_add_the_directors_corptools_knows(self):
+        alt = add_alt(self.pilot, 5201, "Pilot alt", corporation_id=2001)
+        audit = CharacterAudit.objects.create(character=alt)
+        CharacterRoles.objects.create(character=audit, director=True)
+
+        found = self.directors({}, names={5201: "Pilot alt"})
+
+        self.assertEqual(list(found), [5201])
+        self.assertEqual(found[5201]["user_id"], self.pilot.pk)
+
+    def test_should_tell_which_director_has_a_corporation_token(self):
+        make_token(self.pilot.profile.main_character, corptools_source.corporation_scopes())
+        make_token(self.outsider_alt, corptools_source.corporation_scopes()[:-1])
+
+        found = self.directors({2001: {self.main_id, self.outsider_alt.character_id}})
+
+        self.assertEqual(found[self.main_id]["tokens"], {"corptools_corporations": True})
+        self.assertEqual(found[self.outsider_alt.character_id]["tokens"], {"corptools_corporations": False})
+
+    def test_should_leave_out_the_excluded_corporation_scopes(self):
+        scopes = corptools_source.corporation_scopes()
+        make_token(self.pilot.profile.main_character, scopes[:-1])
+
+        found = self.directors({2001: {self.main_id}}, excluded_corporation_scopes=scopes[-1:])
+
+        self.assertEqual(found[self.main_id]["tokens"], {"corptools_corporations": True})
+
+    def test_should_tell_which_director_fetches_for_the_structure_owner(self):
+        with patch(
+            "eos_auth_monitor.snapshot.structures_source.owner_characters", return_value={2001: {self.main_id}}
+        ) as owners:
+            found = self.directors({2001: {self.main_id, 9001}}, groups=["structures"])
+
+        owners.assert_called_once_with([2001])
+        self.assertEqual(found[self.main_id]["tokens"], {"structures": True})
+        self.assertEqual(found[9001]["tokens"], {"structures": False})
+
+    def test_should_ask_nothing_without_a_director(self):
+        self.assertEqual(self.directors({2001: set()}), {})
+        self.lookup.assert_not_called()
+
+    def stored(self, **config):
+        with (
+            patch("eos_auth_monitor.snapshot.members_source.corporation_directors", return_value={self.main_id}),
+            patch("eos_auth_monitor.snapshot.members_source.corporation_members", return_value=None),
+        ):
+            data = build(fetch_members=True, **config)
+        return [row["id"] for row in corporation(data, 2001)["directors"]]
+
+    def test_should_store_the_directors_per_corporation(self):
+        self.assertEqual(self.stored(), [self.main_id])
+
+    def test_should_store_no_directors_without_a_director_list(self):
+        without_lists = [check.key for check in CHECKS if check.group in DIRECTOR_GROUPS]
+
+        self.assertEqual(self.stored(disabled_checks=without_lists), [])
 
 
 class TestMembers(MonitorTestCase):

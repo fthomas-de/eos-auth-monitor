@@ -16,7 +16,7 @@ Last updated 2026-09-29.
     *Only characters in the Alliance* says, and roles are asked only for
     Corporations of the Alliance.
   - *My account* links each problem to `charlink:index`
-    (`views._charlink_url`, `own_fix_link` in `problem-hint.html`), the
+    (`views._charlink_url`, now `charlink` in `problem-hint.html`), the
     check's app without aa-charlink; label "CharLink", untranslated.
   - With *Only characters in the Alliance* on, the account pages say how many
     characters were left out (`left_out` per account in the snapshot,
@@ -42,9 +42,11 @@ Last updated 2026-09-29.
 | Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares), then the Corporations, most problems first, as tiles or as a table (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
 | Corporation | `view_all`, or `basic_access` for the own main's Corporation | Service tiles, a to-do list (per failed character check the mains concerned with the check's hint, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems as cards, the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
-| Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to the app), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
+| Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems keep their app), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
 | Corporation service | as Corporation | One row per main of the Corporation, linked yes/no, no problems |
 | Service | `view_all` | Every main of the Alliance, linked yes/no |
+| Character Audit list (`character_audit`) | `view_all` | Every main of the Alliance with a tag per failed character check (`Account.keyword_counts`, "×n" for n characters), most problems first; 404 without character checks |
+| Director list (`directors/<group>`) | `view_all` | For `corptools_corporations` and `structures`: every Director of the Alliance's Corporations with Corporation, main (linked where the account is in the overview, *not in Auth* tag otherwise) and token yes/no, those without first; a notice without ESI (corptools' Directors only) or where roles were unreadable; 404 when no check of the group ran |
 | My account (`own_account`) | `view_own` | The viewer's own account on `account.html` with `own=True`: service tiles linking to Alliance Auth's `services:services`, no Corporation header, the problems with hints linking to aa-charlink (the check's app without it), the left-out count; a notice when the account is not in the snapshot. `view_own` alone is sent here from the index |
 | Dashboard widgets (`views.dashboard_own`, `views.dashboard_corporation`) | `view_own` / `basic_access` | On Alliance Auth's dashboard, order 4 like eos-invoices, own before Corporation (registration order). Own: failed checks with the number of characters (`Account.keyword_counts`), service icons, link to My account. Corporation: its own problems, each to-do group with the number of mains, the unregistered count, link to the Corporation page. `""` without the permission or when the snapshot has nothing about the viewer |
 | Settings | `manage_settings` | Alliance (Tom Select), stale limit, ESI member lists on/off (also switches the roles call), only characters in the Alliance on/off, check and service switches, corptools sections and scopes |
@@ -90,6 +92,30 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
   on: then those alts are left out altogether (not checked, shown or
   counted), filtered on the ownerships in `snapshot.build`; the account pages
   say how many.
+- **Each character counts where it is** (2026-09-29, after 0.0.5; "ein
+  account kann chars in mehreren corps der alli haben, das ist erlaubt und
+  soll normal bewertet werden"): a character is rated in the Corporation of
+  the overview it is in, not in its main's; outside the overview it counts
+  with its main. Worked out in `Report._characters_by_corporation` from the
+  snapshot as it is: `Corporation.accounts` are the own mains with the
+  characters counted here, `Corporation.visiting` the accounts of mains
+  elsewhere with their characters here (`Account.visiting`,
+  `main_corporation_name`), `evaluated_accounts` both - problem count, cards,
+  to-dos, the Character Audit row. `Report.accounts` and `Report.account()`
+  keep the whole accounts (account pages, Alliance-wide lists, cockpit). On
+  the Corporation page a visiting main links to its account only for
+  `view_all` (`can_view_all`): a CEO may not open another Corporation's
+  account.
+- **Corporation page to-do list** names CharLink (`Check.charlink_hint`) where
+  aa-charlink is installed (2026-09-29).
+- **My account "du-zt"** (2026-09-29): every text of its own speaks to the
+  member - `Check.own_hint` with aa-charlink, `Check.own_app_hint` without,
+  "None of your characters has a problem.", "N of your characters ...", and
+  German with *du* (rule in `CLAUDE.md`, `## Translations`).
+- **My account asks for missing characters** (2026-09-29, "ob chars in der
+  übersicht fehlen und noch ergänzt werden müssen"): `partials/
+  missing-characters.html`, shown on My account with or without an account in
+  the overview, linking to CharLink or to `authentication:add_character`.
 - **Corporation page**: every member of the Corporation, reduced to mains
   where Auth knows the account; unknown counts as a main.
 - **Member lists from ESI** with tokens corptools already has - corptools
@@ -126,19 +152,28 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
 - The account page shows the account's own service links as green/red tiles
   and no longer the Corporation's shares in the header.
 - Translations in de, ru, zh_Hans at every `/commit`, like eos-invoices.
-- **Cockpit tiles without a page of their own** link to the app they count:
-  Character Audit to `corptools:react`, Corporation Audit to
-  `corptools:corp_react`, Structures to `structures:index` (no longer Auth's
-  `/services/`, changed 2026-09-29). A URL that does not resolve leaves the
-  tile unlinked. The Members registered tile and the Corporation tile rows
-  have no link of their own.
+- **Cockpit audit tiles open lists of their own** (2026-09-29, after 0.0.5;
+  before, they linked to corptools and aa-structures): Character Audit to
+  `character_audit` - every main with a tag per failed character check and
+  the number of its characters failing it, like a service list; Corporation
+  Audit and Structures to `directors/<group>` - in both cases the
+  **Directors** ("in beiden Fällen Directoren ohne Token"): all of them,
+  those without the token first, Directors unknown to Auth included with the
+  tag *not in Auth*. Corporation Audit asks for a token with every
+  Corporation-audit scope (the Director check's rule), Structures for an
+  enabled `OwnerCharacter` of the Corporation's owner. The Members registered
+  tile and the Corporation tile rows have no link of their own.
+- **Gua Zi 2nd hand** (98827954, production), reported as not in the
+  Alliance, is in it according to ESI since 2026-08-20: the overview is right.
+  No exclusion list was asked for.
 - **Service lists show mains only** (one link per account), without problem
   badges; all table columns are left-aligned.
 - **"No Director token"** marks a Corporation where no Director's token could
   read the roles: a small info icon with the explanation as tooltip beside the
   name (tile, table line, Corporation page; a badge until 2026-09-29), *not*
   a problem - no percentage, sorting or border colour changes. Set only while
-  the ESI switch and the Director check are on; a Corporation of the Alliance
+  the ESI switch is on together with the Director check or a Director list
+  (the latter since the audit lists); a Corporation of the Alliance
   without any account in Auth is asked as well.
 - The ESI switch is called **Fetch data from ESI** (it also covers the roles).
 - **Readability** (the aim: a compact overview for the Alliance's leadership
@@ -174,8 +209,13 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
 - **Director check only inside the Alliance**: a Director of a Corporation
   outside the Alliance is no problem, with or without *Only characters in
   the Alliance*; such Corporations are not asked for roles.
-- **My account links to aa-charlink** for every problem (the other pages
-  keep the check's app); without aa-charlink the check's app stays.
+- **My account links to aa-charlink** for every problem; without aa-charlink
+  the check's app stays.
+- **The account page links character problems to aa-charlink** too
+  (2026-09-29, after 0.0.5), with hints about the player in the third person
+  ("The player ticks Character Audit in CharLink ..."); the Corporation
+  header's problems keep their app there and on the Corporation page. The
+  Corporation page's to-do list names CharLink as well (see below).
 - Claude may apply this app's migrations to `aa_dev` and restart the dev
   Celery worker without asking.
 
@@ -237,10 +277,29 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
 
 ## Open points / next steps
 
-- The hints on *My account* still name corptools ("The player adds this
-  character in the corptools Character Audit.") while the link beside them
-  now goes to CharLink; offered to the user (2026-09-29) to reword them
-  there, no answer yet.
+- Uncommitted since 0.0.5: the four character checks carry two CharLink
+  hints, `Check.own_hint` (to the player, My account: "Tick Character Audit
+  in CharLink and log in with this character.") and `Check.charlink_hint`
+  (about the player, account page). Both views pass `charlink_url`;
+  `account.html` hands it to `problem-hint.html` as `charlink` for the
+  character problems only, so the Corporation header keeps the check's app;
+  `own` picks the text. The eight new messages go into `tools/glossary.py`
+  at `/commit`. Sabotage 3 for 3 and 4 for 4. "Character Audit" is
+  corptools' default `CORPTOOLS_APP_NAME`, which CharLink shows as the label;
+  an installation that renames it sees a different box.
+- Uncommitted since 0.0.5: the audit lists. `snapshot._directors` stores
+  `directors` per Corporation (`id`, `name`, `in_auth`, `user_id` - only for
+  an account of the overview -, `main_name`, `tokens` per group of
+  `checks.DIRECTOR_GROUPS`), from the ESI roles kept per Corporation
+  (`esi_directors_by_corporation`) and `corptools.known_directors`; tokens
+  from `corptools.corporation_token_holders` and
+  `structures.owner_characters`. The roles are asked when the Director check
+  *or* a Director list needs them (`asked_roles`). `report.Director`,
+  `Report.directors(group)`, `Report.accounts_by_problems()`, `Gauge.url`
+  (replaces the `{% url %}` juggling in `index.html`). Templates
+  `character_audit.html`, `directors.html`. The dev snapshot has no
+  `directors` until the next rebuild; the Celery worker has to be restarted
+  first. New messages for the glossary at `/commit`.
 - Nothing was looked at in a browser: the pages need a login. The JS files
   (`filter.js`, `view.js`, `copy.js`), the tiles, the table, the footer, the
   navbar tabs, the two dashboard widgets and the CSV download are covered by
@@ -267,8 +326,9 @@ dropped when it does not resolve) in `checks.py`. Translations: `tools/glossary.
   The dev DB has one account and no service links: every service number is 0.
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
   Comes), nothing switched off, ESI on, *Only characters in the Alliance*
-  off. The Celery worker was restarted on the 0.0.5 code (after aa-charlink
-  went into `INSTALLED_APPS`) at 21:38 (WSL clock), started detached from a
+  off. The Celery worker was restarted on the code after 0.0.5 (Director
+  lists) at 22:43 (WSL clock; `pkill -f` from `bash -lc` kills its own shell -
+  start it from a script), started detached from a
   shell (`setsid nohup ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo`
   in `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`, not from a
   terminal tab); the two workers running before (one started outside a

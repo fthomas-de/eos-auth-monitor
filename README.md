@@ -22,9 +22,8 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   registered in Auth, share of characters with a complete corptools
   Character Audit, share of Corporations with a working corptools
   Corporation Audit and aa-structures owner - and a tile with the number of
-  connections per service. The service tiles open their list; the Character
-  Audit and Corporation Audit tiles open corptools, the Structures tile
-  aa-structures (no link where that app is not installed)
+  connections per service. Every tile but *Members registered* opens a list,
+  see *Service lists* and *Audit lists*
 - **Most problems first**: Corporation tiles, mains, characters and the service
   lists are ordered by the number of problems, then by name
 - **Filter** above the Corporations of the overview: name or ticker, and a
@@ -37,21 +36,39 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   accounts with problems, below it each app with its share of complete
   entries (registered members, Character Audit, Corporation Audit,
   Structures, every service)
+- **Each character counts where it is**: an account may have characters in
+  several Corporations of the Alliance, and each is rated in the Corporation
+  it is in - an alt with a problem turns its own Corporation red, not its
+  main's. A character in a Corporation outside the overview counts with its
+  main
 - **Corporation detail**: a to-do list first - per failed check the mains it
-  concerns and what they have to do, and the members not registered in Auth,
+  concerns (also mains elsewhere whose alts here fail it) and what they have
+  to do (in aa-charlink where it is installed), and the members not registered in Auth,
   each group with a button that copies the names for an EVE mail and one that
   downloads them as a CSV file; a further button downloads the whole list, a
   line per name with its problem. Then every
   member of the Corporation, reduced to mains: the mains with problems as
-  cards with keywords naming their problems, the others as a compact list,
+  cards with keywords naming their problems (a main elsewhere whose alts
+  here have problems too, marked "Main in ..."), the others as a compact list,
   members whose main is in another Corporation under that main, and members
   unknown to Auth as a compact list, each counting as a main of its own
 - **Account detail**: the characters with problems, with the full details of
   each problem - which scopes are missing, which sections are stale - and
-  what to do about it, with a link to the app where it is done; the
-  characters without problems folded away below
+  what to do about it, with a link to
+  [aa-charlink](https://github.com/Maestro-Zacht/aa-charlink) where it is
+  installed (otherwise to the app where it is done); the Corporation's own
+  problems in the header keep the link to their app; the characters without
+  problems folded away below
 - **Service lists**: per Corporation and per service every main and whether
   it has linked that service; per service the same for the whole Alliance
+- **Audit lists** behind the cockpit tiles, for the whole Alliance: *Character
+  Audit* lists every main with a tag per failed character check (and how many
+  of its characters fail it); *Corporation Audit* and *Structures* list every
+  Director of the Alliance's Corporations with its main and whether it has
+  the app's token - a token with every Corporation-audit scope, or a place
+  among the enabled characters of the Corporation's aa-structures owner -
+  those without first. A Director unknown to Auth is tagged *not in Auth*;
+  see [Directors](#directors)
 - **Page header**: the app's name and version, below it the page - Corporation
   overview, Corporation details, Main details, the service's name
 - **Rebuild now** with a progress bar while the task runs
@@ -60,9 +77,9 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   stored result
 - **My account** for members: their own characters, what is wrong and what
   to do about it - nothing about other accounts; the service tiles open
-  Alliance Auth's services page, and each problem links to
-  [aa-charlink](https://github.com/Maestro-Zacht/aa-charlink) where it is
-  installed (otherwise to the app of the check)
+  Alliance Auth's services page, and each problem links to aa-charlink where
+  it is installed, with a hint which app to tick there (otherwise to the app
+  of the check, with that app's hint)
 - **Navbar tabs** from the narrowest view to the widest: *My account*, *My
   Corporation* (the Corporation of the own main), *Alliance overview*, then
   *Settings* - each only for those who may open it
@@ -120,8 +137,17 @@ A Corporation where no Director's token could read the roles (the ESI call in
 [ESI](#esi) found no token, or none worked) carries a small info mark beside
 its name, *No Director token* as its tooltip, on the overview and its page:
 the check cannot see its Directors there. The mark is not a problem and does
-not count in the percentages; it only exists while *Fetch data from ESI* and
-the check are on.
+not count in the percentages; it only exists while *Fetch data from ESI* is
+on together with the check or a Director list.
+
+### Directors
+
+The Director lists behind the *Corporation Audit* and *Structures* tiles take
+the Directors of each Corporation of the Alliance from ESI (with *Fetch data
+from ESI* on, see [ESI](#esi)) and from the roles corptools read. Without ESI
+they know only the Directors corptools read - characters with a token - and
+say so. A list exists while at least one check of its app is on; the lists
+change no percentage and no problem count.
 
 "Audit inactive" follows the conditions of corptools'
 `CharacterAudit.is_active()` - which sections count depends on corptools'
@@ -168,8 +194,8 @@ Corporation:
 | Endpoint | Scope | Token |
 |---|---|---|
 | `GET /corporations/{corporation_id}/members/` | `esi-corporations.read_corporation_membership.v1` | any token with that scope of a character in that Corporation, from django-esi's store - whichever app it was granted for; corptools' Corporation audit requires the scope anyway. No in-game role needed |
-| `GET /corporations/{corporation_id}/roles` | `esi-corporations.read_corporation_membership.v1` | Corporations of the Alliance only; a token of a character corptools knows as a Director of that Corporation (ESI lists the roles of all members to a Director, Personnel Manager or a character with grantable roles). Names every Director, also those corptools never read the roles of because they have no token - for the check *Director token missing*. Skipped where no such token exists |
-| `POST /universe/names/` | none | for members Auth has no name for |
+| `GET /corporations/{corporation_id}/roles` | `esi-corporations.read_corporation_membership.v1` | Corporations of the Alliance only; a token of a character corptools knows as a Director of that Corporation (ESI lists the roles of all members to a Director, Personnel Manager or a character with grantable roles). Names every Director, also those corptools never read the roles of because they have no token - for the check *Director token missing* and the Director lists. Skipped where no such token exists |
+| `POST /universe/names/` | none | for members and Directors Auth has no name for |
 
 django-esi caches the responses and honours their expiry. The app asks for
 no scopes of its own and adds no login step. When it uses a token, django-esi
@@ -179,7 +205,7 @@ next one tried, on every run; failed calls are not cached and count towards
 ESI's error limit. *Fetch data from ESI*
 in the settings switches all of these calls off; the Corporation page then
 shows the registered accounts only, and the check *Director token missing*
-knows only the Directors corptools read.
+and the Director lists know only the Directors corptools read.
 
 The character count of a Corporation on the overview is not read from ESI by
 this app: it is the member count Auth keeps on the Corporation
@@ -264,7 +290,7 @@ by itself.
 | Permission | Who | What |
 |---|---|---|
 | `eos_auth_monitor.basic_access` | CEOs, directors | The Corporation of their own main: its members, accounts and service lists, the CSV export of its to-do list, its widget on the dashboard; the progress bar |
-| `eos_auth_monitor.view_all` | Leadership | Cockpit and every Corporation of the Alliance, the Alliance-wide service lists, the CSV export of every to-do list, *Rebuild now* |
+| `eos_auth_monitor.view_all` | Leadership | Cockpit and every Corporation of the Alliance, the Alliance-wide service and audit lists, the CSV export of every to-do list, *Rebuild now* |
 | `eos_auth_monitor.manage_settings` | Admins | The settings page: Alliance, checks, services, corptools sections and scopes; *Rebuild now* |
 | `eos_auth_monitor.view_own` | Members (a state is fine) | *My account* and its widget on the dashboard: their own account - characters, problems, what to do, which services are linked. Nothing about other accounts or the Corporation's figures |
 

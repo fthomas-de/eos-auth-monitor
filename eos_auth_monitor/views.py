@@ -28,7 +28,7 @@ from .permissions import (
     can_view_corporation,
     own_corporation_id,
 )
-from .report import PHASE_LABELS, Report
+from .report import CORPORATION_GROUP_LABELS, PHASE_LABELS, Report
 from .tasks import update_snapshot
 
 
@@ -132,6 +132,9 @@ def corporation(request, corporation_id):
     report = _report()
     context = _state(report)
     context["corporation"] = _visible_corporation(request, report, corporation_id)
+    context["charlink_url"] = _charlink_url()
+    # the cards and to-dos of mains elsewhere link to their account only for those who may see it
+    context["can_view_all"] = request.user.has_perm(VIEW_ALL)
     return _render(
         request, "eos_auth_monitor/corporation.html", context, _corporation_nav(request.user, corporation_id)
     )
@@ -188,13 +191,19 @@ def account(request, user_id):
     return _render(
         request,
         "eos_auth_monitor/account.html",
-        {**_state(report), "corporation": corporation, "account": account},
+        {
+            **_state(report),
+            "corporation": corporation,
+            "account": account,
+            # the player fixes their characters in aa-charlink; the Corporation's own problems keep their app
+            "charlink_url": _charlink_url(),
+        },
         _corporation_nav(request.user, corporation.id),
     )
 
 
 def _charlink_url() -> str | None:
-    """aa-charlink's page, where a member adds a character to every app at once; None without the app."""
+    """aa-charlink's page, where a player adds a character to every app at once; None without the app."""
     try:
         return reverse("charlink:index")
     except NoReverseMatch:
@@ -216,7 +225,7 @@ def own_account(request):
             "own": True,
             "location": _("My account"),
             # a member fixes their own tokens in aa-charlink; without it the check's own app stays the link
-            "own_fix_link": _charlink_url(),
+            "charlink_url": _charlink_url(),
         },
         NAV_OWN,
     )
@@ -243,10 +252,7 @@ def service(request, service_key):
     service = report.service(service_key) if report else None
     if service is None:
         raise Http404
-    rows = sorted(
-        ((corporation, account) for corporation in report.corporations for account in corporation.accounts),
-        key=lambda row: (-row[1].problem_count, row[0].name.lower(), row[1].main_name.lower()),
-    )
+    rows = report.accounts_by_problems()
     return _render(
         request,
         "eos_auth_monitor/service.html",
@@ -256,6 +262,48 @@ def service(request, service_key):
             "location": service.label,
             "rows": rows,
             "linked": sum(account.is_linked(service.key) for _, account in rows),
+        },
+    )
+
+
+@any_permission_required(VIEW_ALL)
+def character_audit(request):
+    """Every main of the Alliance with the character checks its account fails, like a service list."""
+    report = _report()
+    if report is None or not report.has_character_checks:
+        raise Http404
+    rows = report.accounts_by_problems()
+    return _render(
+        request,
+        "eos_auth_monitor/character_audit.html",
+        {
+            **_state(report),
+            "location": _("Character Audit"),
+            "rows": rows,
+            "complete": sum(not account.has_problems for _, account in rows),
+        },
+    )
+
+
+@any_permission_required(VIEW_ALL)
+def directors(request, group_key):
+    """Every Director of the Alliance and whether it has the token of a Corporation-level app."""
+    report = _report()
+    if report is None or not report.has_director_list(group_key):
+        raise Http404
+    rows = report.directors(group_key)
+    label = CORPORATION_GROUP_LABELS[group_key]
+    return _render(
+        request,
+        "eos_auth_monitor/directors.html",
+        {
+            **_state(report),
+            "location": label,
+            "label": label,
+            "rows": rows,
+            "with_token": sum(has_token for _, _, has_token in rows),
+            # Directors nobody could read the roles of are missing from the list
+            "unreadable": [corporation for corporation in report.corporations if corporation.no_director_token],
         },
     )
 

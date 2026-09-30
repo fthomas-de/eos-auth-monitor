@@ -69,6 +69,19 @@ class TestStructures(SimpleTestCase):
         self.assertEqual(self.checks(owner, keys={"structures_sync_failing"}), ["structures_sync_failing"])
         self.assertEqual(self.checks(fake_owner(2002), keys={"structures_sync_failing"}), [])
 
+    def test_should_group_the_enabled_owner_characters_by_corporation(self):
+        model = MagicMock()
+        model.objects.filter.return_value.values_list.return_value = [(2001, 11), (2001, 12), (2002, 21)]
+        with patch("eos_auth_monitor.sources.structures.apps.get_model", return_value=model) as get_model:
+            result = structures.owner_characters([2001, 2002])
+
+        get_model.assert_called_once_with("structures", "OwnerCharacter")
+        self.assertEqual(
+            model.objects.filter.call_args.kwargs,
+            {"owner__corporation__corporation_id__in": [2001, 2002], "is_enabled": True},
+        )
+        self.assertEqual(result, {2001: {11, 12}, 2002: {21}})
+
 
 class TestServices(SimpleTestCase):
     def linked(self, service_key):

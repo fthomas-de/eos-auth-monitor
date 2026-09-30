@@ -34,12 +34,14 @@
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                                     <span class="badge text-bg-danger text-wrap" title="{{ todo.check.description }}">{{ todo.check.label }}</span>
                                     <span class="badge text-bg-secondary">{{ todo.accounts|length }}</span>
-                                    <span class="small text-body-secondary me-auto">{{ todo.check.hint }}</span>
+                                    {# the players add their characters in aa-charlink where it is installed #}
+                                    <span class="small text-body-secondary me-auto">{% if charlink_url %}{% firstof todo.check.charlink_hint todo.check.hint %}{% else %}{{ todo.check.hint }}{% endif %}</span>
                                     {% include "eos_auth_monitor/partials/copy-button.html" with names=todo.names %}
                                     {% include "eos_auth_monitor/partials/csv-button.html" with group=todo.check.key %}
                                 </div>
                                 <div class="small text-break">
-                                    {% for account in todo.accounts %}<a href="{% url 'eos_auth_monitor:account' account.user_id %}">{{ account.main_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}
+                                    {# a main elsewhere: its account page belongs to its own Corporation's viewers #}
+                                    {% for account in todo.accounts %}{% if account.visiting and not can_view_all %}{{ account.main_name }}{% else %}<a href="{% url 'eos_auth_monitor:account' account.user_id %}">{{ account.main_name }}</a>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}
                                 </div>
                             </li>
                         {% endfor %}
@@ -72,8 +74,18 @@
                                         <img src="{{ account.main_id|character_portrait_url:64 }}" width="48" height="48" class="rounded flex-shrink-0" alt="">
                                         <div class="flex-grow-1 overflow-hidden">
                                             <h6 class="mb-1 text-truncate">
-                                                <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="stretched-link text-reset text-decoration-none">{{ account.main_name }}</a>
+                                                {% if account.visiting and not can_view_all %}
+                                                    {{ account.main_name }}
+                                                {% else %}
+                                                    <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="stretched-link text-reset text-decoration-none">{{ account.main_name }}</a>
+                                                {% endif %}
                                             </h6>
+                                            {% if account.visiting %}
+                                                {# its characters here count here; the main and the rest of the account elsewhere #}
+                                                <div class="small text-body-secondary text-truncate eos-auth-monitor-visiting">
+                                                    <i class="fas fa-right-from-bracket fa-fw"></i> {% blocktranslate with corporation=account.main_corporation_name context "EVE jargon" %}Main in {{ corporation }}{% endblocktranslate %}
+                                                </div>
+                                            {% endif %}
                                             <div class="small text-body-secondary mb-1">
                                                 {% blocktranslate count counter=account.characters|length context "EVE jargon" %}{{ counter }} character{% plural %}{{ counter }} characters{% endblocktranslate %}
                                             </div>

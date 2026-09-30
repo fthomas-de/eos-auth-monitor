@@ -228,6 +228,31 @@ def character_problems(
     return result
 
 
+def known_directors(corporation_ids) -> dict[int, set[int]]:
+    """Per Corporation the characters corptools read the Director role of - only those with a token."""
+    from corptools.models import CharacterRoles
+
+    result = {}
+    rows = CharacterRoles.objects.filter(
+        director=True, character__character__corporation_id__in=corporation_ids
+    ).values_list("character__character__corporation_id", "character__character__character_id")
+    for corporation_id, character_id in rows:
+        result.setdefault(corporation_id, set()).add(character_id)
+    return result
+
+
+def corporation_token_holders(character_ids, excluded_scopes=()) -> set[int]:
+    """The characters with a token carrying every scope of the Corporation audit - the rule of the Director check."""
+    from esi.models import Token
+
+    required = [scope for scope in corporation_scopes() if scope not in set(excluded_scopes)]
+    return set(
+        Token.objects.filter(character_id__in=character_ids)
+        .require_scopes(required)
+        .values_list("character_id", flat=True)
+    )
+
+
 def corporation_problems(
     corporation_ids, keys, stale_after_days: int, excluded_sections=(), excluded_scopes=()
 ) -> dict[int, list[dict]]:

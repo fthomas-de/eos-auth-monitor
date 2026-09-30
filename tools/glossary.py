@@ -437,7 +437,7 @@ TRANSLATIONS = {
         '请在 aa-structures 中检查该所有者：其 Character 可能已失去 Station Manager 角色。',
     ),
     'Your account is not part of the overview: your main is not in a Corporation of the Alliance, or the overview has not been rebuilt since it joined.': (
-        'Dieser Account gehört nicht zur Übersicht: Sein Main ist in keiner Corporation der Alliance, oder die Übersicht wurde seit dem Beitritt nicht neu aufgebaut.',
+        'Dein Account gehört nicht zur Übersicht: Dein Main ist in keiner Corporation der Alliance, oder die Übersicht wurde seit seinem Beitritt nicht neu aufgebaut.',
         'Ваш аккаунт не входит в обзор: ваш Main не состоит ни в одной Corporation этой Alliance, или обзор не пересобирался с момента его вступления.',
         '你的账号不在概览中：你的 Main 不在该 Alliance 的任何 Corporation 中，或者自其加入以来概览尚未重建。',
     ),
@@ -542,6 +542,103 @@ TRANSLATIONS = {
     ),
     "Name": ("Name", "Имя", "名称"),
     "Problem": ("Problem", "Проблема", "问题"),
+    # CharLink hints: about the player (account page, to-do list) and to the member (My account, "du")
+    'The player ticks Character Audit in CharLink and logs in with this character.': (
+        'Der Spieler setzt in CharLink den Haken bei Character Audit und loggt sich mit diesem Character ein.',
+        'Игрок отмечает Character Audit в CharLink и входит этим Character.',
+        '玩家在 CharLink 中勾选 Character Audit，并用此 Character 登录。',
+    ),
+    'Tick Character Audit in CharLink and log in with this character.': (
+        'Setze in CharLink den Haken bei Character Audit und logge dich mit diesem Character ein.',
+        'Отметь Character Audit в CharLink и войди этим Character.',
+        '请在 CharLink 中勾选 Character Audit，并用此 Character 登录。',
+    ),
+    'Add this character in the corptools Character Audit.': (
+        'Füge diesen Character im corptools-Character-Audit hinzu.',
+        'Добавь этого Character в аудит Character в corptools.',
+        '请在 corptools Character 审计中添加此 Character。',
+    ),
+    'The player ticks Character Audit in CharLink, logs in with this character again and grants every scope it asks for.': (
+        'Der Spieler setzt in CharLink den Haken bei Character Audit, loggt sich erneut mit diesem Character ein und erteilt alle verlangten Scopes.',
+        'Игрок отмечает Character Audit в CharLink, заново входит этим Character и выдаёт все запрошенные скоупы.',
+        '玩家在 CharLink 中勾选 Character Audit，重新用此 Character 登录，并授予其要求的全部 Scope。',
+    ),
+    'Tick Character Audit in CharLink, log in with this character again and grant every scope it asks for.': (
+        'Setze in CharLink den Haken bei Character Audit, logge dich erneut mit diesem Character ein und erteile alle verlangten Scopes.',
+        'Отметь Character Audit в CharLink, заново войди этим Character и выдай все запрошенные скоупы.',
+        '请在 CharLink 中勾选 Character Audit，重新用此 Character 登录，并授予其要求的全部 Scope。',
+    ),
+    'Add this character in the corptools Character Audit again and grant every scope it asks for.': (
+        'Füge diesen Character im corptools-Character-Audit erneut hinzu und erteile alle verlangten Scopes.',
+        'Заново добавь этого Character в аудит Character в corptools и выдай все запрошенные скоупы.',
+        '请在 corptools Character 审计中重新添加此 Character，并授予其要求的全部 Scope。',
+    ),
+    'The next corptools update usually clears this; if it stays, the player ticks Character Audit in CharLink and logs in with this character again.': (
+        'Meist behebt das die nächste corptools-Aktualisierung; bleibt es, setzt der Spieler in CharLink den Haken bei Character Audit und loggt sich erneut mit diesem Character ein.',
+        'Обычно это исчезает после следующего обновления corptools; если нет, игрок отмечает Character Audit в CharLink и заново входит этим Character.',
+        '通常下一次 corptools 更新后即可恢复；如果仍然存在，玩家需在 CharLink 中勾选 Character Audit 并重新用此 Character 登录。',
+    ),
+    'The next corptools update usually clears this; if it stays, tick Character Audit in CharLink and log in with this character again.': (
+        'Meist behebt das die nächste corptools-Aktualisierung; bleibt es, setze in CharLink den Haken bei Character Audit und logge dich erneut mit diesem Character ein.',
+        'Обычно это исчезает после следующего обновления corptools; если нет, отметь Character Audit в CharLink и заново войди этим Character.',
+        '通常下一次 corptools 更新后即可恢复；如果仍然存在，请在 CharLink 中勾选 Character Audit 并重新用此 Character 登录。',
+    ),
+    'The next corptools update usually clears this; if it stays, add the character again.': (
+        'Meist behebt das die nächste corptools-Aktualisierung; bleibt es, füge den Character erneut hinzu.',
+        'Обычно это исчезает после следующего обновления corptools; если нет, заново добавь этого Character.',
+        '通常下一次 corptools 更新后即可恢复；如果仍然存在，请重新添加该 Character。',
+    ),
+    'The Director ticks Corporation Audit in CharLink and logs in with this character.': (
+        'Der Director setzt in CharLink den Haken bei Corporation Audit und loggt sich mit diesem Character ein.',
+        'Director отмечает Corporation Audit в CharLink и входит этим Character.',
+        '该 Director 在 CharLink 中勾选 Corporation Audit，并用此 Character 登录。',
+    ),
+    'Tick Corporation Audit in CharLink and log in with this character.': (
+        'Setze in CharLink den Haken bei Corporation Audit und logge dich mit diesem Character ein.',
+        'Отметь Corporation Audit в CharLink и войди этим Character.',
+        '请在 CharLink 中勾选 Corporation Audit，并用此 Character 登录。',
+    ),
+    'Add a Corporation token in the corptools Corporation Audit with this character.': (
+        'Füge mit diesem Character im corptools-Corporation-Audit einen Corporation-Token hinzu.',
+        'Добавь этим Character токен Corporation в аудите Corporation в corptools.',
+        '请用此 Character 在 corptools Corporation 审计中添加 Corporation 令牌。',
+    ),
+    # My account, to the member
+    'None of your characters has a problem.': (
+        'Keiner deiner Characters hat ein Problem.',
+        'Ни у одного из твоих Character нет проблем.',
+        '你的 Character 都没有问题。',
+    ),
+    'Is one of your characters missing here? Add it, so that it is checked too.': (
+        'Fehlt hier einer deiner Characters? Füge ihn hinzu, damit er auch geprüft wird.',
+        'Здесь не хватает одного из твоих Character? Добавь его, чтобы он тоже проверялся.',
+        '这里缺少你的某个 Character 吗？请添加它，以便它也被检查。',
+    ),
+    'Add character': ('Character hinzufügen', 'Добавить Character', '添加 Character'),
+    # the audit lists
+    '%(part)s of %(total)s mains complete': (
+        '%(part)s von %(total)s Mains vollständig',
+        'Завершено Main: %(part)s из %(total)s',
+        '已完成 %(part)s / %(total)s 个 Main',
+    ),
+    'complete': ('vollständig', 'завершён', '已完成'),
+    'Main in %(corporation)s': ('Main in %(corporation)s', 'Main в %(corporation)s', 'Main 在 %(corporation)s'),
+    'Only the Directors corptools knows are listed: it reads the roles of characters with a token alone. Switch on Fetch data from ESI in the settings to list every Director.': (
+        'Nur die Director, die corptools kennt, stehen hier: Es liest die Rollen nur von Characters mit Token. Schalte in den Einstellungen Daten von ESI abrufen ein, um jeden Director aufzulisten.',
+        'Показаны только Director, известные corptools: он читает роли лишь Character с токеном. Включи в настройках получение данных из ESI, чтобы видеть всех Director.',
+        '这里只列出 corptools 已知的 Director：它只读取有令牌的 Character 的角色。在设置中开启从 ESI 获取数据即可列出所有 Director。',
+    ),
+    'Directors': ('Director', 'Director', 'Director'),
+    'Director': ('Director', 'Director', 'Director'),
+    '%(part)s of %(total)s Directors with a token': (
+        '%(part)s von %(total)s Director mit Token',
+        'С токеном Director: %(part)s из %(total)s',
+        '%(part)s / %(total)s 个 Director 有令牌',
+    ),
+    'Token': ('Token', 'Токен', '令牌'),
+    'token': ('Token', 'токен', '令牌'),
+    'no token': ('kein Token', 'нет токена', '无令牌'),
+    'not in Auth': ('nicht in Auth', 'нет в Auth', '不在 Auth 中'),
 }
 
 PLURALS = {
@@ -576,6 +673,30 @@ PLURALS = {
         ['+ %(counter)s Corporation-Problem', '+ %(counter)s Corporation-Probleme'],
         ['+ %(counter)s проблема Corporation', '+ %(counter)s проблемы Corporation', '+ %(counter)s проблем Corporation'],
         ['+ %(counter)s 个 Corporation 问题'],
+    ),
+    '%(counter)s of your characters is outside the Alliance and neither shown nor checked here.': (
+        [
+            '%(counter)s deiner Characters ist außerhalb der Alliance und wird hier weder angezeigt noch geprüft.',
+            '%(counter)s deiner Characters sind außerhalb der Alliance und werden hier weder angezeigt noch geprüft.',
+        ],
+        [
+            '%(counter)s из твоих Character вне Alliance и здесь не показывается и не проверяется.',
+            '%(counter)s из твоих Character вне Alliance и здесь не показываются и не проверяются.',
+            '%(counter)s из твоих Character вне Alliance и здесь не показываются и не проверяются.',
+        ],
+        ['你有 %(counter)s 个 Character 在 Alliance 之外，在此既不显示也不检查。'],
+    ),
+    'No Director token could read the roles of %(counter)s Corporation, so its Directors without a token are missing here.': (
+        [
+            'Kein Director-Token konnte die Rollen von %(counter)s Corporation lesen; ihre Director ohne Token fehlen hier.',
+            'Kein Director-Token konnte die Rollen von %(counter)s Corporations lesen; deren Director ohne Token fehlen hier.',
+        ],
+        [
+            'Ни один токен Director не смог прочитать роли %(counter)s Corporation, поэтому её Director без токена здесь отсутствуют.',
+            'Ни один токен Director не смог прочитать роли %(counter)s Corporation, поэтому их Director без токена здесь отсутствуют.',
+            'Ни один токен Director не смог прочитать роли %(counter)s Corporation, поэтому их Director без токена здесь отсутствуют.',
+        ],
+        ['没有任何 Director 令牌能读取 %(counter)s 个 Corporation 的角色，因此这里缺少其中没有令牌的 Director。'],
     ),
 }
 

@@ -1,15 +1,20 @@
 {% load i18n %}
 {# What to do about `problem`, with a link to the page of the app where it is done - if that app is installed. #}
+{# `charlink`: aa-charlink's URL, passed for a character's problems; the player fixes them there, whatever the check's app. #}
 {% if problem.check.hint %}
     <div class="small">
-        <i class="fas fa-wrench fa-fw text-body-secondary"></i> {{ problem.check.hint }}
-        {% if own_fix_link %}
-            {# My account: the member's own characters, all added in aa-charlink #}
-            <a href="{{ own_fix_link }}" class="text-nowrap eos-auth-monitor-fix">CharLink <i class="fas fa-arrow-up-right-from-square fa-xs"></i></a>
-        {% elif problem.check.fix_url %}
-            {% url problem.check.fix_url as fix_link %}
-            {% if fix_link %}
-                <a href="{{ fix_link }}" class="text-nowrap eos-auth-monitor-fix">{{ problem.check.app_title }} <i class="fas fa-arrow-up-right-from-square fa-xs"></i></a>
+        <i class="fas fa-wrench fa-fw text-body-secondary"></i>
+        {% if charlink %}
+            {# My account speaks to the player, the account page about them #}
+            {% if own %}{% firstof problem.check.own_hint problem.check.hint %}{% else %}{% firstof problem.check.charlink_hint problem.check.hint %}{% endif %}
+            <a href="{{ charlink }}" class="text-nowrap eos-auth-monitor-fix">CharLink <i class="fas fa-arrow-up-right-from-square fa-xs"></i></a>
+        {% else %}
+            {% if own %}{% firstof problem.check.own_app_hint problem.check.hint %}{% else %}{{ problem.check.hint }}{% endif %}
+            {% if problem.check.fix_url %}
+                {% url problem.check.fix_url as fix_link %}
+                {% if fix_link %}
+                    <a href="{{ fix_link }}" class="text-nowrap eos-auth-monitor-fix">{{ problem.check.app_title }} <i class="fas fa-arrow-up-right-from-square fa-xs"></i></a>
+                {% endif %}
             {% endif %}
         {% endif %}
     </div>

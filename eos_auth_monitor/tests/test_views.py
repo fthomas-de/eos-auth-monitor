@@ -170,38 +170,32 @@ class TestPages(ViewTestCase):
         for corporation_id in (2001, 2002):
             self.assertContains(response, reverse("eos_auth_monitor:corporation", args=[corporation_id]))
 
-    def test_should_link_the_audit_gauges_to_corptools(self):
+    def test_should_link_the_audit_gauges_to_their_lists(self):
         snapshot = Snapshot.objects.get()
-        snapshot.data["checks"] = ["char_audit_missing", "corp_token_missing"]
+        snapshot.data["checks"] = ["char_audit_missing", "corp_token_missing", "structures_no_owner"]
         snapshot.save()
 
         response = self.get(self.leader, "index")
 
-        targets = {"Character Audit complete": "corptools:react", "Corporation Audit working": "corptools:corp_react"}
-        for label, url_name in targets.items():
+        targets = {
+            "Character Audit complete": reverse("eos_auth_monitor:character_audit"),
+            "Corporation Audit working": reverse("eos_auth_monitor:directors", args=["corptools_corporations"]),
+            "Structures working": reverse("eos_auth_monitor:directors", args=["structures"]),
+        }
+        for label, url in targets.items():
             with self.subTest(label):
-                self.assertContains(response, f'href="{reverse(url_name)}" class="stretched-link" aria-label="{label}"')
+                self.assertContains(response, f'href="{url}" class="stretched-link" aria-label="{label}"')
         self.assertNotContains(response, reverse("services:services"))
 
-    def test_should_link_the_structures_gauge_to_aa_structures(self):
-        if not is_app_installed("structures"):
-            self.skipTest("aa-structures is not installed")
+    def test_should_leave_the_members_registered_gauge_unlinked(self):
         snapshot = Snapshot.objects.get()
-        snapshot.data["checks"] = ["structures_no_owner"]
+        snapshot.data["corporations"][0].update(member_count=1, unregistered=[])
         snapshot.save()
 
         response = self.get(self.leader, "index")
 
-        url = reverse("structures:index")
-        self.assertContains(response, f'href="{url}" class="stretched-link" aria-label="Structures working"')
-
-    def test_should_leave_a_gauge_unlinked_when_its_app_has_no_such_page(self):
-        # an app that is not installed has no URLs; the tile stays, without a link
-        with patch("eos_auth_monitor.report.CHARACTER_AUDIT_URL", "nowhere:page"):
-            response = self.get(self.leader, "index")
-
-        self.assertContains(response, "Character Audit complete")
-        self.assertNotContains(response, 'aria-label="Character Audit complete"')
+        self.assertContains(response, "Members registered")
+        self.assertNotContains(response, 'aria-label="Members registered"')
 
     def test_should_mark_a_corporation_without_a_director_token(self):
         snapshot = Snapshot.objects.get()
@@ -467,7 +461,9 @@ class TestPages(ViewTestCase):
         row["unregistered"] = [{"id": 7001, "name": "Stranger A"}, {"id": 7002, "name": "Stranger B"}]
         snapshot.save()
 
-        response = self.get(self.leader, "corporation", 2002)
+        # without aa-charlink, whether or not this instance has it
+        with patch("eos_auth_monitor.views._charlink_url", return_value=None):
+            response = self.get(self.leader, "corporation", 2002)
         content = response.content.decode()
 
         todos = content[content.index("eos-auth-monitor-todos"):content.index("Mains of this Corporation")]
@@ -480,6 +476,15 @@ class TestPages(ViewTestCase):
         # and the members Auth does not know
         self.assertIn('data-eos-auth-monitor-copy="Stranger A, Stranger B"', todos)
         self.assertRegex(content, r"eos_auth_monitor/js/copy[^\"]*\.js")
+
+    def test_should_name_charlink_in_the_to_do_list_where_it_is_installed(self):
+        with patch("eos_auth_monitor.views._charlink_url", return_value="/charlink/"):
+            response = self.get(self.leader, "corporation", 2002)
+        content = response.content.decode()
+
+        todos = content[content.index("eos-auth-monitor-todos"):content.index("Mains of this Corporation")]
+        self.assertIn("The player ticks Character Audit in CharLink and logs in with this character.", todos)
+        self.assertNotIn("The player adds this character in the corptools Character Audit.", todos)
 
     def test_should_have_nothing_to_do_where_nothing_is_wrong(self):
         self.assertNotContains(self.get(self.leader, "corporation", 2001), "eos-auth-monitor-todos")
@@ -498,7 +503,9 @@ class TestPages(ViewTestCase):
         self.assertContains(response, 'class="card h-100 border-danger"', count=1)
 
     def test_should_put_a_hint_and_the_app_to_each_problem_of_an_account(self):
-        response = self.get(self.leader, "account", 22)
+        # without aa-charlink, whether or not this instance has it
+        with patch("eos_auth_monitor.views._charlink_url", return_value=None):
+            response = self.get(self.leader, "account", 22)
 
         self.assertContains(response, "The player adds this character in the corptools Character Audit.")
         url = reverse("corptools:react")
@@ -726,7 +733,7 @@ class TestOwnAccount(ViewTestCase):
         response = self.get(self.member, "own_account")
 
         self.assertContains(response, f"Char {self.member.profile.main_character.character_id}")
-        self.assertContains(response, "The player adds this character in the corptools Character Audit.")
+        self.assertContains(response, "eos-auth-monitor-fix")
         self.assertContains(response, '<small class="text-muted">My account</small>')
         self.assertContains(response, "1 character without problems")
 
@@ -737,7 +744,49 @@ class TestOwnAccount(ViewTestCase):
 
         response = self.get(self.member, "own_account")
 
-        self.assertContains(response, "1 character outside the Alliance is neither shown nor checked here.")
+        self.assertContains(
+            response, "1 of your characters is outside the Alliance and neither shown nor checked here."
+        )
+
+    def test_should_ask_a_member_whether_a_character_is_missing(self):
+        with patch("eos_auth_monitor.views._charlink_url", return_value="/charlink/"):
+            with_charlink = self.get(self.member, "own_account")
+        with patch("eos_auth_monitor.views._charlink_url", return_value=None):
+            without = self.get(self.member, "own_account")
+
+        question = "Is one of your characters missing here?"
+        self.assertContains(with_charlink, question)
+        self.assertContains(with_charlink, '<a href="/charlink/" class="btn btn-sm btn-primary text-nowrap">CharLink')
+        # without aa-charlink, Alliance Auth's own page adds the character
+        self.assertContains(without, question)
+        self.assertContains(without, f'<a href="{reverse("authentication:add_character")}"')
+
+    def test_should_ask_about_missing_characters_also_without_an_account_in_the_overview(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][1]["accounts"].pop()
+        snapshot.save()
+
+        response = self.get(self.member, "own_account")
+
+        self.assertContains(response, "Your account is not part of the overview")
+        self.assertContains(response, "Is one of your characters missing here?")
+
+    def test_should_not_ask_leadership_about_someone_elses_characters(self):
+        response = self.get(self.leader, "account", self.member.pk)
+
+        self.assertNotContains(response, "Is one of your characters missing here?")
+        self.assertNotContains(response, "of your characters")
+
+    def test_should_speak_to_the_member_when_nothing_is_wrong(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][1]["accounts"][-1]["characters"][0]["problems"] = []
+        snapshot.save()
+
+        own = self.get(self.member, "own_account")
+        other = self.get(self.leader, "account", self.member.pk)
+
+        self.assertContains(own, "None of your characters has a problem.")
+        self.assertContains(other, "No character of this account has a problem.")
 
     def fix_links(self, response):
         return re.findall(r'<a href="([^"]*)" class="text-nowrap eos-auth-monitor-fix">\s*([^<]*?)\s*<', response.content.decode())
@@ -747,6 +796,18 @@ class TestOwnAccount(ViewTestCase):
             response = self.get(self.member, "own_account")
 
         self.assertEqual(self.fix_links(response), [("/charlink/", "CharLink")])
+
+    CHARLINK_HINT = "Tick Character Audit in CharLink and log in with this character."
+    CHARLINK_HINT_ABOUT = "The player ticks Character Audit in CharLink and logs in with this character."
+    CORPTOOLS_HINT = "The player adds this character in the corptools Character Audit."
+
+    def test_should_tell_a_member_what_to_do_in_charlink(self):
+        with patch("eos_auth_monitor.views._charlink_url", return_value="/charlink/"):
+            response = self.get(self.member, "own_account")
+
+        self.assertContains(response, self.CHARLINK_HINT)
+        self.assertNotContains(response, self.CHARLINK_HINT_ABOUT)
+        self.assertNotContains(response, self.CORPTOOLS_HINT)
 
     @skipUnless(apps.is_installed("charlink"), "aa-charlink is not installed")
     def test_should_find_the_page_of_the_installed_charlink(self):
@@ -760,12 +821,34 @@ class TestOwnAccount(ViewTestCase):
             response = self.get(self.member, "own_account")
 
         self.assertEqual(self.fix_links(response), [(reverse("corptools:react"), "corptools - Character Audit")])
+        # still to the member, not about them
+        self.assertContains(response, "Add this character in the corptools Character Audit.")
+        self.assertNotContains(response, self.CORPTOOLS_HINT)
+        self.assertNotContains(response, self.CHARLINK_HINT)
 
-    def test_should_keep_the_checks_app_on_someone_elses_account(self):
+    def test_should_link_someone_elses_problems_to_charlink(self):
         with patch("eos_auth_monitor.views._charlink_url", return_value="/charlink/"):
             response = self.get(self.leader, "account", self.member.pk)
 
-        self.assertEqual(self.fix_links(response), [(reverse("corptools:react"), "corptools - Character Audit")])
+        self.assertEqual(self.fix_links(response), [("/charlink/", "CharLink")])
+        # about the player, not to them
+        self.assertContains(response, self.CHARLINK_HINT_ABOUT)
+        self.assertNotContains(response, self.CHARLINK_HINT)
+        self.assertNotContains(response, self.CORPTOOLS_HINT)
+
+    def test_should_keep_the_checks_app_for_the_corporations_problems_on_an_account(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["checks"].append("corp_token_missing")
+        snapshot.data["corporations"][1]["problems"] = [{"check": "corp_token_missing", "detail": []}]
+        snapshot.save()
+
+        with patch("eos_auth_monitor.views._charlink_url", return_value="/charlink/"):
+            response = self.get(self.leader, "account", self.member.pk)
+
+        self.assertEqual(
+            self.fix_links(response),
+            [(reverse("corptools:corp_react"), "corptools - Corporation Audit"), ("/charlink/", "CharLink")],
+        )
 
     def test_should_show_nothing_of_the_other_accounts(self):
         response = self.get(self.member, "own_account")
@@ -1077,3 +1160,157 @@ class TestCorporationExport(ViewTestCase):
         self.assertIn(f'href="{url}?group=unregistered"', todos)
         # and once more beside the list of the unregistered members further down
         self.assertEqual(content.count(f'href="{url}?group=unregistered"'), 2)
+
+
+class TestAltsInAnotherCorporation(ViewTestCase):
+    """An alt counts in the Corporation it is in: its problems show there, beside its main's name."""
+
+    def setUp(self):
+        super().setUp()
+        self.ceo_2002 = make_user("ceo2002", BASIC_ACCESS, corporation_id=2002)
+        snapshot = Snapshot.objects.get()
+        # account 11's main is in 2001; its alt with a problem is in 2002
+        snapshot.data["corporations"][0]["accounts"][0]["characters"].append(
+            character_row(1102, [AUDIT_MISSING], corporation_id=2002)
+        )
+        snapshot.save()
+
+    def test_should_show_the_alt_on_the_page_of_its_corporation(self):
+        response = self.get(self.leader, "corporation", 2002)
+        content = response.content.decode()
+
+        todos = content[content.index("eos-auth-monitor-todos"):content.index("Mains of this Corporation")]
+        self.assertIn('data-eos-auth-monitor-copy="Char 1101, Char 2201"', todos)
+        self.assertContains(response, 'class="card h-100 border-danger"', count=2)
+        self.assertContains(response, "Main in Corp 2001")
+        self.assertContains(response, reverse("eos_auth_monitor:account", args=[11]))
+
+    def test_should_keep_the_main_corporation_free_of_the_alts_problem(self):
+        response = self.get(self.leader, "corporation", 2001)
+
+        self.assertNotContains(response, "eos-auth-monitor-todos")
+        self.assertNotContains(response, 'class="card h-100 border-danger"')
+
+    def test_should_not_link_a_ceo_to_an_account_of_another_corporation(self):
+        response = self.get(self.ceo_2002, "corporation", 2002)
+
+        self.assertContains(response, "Main in Corp 2001")
+        self.assertNotContains(response, reverse("eos_auth_monitor:account", args=[11]))
+        self.assertContains(response, reverse("eos_auth_monitor:account", args=[22]))
+
+
+class TestCharacterAuditList(ViewTestCase):
+    """Behind the Character Audit tile: every main with the checks its account fails."""
+
+    def test_should_list_every_main_with_its_failed_checks(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][1]["accounts"][0]["characters"].append(
+            character_row(2202, [AUDIT_MISSING], corporation_id=2002)
+        )
+        snapshot.save()
+
+        response = self.get(self.leader, "character_audit")
+
+        content = response.content.decode()
+        self.assertContains(response, "1 of 2 mains complete")
+        self.assertContains(response, '<small class="text-muted">Character Audit</small>')
+        # most problems first, each account linked; two characters fail the same check
+        self.assertLess(content.index("Char 2201"), content.index("Char 1101"))
+        self.assertContains(response, reverse("eos_auth_monitor:account", args=[11]))
+        tags = content[content.index("eos-auth-monitor-tags"):]
+        self.assertIn("Audit missing &times;2</span>", tags)
+        self.assertContains(response, '<span class="badge text-bg-success">complete</span>', count=1)
+
+    def test_should_not_exist_without_character_checks(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["checks"] = ["corp_token_missing"]
+        snapshot.save()
+
+        self.assertEqual(self.get(self.leader, "character_audit").status_code, 404)
+
+    def test_should_keep_everyone_but_leadership_out(self):
+        self.assertEqual(self.get(self.ceo, "character_audit").status_code, 302)
+        self.assertEqual(self.get(self.leader, "character_audit").status_code, 200)
+
+
+class TestDirectorList(ViewTestCase):
+    """Behind the Corporation Audit and Structures tiles: every Director and whether it has the token."""
+
+    def setUp(self):
+        super().setUp()
+        snapshot = Snapshot.objects.get()
+        snapshot.data["checks"] += ["corp_token_missing", "structures_no_owner"]
+        snapshot.data["members_fetched"] = True
+        snapshot.data["corporations"][0]["directors"] = [
+            {
+                "id": 1101,
+                "name": "Char 1101",
+                "in_auth": True,
+                "user_id": 11,
+                "main_name": "Char 1101",
+                "tokens": {"corptools_corporations": True, "structures": False},
+            }
+        ]
+        snapshot.data["corporations"][1]["directors"] = [
+            {
+                "id": 9001,
+                "name": "Stranger",
+                "in_auth": False,
+                "user_id": None,
+                "main_name": None,
+                "tokens": {"corptools_corporations": False, "structures": False},
+            }
+        ]
+        snapshot.save()
+
+    def test_should_list_the_directors_without_the_token_first(self):
+        response = self.get(self.leader, "directors", "corptools_corporations")
+
+        content = response.content.decode()
+        self.assertContains(response, "1 of 2 Directors with a token")
+        self.assertContains(response, '<small class="text-muted">Corporation Audit</small>')
+        self.assertLess(content.index("Stranger"), content.index("Char 1101"))
+        self.assertContains(response, 'eos-auth-monitor-no-token">no token</span>', count=1)
+        self.assertContains(response, 'eos-auth-monitor-not-in-auth">not in Auth</span>', count=1)
+        self.assertContains(response, f'<a href="{reverse("eos_auth_monitor:account", args=[11])}">Char 1101</a>')
+
+    def test_should_ask_each_list_for_its_own_token(self):
+        response = self.get(self.leader, "directors", "structures")
+
+        self.assertContains(response, "0 of 2 Directors with a token")
+        self.assertContains(response, 'eos-auth-monitor-no-token">no token</span>', count=2)
+
+    def test_should_not_exist_for_a_group_without_a_director_list(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["checks"] = ["char_audit_missing", "corp_token_missing"]
+        snapshot.save()
+
+        for group in ("structures", "corptools_characters", "nothing"):
+            with self.subTest(group):
+                self.assertEqual(self.get(self.leader, "directors", group).status_code, 404)
+
+    def test_should_say_that_only_corptools_directors_are_known_without_esi(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["members_fetched"] = False
+        snapshot.save()
+
+        response = self.get(self.leader, "directors", "corptools_corporations")
+
+        self.assertContains(response, "Only the Directors corptools knows are listed")
+
+    def test_should_say_where_the_roles_could_not_be_read(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][1]["no_director_token"] = True
+        snapshot.save()
+
+        with_marker = self.get(self.leader, "directors", "corptools_corporations")
+        snapshot.data["corporations"][1]["no_director_token"] = False
+        snapshot.save()
+        without = self.get(self.leader, "directors", "corptools_corporations")
+
+        self.assertContains(with_marker, "No Director token could read the roles of 1 Corporation")
+        self.assertNotContains(without, "No Director token could read the roles")
+
+    def test_should_keep_everyone_but_leadership_out(self):
+        self.assertEqual(self.get(self.ceo, "directors", "corptools_corporations").status_code, 302)
+        self.assertEqual(self.get(self.leader, "directors", "corptools_corporations").status_code, 200)

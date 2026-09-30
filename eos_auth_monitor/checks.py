@@ -34,6 +34,12 @@ class Check:
     # what someone has to do about it, and the page of the app where it is done
     hint: str = ""
     fix_url: str | None = None
+    # where a character's problem links to aa-charlink: the hint about the player (account page)
+    # and the one for the player on My account
+    charlink_hint: str = ""
+    own_hint: str = ""
+    # My account without aa-charlink: the hint to the player, naming the check's app
+    own_app_hint: str = ""
 
     @property
     def is_installed(self) -> bool:
@@ -71,6 +77,8 @@ GROUPS = (
     Group("corptools_corporations", "corptools", _("corptools - Corporation Audit")),
     Group("structures", "structures", _("aa-structures")),
 )
+# the Corporation-level groups whose token a Director adds: each has a list of the Directors
+DIRECTOR_GROUPS = ("corptools_corporations", "structures")
 GROUPS_BY_KEY = {group.key: group for group in GROUPS}
 
 CHECKS = (
@@ -82,6 +90,9 @@ CHECKS = (
         _("The character has no corptools Character Audit."),
         hint=_("The player adds this character in the corptools Character Audit."),
         fix_url="corptools:react",
+        charlink_hint=_("The player ticks Character Audit in CharLink and logs in with this character."),
+        own_hint=_("Tick Character Audit in CharLink and log in with this character."),
+        own_app_hint=_("Add this character in the corptools Character Audit."),
     ),
     Check(
         "char_scopes_missing",
@@ -94,6 +105,17 @@ CHECKS = (
             "and grants every scope it asks for."
         ),
         fix_url="corptools:react",
+        charlink_hint=_(
+            "The player ticks Character Audit in CharLink, logs in with this character again "
+            "and grants every scope it asks for."
+        ),
+        own_hint=_(
+            "Tick Character Audit in CharLink, log in with this character again "
+            "and grant every scope it asks for."
+        ),
+        own_app_hint=_(
+            "Add this character in the corptools Character Audit again and grant every scope it asks for."
+        ),
     ),
     Check(
         "char_audit_inactive",
@@ -103,6 +125,15 @@ CHECKS = (
         _("corptools marks the audit inactive: a section has not updated for too long."),
         hint=_("The next corptools update usually clears this; if it stays, the player adds the character again."),
         fix_url="corptools:react",
+        charlink_hint=_(
+            "The next corptools update usually clears this; if it stays, the player ticks Character Audit "
+            "in CharLink and logs in with this character again."
+        ),
+        own_hint=_(
+            "The next corptools update usually clears this; if it stays, tick Character Audit in CharLink "
+            "and log in with this character again."
+        ),
+        own_app_hint=_("The next corptools update usually clears this; if it stays, add the character again."),
     ),
     Check(
         "char_director_token_missing",
@@ -115,6 +146,9 @@ CHECKS = (
         ),
         hint=_("The Director adds a Corporation token in the corptools Corporation Audit."),
         fix_url="corptools:corp_react",
+        charlink_hint=_("The Director ticks Corporation Audit in CharLink and logs in with this character."),
+        own_hint=_("Tick Corporation Audit in CharLink and log in with this character."),
+        own_app_hint=_("Add a Corporation token in the corptools Corporation Audit with this character."),
     ),
     Check(
         "corp_audit_missing",

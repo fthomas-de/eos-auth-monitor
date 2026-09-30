@@ -1,0 +1,11 @@
+{% load i18n %}
+{# My account: only characters Auth knows are checked - ask the member whether one is missing, and where to add it. #}
+<div class="alert alert-secondary d-flex flex-wrap align-items-center gap-2 mt-3 mb-0 eos-auth-monitor-missing-characters">
+    <i class="fas fa-circle-question"></i>
+    <span class="me-auto">{% translate "Is one of your characters missing here? Add it, so that it is checked too." %}</span>
+    {% if charlink_url %}
+        <a href="{{ charlink_url }}" class="btn btn-sm btn-primary text-nowrap">CharLink <i class="fas fa-arrow-up-right-from-square fa-xs"></i></a>
+    {% else %}
+        <a href="{% url 'authentication:add_character' %}" class="btn btn-sm btn-primary text-nowrap">{% translate "Add character" context "eos-auth-monitor" %}</a>
+    {% endif %}
+</div>

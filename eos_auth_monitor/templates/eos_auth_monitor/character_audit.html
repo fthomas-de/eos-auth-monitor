@@ -1,0 +1,54 @@
+{% extends "eos_auth_monitor/base.html" %}
+{% load i18n %}
+{% load evelinks %}
+
+{% block details %}
+    <div class="card">
+        <div class="card-header d-flex flex-wrap align-items-center gap-2">
+            <div class="card-title mb-0 me-auto"><i class="fas fa-user-check"></i> {% translate "Character Audit" %}</div>
+            <span class="small">
+                {% blocktranslate with part=complete total=rows|length %}{{ part }} of {{ total }} mains complete{% endblocktranslate %}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
+                    <thead>
+                        <tr>
+                            <th>{% translate "Main" context "EVE jargon" %}</th>
+                            <th>{% translate "Corporation" context "EVE jargon" %}</th>
+                            <th>{% translate "Character Audit" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for corporation, account in rows %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <img src="{{ account.main_id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+                                        <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="text-break">{{ account.main_name }}</a>
+                                    </div>
+                                </td>
+                                <td class="text-break"><a href="{% url 'eos_auth_monitor:corporation' corporation.id %}">{{ corporation.name }}</a></td>
+                                <td data-order="{{ account.problem_count }}">
+                                    {% with counts=account.keyword_counts %}
+                                        {% if counts %}
+                                            {# each failed check with how many characters of the account fail it #}
+                                            <div class="d-flex flex-wrap gap-1 eos-auth-monitor-tags">
+                                                {% for check, count in counts %}
+                                                    <span class="badge text-bg-danger text-wrap" title="{{ check.description }}">{{ check.label }}{% if count > 1 %} &times;{{ count }}{% endif %}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <span class="badge text-bg-success">{% translate "complete" %}</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,4 +1,6 @@
-from eos_auth_monitor.report import Report, describe
+from django.urls import reverse
+
+from eos_auth_monitor.report import Gauge, Report, describe
 
 from .base import MonitorTestCase, account_row, character_row, corporation_row, snapshot_data, store_snapshot
 
@@ -26,7 +28,7 @@ class TestDirectorMarker(MonitorTestCase):
 
 
 class TestGaugeTargets(MonitorTestCase):
-    def test_should_send_the_audit_and_structures_gauges_to_their_apps(self):
+    def test_should_send_every_gauge_to_its_list(self):
         account = account_row(11, 1101)
         gauges = report(
             [corporation_row(2001, [account])],
@@ -34,16 +36,111 @@ class TestGaugeTargets(MonitorTestCase):
             services=["discord"],
         ).cockpit()
 
-        targets = {str(gauge.label): gauge.url_name for gauge in gauges}
+        targets = {str(gauge.label): gauge.url for gauge in gauges}
         self.assertEqual(
             targets,
             {
-                "Discord": None,
-                "Character Audit complete": "corptools:react",
-                "Corporation Audit working": "corptools:corp_react",
-                "Structures working": "structures:index",
+                "Discord": reverse("eos_auth_monitor:service", args=["discord"]),
+                "Character Audit complete": reverse("eos_auth_monitor:character_audit"),
+                "Corporation Audit working": reverse("eos_auth_monitor:directors", args=["corptools_corporations"]),
+                "Structures working": reverse("eos_auth_monitor:directors", args=["structures"]),
             },
         )
+
+    def test_should_leave_a_gauge_unlinked_when_its_page_does_not_resolve(self):
+        self.assertEqual(Gauge("Somewhere", 1, 1, "fas fa-x", url_name="nowhere:page").url, "")
+        self.assertEqual(Gauge("Nothing", 1, 1, "fas fa-x").url, "")
+
+
+def director_row(character_id, tokens=None, in_auth=True, user_id=None, main_name=None):
+    return {
+        "id": character_id,
+        "name": f"Char {character_id}",
+        "in_auth": in_auth,
+        "user_id": user_id,
+        "main_name": main_name,
+        "tokens": dict(tokens or {}),
+    }
+
+
+class TestAltsInAnotherCorporation(MonitorTestCase):
+    """An account may have characters in several Corporations of the Alliance; each counts where it is."""
+
+    def found(self):
+        account = account_row(
+            11,
+            1101,
+            [
+                character_row(1101),
+                character_row(1102, [AUDIT_MISSING], corporation_id=2002),
+                # a Corporation outside the overview: counted with the main
+                character_row(1103, [SCOPES_MISSING], corporation_id=5005),
+            ],
+        )
+        return report(
+            [corporation_row(2001, [account]), corporation_row(2002)], checks=["char_audit_missing"]
+        )
+
+    def test_should_count_each_character_in_its_own_corporation(self):
+        found = self.found()
+        main_corporation, alt_corporation = found.corporation(2001), found.corporation(2002)
+
+        self.assertEqual([character.id for character in main_corporation.accounts[0].characters], [1101, 1103])
+        self.assertEqual([account.user_id for account in alt_corporation.visiting], [11])
+        self.assertEqual([character.id for character in alt_corporation.visiting[0].characters], [1102])
+        self.assertEqual(alt_corporation.visiting[0].main_corporation_name, "Corp 2001")
+
+    def test_should_rate_the_alts_corporation_by_the_alt(self):
+        found = self.found()
+        main_corporation, alt_corporation = found.corporation(2001), found.corporation(2002)
+
+        self.assertEqual(alt_corporation.problem_count, 1)
+        self.assertEqual([todo.check.key for todo in alt_corporation.todos], ["char_audit_missing"])
+        self.assertEqual([todo.check.key for todo in main_corporation.todos], ["char_scopes_missing"])
+        rows = {str(row.label): (row.part, row.total) for row in alt_corporation.check_rows}
+        self.assertEqual(rows["Character Audit"], (0, 1))
+        # the alt's Corporation has no main of its own; its services count nobody
+        self.assertEqual(alt_corporation.mains, 0)
+
+    def test_should_keep_the_whole_account_for_the_account_page(self):
+        corporation, account = self.found().account(11)
+
+        self.assertEqual(corporation.id, 2001)
+        self.assertEqual([character.id for character in account.characters], [1101, 1102, 1103])
+        self.assertEqual([account.user_id for account in self.found().accounts], [11])
+
+
+class TestDirectors(MonitorTestCase):
+    def found(self, group="corptools_corporations"):
+        first = {
+            **corporation_row(2001),
+            "directors": [
+                director_row(1101, {"corptools_corporations": True, "structures": False}),
+                director_row(1102, {"corptools_corporations": False, "structures": True}),
+            ],
+        }
+        second = {**corporation_row(2002), "directors": [director_row(2201, {"corptools_corporations": False})]}
+        found = report([first, second], checks=["corp_token_missing", "structures_no_owner"])
+        return [(corporation.id, director.id, has_token) for corporation, director, has_token in found.directors(group)]
+
+    def test_should_list_the_directors_without_the_token_first(self):
+        self.assertEqual(self.found(), [(2001, 1102, False), (2002, 2201, False), (2001, 1101, True)])
+
+    def test_should_ask_each_list_for_its_own_token(self):
+        # a token the snapshot does not mention counts as missing
+        self.assertEqual(self.found("structures"), [(2001, 1101, False), (2002, 2201, False), (2001, 1102, True)])
+
+    def test_should_read_a_snapshot_without_directors(self):
+        found = report([corporation_row(2001)], checks=["corp_token_missing"])
+
+        self.assertEqual(found.directors("corptools_corporations"), [])
+
+    def test_should_have_a_director_list_only_for_a_corporation_group_whose_checks_ran(self):
+        found = report([corporation_row(2001)], checks=["char_audit_missing", "corp_token_missing"])
+
+        self.assertTrue(found.has_director_list("corptools_corporations"))
+        self.assertFalse(found.has_director_list("structures"))
+        self.assertFalse(found.has_director_list("corptools_characters"))
 
 
 class TestCorporationLists(MonitorTestCase):
@@ -85,6 +182,15 @@ class TestCorporationLists(MonitorTestCase):
         from eos_auth_monitor.checks import CHECKS
 
         self.assertEqual([check.key for check in CHECKS if not check.hint], [])
+
+    def test_should_give_every_character_check_its_charlink_hints(self):
+        # a character's problem links to aa-charlink on the account page and on My account
+        from eos_auth_monitor.checks import CHARACTER, CHECKS
+
+        characters = [check for check in CHECKS if check.scope == CHARACTER]
+        self.assertEqual([check.key for check in characters if not check.charlink_hint], [])
+        self.assertEqual([check.key for check in characters if not check.own_hint], [])
+        self.assertEqual([check.key for check in characters if not check.own_app_hint], [])
 
 
 class TestOverviewTable(MonitorTestCase):
@@ -201,7 +307,9 @@ class TestAccounts(MonitorTestCase):
         self.assertEqual([character.id for character in found.characters_by_problems], [102, 104, 101, 103])
 
     def test_should_rank_corporations_by_their_own_problems_plus_those_of_their_accounts(self):
-        broken_account = account_row(1, 101, characters=[character_row(101, [AUDIT_MISSING, SCOPES_MISSING])])
+        broken_account = account_row(
+            1, 101, characters=[character_row(101, [AUDIT_MISSING, SCOPES_MISSING], corporation_id=2002)]
+        )
         corporations = [
             corporation_row(2001),
             corporation_row(2002, [broken_account]),

@@ -15,7 +15,14 @@ from allianceauth.authentication.models import CharacterOwnership, UserProfile
 from allianceauth.eveonline.models import EveCorporationInfo
 from allianceauth.services.hooks import get_extension_logger
 
-from .checks import CHARACTER, CHECKS_BY_KEY, enabled_checks, enabled_services, is_app_installed
+from .checks import (
+    CHARACTER,
+    CHECKS_BY_KEY,
+    DIRECTOR_GROUPS,
+    enabled_checks,
+    enabled_services,
+    is_app_installed,
+)
 from .metrics import Measurement
 from .models import MonitorConfiguration, Snapshot
 from .sources import corptools as corptools_source
@@ -111,6 +118,64 @@ def _members(corporation_ids, accounts_by_corporation, on_step) -> dict[int, dic
     return result
 
 
+def _directors(corporation_ids, from_esi, account_user_ids, groups, config) -> dict[int, list[dict]]:
+    """Per Corporation its Directors: whose account they are and which token of each Director list they have.
+
+    ESI names every Director of a Corporation where a Director's token could
+    read the roles; corptools adds those whose roles it read itself. A
+    Director unknown to Auth has no account and, as a rule, no token.
+    """
+    ids_by_corporation = defaultdict(set)
+    for corporation_id, found in from_esi.items():
+        ids_by_corporation[corporation_id] |= set(found)
+    if is_app_installed("corptools"):
+        for corporation_id, found in corptools_source.known_directors(corporation_ids).items():
+            ids_by_corporation[corporation_id] |= found
+    everyone = {character_id for found in ids_by_corporation.values() for character_id in found}
+    if not everyone:
+        return {}
+
+    # Auth's names first; ESI only for Directors Auth does not know, who only come from ESI
+    names = members_source.names(everyone)
+    ownerships = {
+        ownership.character.character_id: ownership
+        for ownership in CharacterOwnership.objects.filter(character__character_id__in=everyone).select_related(
+            "character", "user__profile__main_character"
+        )
+    }
+    corporation_tokens = (
+        corptools_source.corporation_token_holders(everyone, config.excluded_corporation_scopes)
+        if "corptools_corporations" in groups
+        else set()
+    )
+    owner_characters = structures_source.owner_characters(corporation_ids) if "structures" in groups else {}
+
+    result = {}
+    for corporation_id, found in ids_by_corporation.items():
+        rows = []
+        for character_id in found:
+            ownership = ownerships.get(character_id)
+            main = ownership.user.profile.main_character if ownership else None
+            tokens = {}
+            if "corptools_corporations" in groups:
+                tokens["corptools_corporations"] = character_id in corporation_tokens
+            if "structures" in groups:
+                tokens["structures"] = character_id in owner_characters.get(corporation_id, set())
+            rows.append(
+                {
+                    "id": character_id,
+                    "name": names.get(character_id, str(character_id)),
+                    "in_auth": ownership is not None,
+                    # only an account of the overview has a page to link to
+                    "user_id": ownership.user_id if ownership and ownership.user_id in account_user_ids else None,
+                    "main_name": main.character_name if main else None,
+                    "tokens": tokens,
+                }
+            )
+        result[corporation_id] = sorted(rows, key=lambda row: row["name"].lower())
+    return result
+
+
 def build(config, on_step=_no_progress) -> dict | None:
     """The snapshot for the configured Alliance, or None without one."""
     alliance = config.alliance
@@ -143,9 +208,16 @@ def build(config, on_step=_no_progress) -> dict | None:
     character_problems = {}
     character_keys = {key for key in keys if CHECKS_BY_KEY[key].scope == CHARACTER}
     esi_directors = set()
+    esi_directors_by_corporation = {}
+    director_lists = [group for group in DIRECTOR_GROUPS if _keys_of_group(keys, group)]
     # Corporations where the roles were asked for and no Director token could read them
     roles_unreadable = set()
-    asked_roles = config.fetch_members and "char_director_token_missing" in character_keys
+    # corptools says whose token may read the roles; the Director check and the Director lists need them
+    asked_roles = (
+        config.fetch_members
+        and is_app_installed("corptools")
+        and ("char_director_token_missing" in character_keys or bool(director_lists))
+    )
     asked = set()
 
     def ask_roles(corporation_id):
@@ -154,6 +226,7 @@ def build(config, on_step=_no_progress) -> dict | None:
         if found is None:
             roles_unreadable.add(corporation_id)
         else:
+            esi_directors_by_corporation[corporation_id] = found
             esi_directors.update(found)
 
     if asked_roles:
@@ -220,6 +293,18 @@ def build(config, on_step=_no_progress) -> dict | None:
         for corporation_id, problems in found.items():
             corporation_problems[corporation_id] += problems
 
+    directors = (
+        _directors(
+            corporation_ids,
+            esi_directors_by_corporation,
+            {profile.user_id for profile in profiles},
+            director_lists,
+            config,
+        )
+        if director_lists
+        else {}
+    )
+
     on_step("services")
     links = {service: services_source.linked_user_ids(service, users) for service in services}
 
@@ -280,6 +365,7 @@ def build(config, on_step=_no_progress) -> dict | None:
                     "member_total": corporations[corporation_id]["member_total"],
                     "problems": corporation_problems.get(corporation_id, []),
                     "no_director_token": corporation_id in roles_unreadable,
+                    "directors": directors.get(corporation_id, []),
                     "accounts": sorted(
                         accounts_by_corporation.get(corporation_id, []),
                         key=lambda account: account["main_name"].lower(),

@@ -44,3 +44,16 @@ def corporation_problems(corporation_ids, keys) -> dict[int, list[dict]]:
             result[corporation_id] = found
 
     return result
+
+
+def owner_characters(corporation_ids) -> dict[int, set[int]]:
+    """Per Corporation the EVE character IDs whose token its owner fetches data with - the enabled ones."""
+    OwnerCharacter = apps.get_model("structures", "OwnerCharacter")
+
+    result = {}
+    rows = OwnerCharacter.objects.filter(
+        owner__corporation__corporation_id__in=corporation_ids, is_enabled=True
+    ).values_list("owner__corporation__corporation_id", "character_ownership__character__character_id")
+    for corporation_id, character_id in rows:
+        result.setdefault(corporation_id, set()).add(character_id)
+    return result

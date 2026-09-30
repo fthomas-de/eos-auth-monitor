@@ -30,9 +30,7 @@
                 {% endif %}
                 {% for gauge in cockpit %}
                     <div class="col">
-                        {# the loop keeps one context, so a tile without a page must clear the link of the tile before #}
-                        {% if gauge.service %}{% url 'eos_auth_monitor:service' gauge.service.key as gauge_link %}{% elif gauge.url_name %}{% url gauge.url_name as gauge_link %}{% else %}{% firstof "" as gauge_link %}{% endif %}
-                        {% include "eos_auth_monitor/partials/gauge.html" with link=gauge_link %}
+                        {% include "eos_auth_monitor/partials/gauge.html" with link=gauge.url %}
                     </div>
                 {% endfor %}
             </div>

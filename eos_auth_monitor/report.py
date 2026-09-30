@@ -4,21 +4,20 @@ Nothing here queries the database - everything comes from the snapshot, so a
 page costs one read however big the Alliance is.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
+from django.urls import NoReverseMatch, reverse
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import pgettext_lazy
 
 from .checks import CHARACTER, CHECKS_BY_KEY, SERVICES_BY_KEY, Check, Service
 
-# corporation-level check groups: (group key, label, cockpit icon, the app's own page)
+# corporation-level check groups: (group key, label, cockpit icon)
 CORPORATION_GROUPS = (
-    ("corptools_corporations", _("Corporation Audit"), "fas fa-building-circle-check", "corptools:corp_react"),
-    ("structures", pgettext_lazy("eos-auth-monitor", "Structures"), "fas fa-tower-broadcast", "structures:index"),
+    ("corptools_corporations", _("Corporation Audit"), "fas fa-building-circle-check"),
+    ("structures", pgettext_lazy("eos-auth-monitor", "Structures"), "fas fa-tower-broadcast"),
 )
-
-# the menu entry of corptools' Character Audit
-CHARACTER_AUDIT_URL = "corptools:react"
+CORPORATION_GROUP_LABELS = {group: label for group, label, _icon in CORPORATION_GROUPS}
 
 
 PHASE_LABELS = {
@@ -68,6 +67,23 @@ class Character:
 
 
 @dataclass
+class Director:
+    """A Director of a Corporation, the account it belongs to and the tokens the Director lists ask about."""
+
+    id: int
+    name: str
+    in_auth: bool
+    # the account in the overview, or None: unknown to Auth, or a main outside the Alliance
+    user_id: int | None
+    main_name: str | None
+    # group key -> whether the Director has that app's token
+    tokens: dict[str, bool]
+
+    def has_token(self, group: str) -> bool:
+        return self.tokens.get(group, False)
+
+
+@dataclass
 class ServiceLink:
     service: Service
     linked: bool
@@ -83,6 +99,9 @@ class Account:
     characters: list[Character]
     # characters outside the Alliance that *Only characters in the Alliance* left out
     left_out: int = 0
+    # on another Corporation's page: the account of a main elsewhere, with only the characters counted there
+    visiting: bool = False
+    main_corporation_name: str = ""
 
     @property
     def problem_characters(self) -> list[Character]:
@@ -210,6 +229,9 @@ class Corporation:
     member_total: int | None = None
     # no Director token could read the roles: Director problems of this Corporation go unseen
     no_director_token: bool = False
+    directors: list[Director] = field(default_factory=list)
+    # accounts whose main is in another Corporation, each with only its characters in this one
+    visiting: list[Account] = field(default_factory=list)
 
     @property
     def characters(self) -> int | None:
@@ -229,13 +251,20 @@ class Corporation:
         return len(self.accounts)
 
     @property
+    def evaluated_accounts(self) -> list[Account]:
+        """Every account with a character counted here: the own mains' and those visiting from elsewhere."""
+        return self.accounts + self.visiting
+
+    @property
     def problem_accounts(self) -> list[Account]:
-        return [account for account in self.accounts if account.has_problems]
+        return [account for account in self.evaluated_accounts if account.has_problems]
 
     @property
     def accounts_by_problems(self) -> list[Account]:
         """Most problems first; by name where they are equal."""
-        return sorted(self.accounts, key=lambda account: (-account.problem_count, account.main_name.lower()))
+        return sorted(
+            self.evaluated_accounts, key=lambda account: (-account.problem_count, account.main_name.lower())
+        )
 
     @property
     def problem_free_accounts(self) -> list[Account]:
@@ -248,7 +277,7 @@ class Corporation:
     def todos(self) -> list[Todo]:
         """Per failed character check, in check order, the mains it concerns, by name."""
         accounts_by_check: dict[str, list[Account]] = {}
-        for account in sorted(self.accounts, key=lambda account: account.main_name.lower()):
+        for account in sorted(self.evaluated_accounts, key=lambda account: account.main_name.lower()):
             for check in account.keywords:
                 accounts_by_check.setdefault(check.key, []).append(account)
         return [Todo(check, accounts_by_check[key]) for key, check in CHECKS_BY_KEY.items() if key in accounts_by_check]
@@ -272,8 +301,8 @@ class Corporation:
 
     @property
     def problem_count(self) -> int:
-        """Problems of the Corporation itself plus those of all its accounts, to rank the tiles."""
-        return len(self.problems) + sum(account.problem_count for account in self.accounts)
+        """Problems of the Corporation itself plus those of every character counted here, to rank the tiles."""
+        return len(self.problems) + sum(account.problem_count for account in self.evaluated_accounts)
 
     @property
     def registered(self) -> int | None:
@@ -311,7 +340,7 @@ class Corporation:
         if self.member_count is not None:
             rows.append(Row(_("Registered in Auth"), "fas fa-user-plus", self.registered, self.member_count))
         if any(check.scope == CHARACTER for check in self.checks):
-            characters = [character for account in self.accounts for character in account.characters]
+            characters = [character for account in self.evaluated_accounts for character in account.characters]
             rows.append(
                 Row(
                     _("Character Audit"),
@@ -320,7 +349,7 @@ class Corporation:
                     len(characters),
                 )
             )
-        for group, label, icon, _url_name in CORPORATION_GROUPS:
+        for group, label, icon in CORPORATION_GROUPS:
             if any(check.group == group for check in self.checks):
                 rows.append(
                     Row(label, icon, problems=[problem for problem in self.problems if problem.check.group == group])
@@ -339,13 +368,25 @@ class Gauge:
     total: int
     icon: str
     service: Service | None = None
-    # a tile without a page of its own points to the app it counts; a URL
-    # name, since the app may not be installed and the template then drops it
+    # the list behind a tile that is not a service's: a URL name and its arguments
     url_name: str | None = None
+    url_args: tuple = ()
 
     @property
     def percent(self) -> int | None:
         return percent(self.part, self.total)
+
+    @property
+    def url(self) -> str:
+        """Where the tile leads; "" for a tile without a list."""
+        if self.service is not None:
+            return reverse("eos_auth_monitor:service", args=[self.service.key])
+        if self.url_name is None:
+            return ""
+        try:
+            return reverse(self.url_name, args=self.url_args)
+        except NoReverseMatch:
+            return ""
 
 
 class Report:
@@ -358,7 +399,15 @@ class Report:
         self.services = [SERVICES_BY_KEY[key] for key in data["services"] if key in SERVICES_BY_KEY]
         self.stale_after_days = data.get("stale_after_days")
         self.members_fetched = data.get("members_fetched", False)
-        self.corporations = [self._corporation(row) for row in data["corporations"]]
+        rows = data["corporations"]
+        # the whole accounts, by the Corporation of their main: the account pages and the Alliance-wide lists
+        self._accounts = {
+            account["user_id"]: self._account(row["id"], account) for row in rows for account in row["accounts"]
+        }
+        self._counted = self._characters_by_corporation({row["id"] for row in rows})
+        names = {row["id"]: row["name"] for row in rows}
+        self.corporations = [self._corporation(row, names) for row in rows]
+        self._corporations_by_id = {corporation.id: corporation for corporation in self.corporations}
         self.metrics = self._metrics(data.get("metrics"))
 
     @staticmethod
@@ -374,34 +423,65 @@ class Report:
             ],
         }
 
-    def _corporation(self, row) -> Corporation:
+    def _account(self, corporation_id, account) -> Account:
+        return Account(
+            user_id=account["user_id"],
+            main_id=account["main_id"],
+            main_name=account["main_name"],
+            corporation_id=corporation_id,
+            services=[ServiceLink(service, bool(account["services"].get(service.key))) for service in self.services],
+            characters=[
+                Character(
+                    id=character["id"],
+                    name=character["name"],
+                    corporation_id=character["corporation_id"],
+                    corporation_name=character["corporation_name"],
+                    corporation_ticker=character["corporation_ticker"],
+                    alliance_name=character["alliance_name"],
+                    is_main=character["id"] == account["main_id"],
+                    problems=_problems(character["problems"]),
+                )
+                for character in account["characters"]
+            ],
+            # a snapshot from before 0.0.5 has no such count
+            left_out=account.get("left_out", 0),
+        )
+
+    def _characters_by_corporation(self, corporation_ids) -> dict[int, dict[int, list[Character]]]:
+        """Where each character counts: per Corporation, per account, its characters there.
+
+        An account may have characters in several Corporations of the Alliance;
+        each counts in the one it is in. A character in a Corporation outside
+        the overview counts with its main.
+        """
+        counted = {}
+        for account in self._accounts.values():
+            for character in account.characters:
+                where = character.corporation_id
+                if where not in corporation_ids:
+                    where = account.corporation_id
+                counted.setdefault(where, {}).setdefault(account.user_id, []).append(character)
+        return counted
+
+    def _corporation(self, row, names) -> Corporation:
+        counted = self._counted.get(row["id"], {})
         accounts = [
-            Account(
-                user_id=account["user_id"],
-                main_id=account["main_id"],
-                main_name=account["main_name"],
-                corporation_id=row["id"],
-                services=[
-                    ServiceLink(service, bool(account["services"].get(service.key))) for service in self.services
-                ],
-                characters=[
-                    Character(
-                        id=character["id"],
-                        name=character["name"],
-                        corporation_id=character["corporation_id"],
-                        corporation_name=character["corporation_name"],
-                        corporation_ticker=character["corporation_ticker"],
-                        alliance_name=character["alliance_name"],
-                        is_main=character["id"] == account["main_id"],
-                        problems=_problems(character["problems"]),
-                    )
-                    for character in account["characters"]
-                ],
-                # a snapshot from before 0.0.5 has no such count
-                left_out=account.get("left_out", 0),
-            )
+            replace(self._accounts[account["user_id"]], characters=counted.get(account["user_id"], []))
             for account in row["accounts"]
         ]
+        visiting = sorted(
+            (
+                replace(
+                    self._accounts[user_id],
+                    characters=characters,
+                    visiting=True,
+                    main_corporation_name=names[self._accounts[user_id].corporation_id],
+                )
+                for user_id, characters in counted.items()
+                if self._accounts[user_id].corporation_id != row["id"]
+            ),
+            key=lambda account: account.main_name.lower(),
+        )
         return Corporation(
             row["id"],
             row["name"],
@@ -415,11 +495,15 @@ class Report:
             self.checks,
             row.get("member_total"),
             row.get("no_director_token", False),
+            # a snapshot from before the Director lists has none
+            [Director(**director) for director in row.get("directors", [])],
+            visiting=visiting,
         )
 
     @property
     def accounts(self) -> list[Account]:
-        return [account for corporation in self.corporations for account in corporation.accounts]
+        """Every account of the Alliance with all its characters."""
+        return list(self._accounts.values())
 
     @property
     def corporations_by_problems(self) -> list[Corporation]:
@@ -430,14 +514,43 @@ class Report:
         return next((corporation for corporation in self.corporations if corporation.id == corporation_id), None)
 
     def account(self, user_id: int) -> tuple[Corporation, Account] | tuple[None, None]:
-        for corporation in self.corporations:
-            for account in corporation.accounts:
-                if account.user_id == user_id:
-                    return corporation, account
-        return None, None
+        """The whole account and the Corporation of its main."""
+        account = self._accounts.get(user_id)
+        if account is None:
+            return None, None
+        return self._corporations_by_id[account.corporation_id], account
 
     def service(self, service_key: str) -> Service | None:
         return next((service for service in self.services if service.key == service_key), None)
+
+    @property
+    def has_character_checks(self) -> bool:
+        return any(check.scope == CHARACTER for check in self.checks)
+
+    def accounts_by_problems(self) -> list[tuple[Corporation, Account]]:
+        """Every account of the Alliance with its Corporation: most problems first, then by Corporation and name."""
+        return sorted(
+            ((self._corporations_by_id[account.corporation_id], account) for account in self.accounts),
+            key=lambda row: (-row[1].problem_count, row[0].name.lower(), row[1].main_name.lower()),
+        )
+
+    def has_director_list(self, group: str) -> bool:
+        """Whether the checks of ``group`` ran, which is what gives it a list of Directors."""
+        return group in CORPORATION_GROUP_LABELS and any(check.group == group for check in self.checks)
+
+    def directors(self, group: str) -> list[tuple[Corporation, Director, bool]]:
+        """Every Director of the Alliance with its Corporation and whether it has the token of ``group``.
+
+        Those without the token first, then by Corporation and name.
+        """
+        return sorted(
+            (
+                (corporation, director, director.has_token(group))
+                for corporation in self.corporations
+                for director in corporation.directors
+            ),
+            key=lambda row: (row[2], row[0].name.lower(), row[1].name.lower()),
+        )
 
     def overview_table(self) -> tuple[list[Row], list[tuple[Corporation, list[Row | None]]]]:
         """The overview as a table: a column per row of the tiles, a line per Corporation.
@@ -485,7 +598,7 @@ class Report:
                 )
             )
 
-        if any(check.scope == CHARACTER for check in self.checks):
+        if self.has_character_checks:
             characters = [character for account in accounts for character in account.characters]
             gauges.append(
                 Gauge(
@@ -493,11 +606,11 @@ class Report:
                     sum(not character.problems for character in characters),
                     len(characters),
                     "fas fa-user-check",
-                    url_name=CHARACTER_AUDIT_URL,
+                    url_name="eos_auth_monitor:character_audit",
                 )
             )
 
-        for group, label, icon, url_name in CORPORATION_GROUPS:
+        for group, label, icon in CORPORATION_GROUPS:
             if any(check.group == group for check in self.checks):
                 gauges.append(
                     Gauge(
@@ -508,7 +621,8 @@ class Report:
                         ),
                         len(self.corporations),
                         icon,
-                        url_name=url_name,
+                        url_name="eos_auth_monitor:directors",
+                        url_args=(group,),
                     )
                 )
 

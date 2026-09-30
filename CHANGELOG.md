@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Lists behind the audit tiles of the cockpit: *Character Audit* shows every
+  main of the Alliance with a tag per failed character check; *Corporation
+  Audit* and *Structures* show every Director of the Alliance's Corporations
+  with its main and whether it has a Corporation-audit token or fetches data
+  for the aa-structures owner, those without first. Directors unknown to
+  Auth are tagged *not in Auth*. The lists appear after the next rebuild.
+
+- *My account* asks whether one of the member's characters is missing and
+  links to aa-charlink, or to Alliance Auth's *Add Character* without it.
+
+### Changed
+
+- *My account* speaks to the member throughout: the hints, the line when
+  nothing is wrong and the count of characters left out (German with *du*),
+  also without aa-charlink.
+- A character counts in the Corporation of the Alliance it is in, not in its
+  main's: an alt in another Corporation of the Alliance turns that
+  Corporation's tile and page red, shows there as a card with "Main in ..."
+  and puts its main into that page's to-do list. A character in a
+  Corporation outside the overview still counts with its main. The account
+  page and the Alliance-wide lists keep the whole account. On the
+  Corporation page, a CEO sees such a main without a link to its account.
+- With aa-charlink installed, the to-do list of the Corporation page says
+  what to do in aa-charlink instead of naming the corptools pages.
+- The Character Audit, Corporation Audit and Structures tiles of the cockpit
+  open these lists instead of corptools and aa-structures.
+- With *Fetch data from ESI* on, the Director roles are also read when the
+  Director check is off but a Director list needs them, and *No Director
+  token* marks a Corporation in that case too.
+
+- With aa-charlink installed, the problems of the characters on the account
+  page link to aa-charlink as well, like on *My account*. The hints on both
+  pages say what to do there - which app to tick before logging in with the
+  character - instead of naming the corptools pages. The Corporation's own
+  problems in the header, the Corporation page and every page without
+  aa-charlink keep the link to the app of the check.
+
 ## [0.0.5] - 2026-09-29
 
 ### Added

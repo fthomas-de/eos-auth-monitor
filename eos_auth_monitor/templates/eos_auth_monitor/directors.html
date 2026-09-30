@@ -1,0 +1,68 @@
+{% extends "eos_auth_monitor/base.html" %}
+{% load i18n %}
+{% load evelinks %}
+
+{% block details %}
+    {% if not report.members_fetched %}
+        <div class="alert alert-info small">
+            {% translate "Only the Directors corptools knows are listed: it reads the roles of characters with a token alone. Switch on Fetch data from ESI in the settings to list every Director." %}
+        </div>
+    {% elif unreadable %}
+        <div class="alert alert-info small">
+            {% blocktranslate count counter=unreadable|length context "EVE jargon" %}No Director token could read the roles of {{ counter }} Corporation, so its Directors without a token are missing here.{% plural %}No Director token could read the roles of {{ counter }} Corporations, so their Directors without a token are missing here.{% endblocktranslate %}
+        </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header d-flex flex-wrap align-items-center gap-2">
+            <div class="card-title mb-0 me-auto">{{ label }} - {% translate "Directors" context "EVE jargon" %}</div>
+            <span class="small">
+                {% blocktranslate with part=with_token total=rows|length context "EVE jargon" %}{{ part }} of {{ total }} Directors with a token{% endblocktranslate %}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
+                    <thead>
+                        <tr>
+                            <th>{% translate "Director" context "EVE jargon" %}</th>
+                            <th>{% translate "Corporation" context "EVE jargon" %}</th>
+                            <th>{% translate "Main" context "EVE jargon" %}</th>
+                            <th>{% translate "Token" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for corporation, director, has_token in rows %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <img src="{{ director.id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+                                        <span class="text-break">{{ director.name }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-break"><a href="{% url 'eos_auth_monitor:corporation' corporation.id %}">{{ corporation.name }}</a></td>
+                                <td class="text-break" data-order="{% firstof director.main_name '' %}">
+                                    {% if not director.in_auth %}
+                                        <span class="badge text-bg-secondary eos-auth-monitor-not-in-auth">{% translate "not in Auth" %}</span>
+                                    {% elif director.user_id %}
+                                        <a href="{% url 'eos_auth_monitor:account' director.user_id %}">{{ director.main_name }}</a>
+                                    {% else %}
+                                        {# an account whose main is outside the Alliance has no page here #}
+                                        {% firstof director.main_name "-" %}
+                                    {% endif %}
+                                </td>
+                                <td data-order="{% if has_token %}1{% else %}0{% endif %}">
+                                    {% if has_token %}
+                                        <span class="badge text-bg-success">{% translate "token" %}</span>
+                                    {% else %}
+                                        <span class="badge text-bg-danger eos-auth-monitor-no-token">{% translate "no token" %}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
