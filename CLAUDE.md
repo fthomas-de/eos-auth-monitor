@@ -29,6 +29,12 @@ Run from `~/aa-dev/working/myauth`:
 eos-test eos_auth_monitor --exclude-tag translations
 ```
 
+`eos-test` keeps the test database between runs (`--keepdb`): building it
+runs every migration of the instance on MySQL, about 100 seconds against 23
+for this suite. A migration rewritten after it was applied, or another
+branch's schema, needs `eos-test ... --fresh`; the suite at `/commit` always
+runs fresh.
+
 ```bash
 ~/aa-dev/venv/bin/python manage.py makemigrations eos_auth_monitor
 ```
@@ -52,7 +58,7 @@ app. Commands run from `~/aa-dev/working/myauth`.
 - Version file: `eos_auth_monitor/__init__.py`
 - Changelog section: `[Unreleased]`
 - Tests while working: `eos-test eos_auth_monitor.tests.<module>`
-- Suite without translation tests: `eos-test eos_auth_monitor --exclude-tag translations`
+- Suite without translation tests: `eos-test eos_auth_monitor --fresh --exclude-tag translations`
 - Checks: `~/aa-dev/venv/bin/python manage.py makemigrations eos_auth_monitor --check --dry-run`
 - Translations: new messages into `tools/glossary.py`, then
   `~/aa-dev/venv/bin/python tools/translate.py` from the repo root
