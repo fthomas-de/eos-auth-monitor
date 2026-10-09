@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.11] - 2026-10-09
+
 ### Added
 
 - The cockpit tile *Members registered* opens a list of the rest: every

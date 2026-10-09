@@ -4,17 +4,24 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-09-30.
+Last updated 2026-10-09.
 
 ## Release
 
-- Version **0.0.10** of 2026-09-30, tagged `v0.0.10` (annotated, like every
-  release tag) on the release commit and pushed with it. New in 0.0.10, see
-  `CHANGELOG.md`:
-  - **My account greys out unlinked QQ and Telegram** (`Service.
-    grey_when_missing`, filter `link_colour`); Discord, Mumble and the
-    account page others see stay red.
-  No migration, no new permission, no new static file, no new message.
+- Version **0.0.11** of 2026-10-09. New in 0.0.11, see `CHANGELOG.md`:
+  - **Service shares count mains only** (cockpit, Corporation tiles and
+    table, Corporation page); members unknown to Auth are no longer mains
+    that linked nothing.
+  - **Members registered opens `unknown_characters`**: every `unregistered`
+    member with Corporation and status (*not in Auth* / *no main*, from the
+    snapshot's new `in_auth`).
+  - **Paging** of every sortable list longer than 25 rows, 100 by default.
+  - **Table first** on the Alliance overview.
+  No migration, no new permission; changed static files (`tables.js`,
+  `view.js`: `collectstatic`); six new messages, translated.
+- New in 0.0.10: *My account* greys out unlinked QQ and Telegram (`Service.
+  grey_when_missing`, filter `link_colour`); Discord, Mumble and the
+  account page others see stay red.
 - New in 0.0.9: a *Director token missing* problem lacking the sovereignty
   scope links to *Add Token* in the corptools Corporation Audit instead of
   CharLink (`Check.beyond_charlink`), dashboard widgets green or red. New in
@@ -28,13 +35,15 @@ Last updated 2026-09-30.
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 338 tests without the translation tests, 3 translation tests, all green;
+- 347 tests without the translation tests, 3 translation tests, all green;
   one of them (`test_should_find_the_page_of_the_installed_charlink`) runs
   only with aa-charlink installed. Every check, access rule and feature was
   counter-checked against broken code (a sabotage that stays green means the
-  test is too weak - it happened six times and each was fixed; 0.0.2 went 34
+  test is too weak - it happened seven times and each was fixed; 0.0.2 went 34
   for 34, 0.0.3 31 for 31, 0.0.4 3 for 3, 0.0.5 11 for 11, 0.0.6 41 for 41,
-  0.0.7 11 for 11, 0.0.8 16 for 16, 0.0.9 7 for 7, 0.0.10 4 for 4).
+  0.0.7 11 for 11, 0.0.8 16 for 16, 0.0.9 7 for 7, 0.0.10 4 for 4, 0.0.11
+  13 for 13 after one fix: the status badges were counted, not tied to
+  their rows).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -43,7 +52,7 @@ Last updated 2026-09-30.
 
 | Page | Permission | What |
 |---|---|---|
-| Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares), then the Corporations, most problems first, as tiles or as a table (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
+| Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares; *Members registered* opens the unknown characters), then the Corporations, most problems first, as a table (the default since 0.0.11) or as tiles (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
 | Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_gauges`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems as cards (a visiting main marked "Main in ...", linked only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
@@ -51,6 +60,7 @@ Last updated 2026-09-30.
 | Service | `view_all` | Every main of the Alliance, linked yes/no |
 | Character Audit list (`character_audit`) | `view_all` | Every main of the Alliance with a tag per failed character check (`Account.keyword_counts`, "×n" for n characters), most problems first; 404 without character checks |
 | Director list (`directors/<group>`) | `view_all` | For `corptools_corporations` and `structures`: every Director of the Alliance's Corporations with Corporation, main (linked where the account is in the overview, *not in Auth* tag otherwise) and token yes/no, those without first; a notice without ESI (corptools' Directors only) or where roles were unreadable; 404 when no check of the group ran |
+| Unknown characters (`unknown_characters`) | `view_all` | Behind *Members registered*: every `unregistered` member of the Alliance (`Report.unknown_characters`) with Corporation and status - *not in Auth*, *no main* (account without a main), "-" for a snapshot from before 0.0.11 -, by Corporation and name; a notice naming how many Corporations' member lists were unread; 404 without any member list |
 | My account (`own_account`) | `view_own` | The viewer's own account on `account.html` with `own=True`: service tiles linking to Alliance Auth's `services:services`, no Corporation header, the problems with hints linking to aa-charlink (the check's app without it), the left-out count; a notice when the account is not in the snapshot. `view_own` alone is sent here from the index |
 | Dashboard widgets (`views.dashboard_own`, `views.dashboard_corporation`) | `view_own` / `basic_access` | On Alliance Auth's dashboard, order 4 like eos-invoices, own before Corporation (registration order). Own: failed checks with the number of characters (`Account.keyword_counts`), service icons, link to My account. Corporation: its own problems, each to-do group with the number of mains, the unregistered count, link to the Corporation page. Red border with anything to do, green without. `""` without the permission or when the snapshot has nothing about the viewer |
 | Settings | `manage_settings` | Alliance (Tom Select), stale limit, ESI member lists on/off (also switches the roles call), only characters in the Alliance on/off, check and service switches, corptools sections and scopes, the notice to members (saving only a changed notice starts no rebuild: `form.changed_data`) |
@@ -312,7 +322,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   too, but not named - and Mumble stay red, and so does every tile on the
   account page others see. The dashboard widget's icons were grey already.
 
-2026-10-09 (not committed yet):
+2026-10-09:
 
 - **Unknown characters apart** ("zähle charactere, die noch nicht im auth
   sind und noch keinem main zugehörig sind ... nicht mit in die gesamtsumme,
@@ -326,7 +336,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   same day ("die ist ja doppelt mit registered"). The snapshot keeps
   `in_auth` per unregistered member (False: not in Auth, True: account
   without a main); an older snapshot shows "-" until the next rebuild.
-  Restart the Celery worker before rebuilding (build changed).
+  The user reported that "-" as "status unknown" before rebuilding.
 - **Paging on every list** ("bau eine pagination bei allen listen ein mit
   standard 100"): `tables.js` pages every sortable table longer than 25 rows,
   100 per page, 25-500 to choose, with DataTables' info line. Not the
@@ -430,11 +440,22 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   upstream bug, not reported yet.
 - django-esi's `Token.created` is overwritten on every refresh: a token
   refreshed by the rebuild looks newer than the snapshot that used it.
+- `sed` in Git Bash turns a `\n` in its replacement into a real line break:
+  a Python string edited that way ends unterminated. Change scratch scripts
+  with the Edit tool.
+- A sabotage pattern must be unique in its file (`snapshot.py` builds
+  `in_auth` for Directors too; the status template tests `in_auth` twice):
+  the script asserts a single match and stops otherwise.
 
 ## Open points / next steps
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.10 are to be deployed, with
-  migrations 0007 and 0008. After deploying, *Rebuild now* (or the beat run) fills the
+- **Rebuild the dev snapshot** (*Rebuild now*; the worker already runs the
+  0.0.11 build): then the unknown characters list should show *not in Auth*
+  or *no main* for every one of Ether Element's 275, and the paging (275 rows:
+  three pages of 100) and the table-first overview can be looked at.
+
+- Production still runs 0.0.5: 0.0.6 to 0.0.11 are to be deployed, with
+  migrations 0007 and 0008 and `collectstatic`. After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
   without a snapshot it fails everyone.
 - **A CEO does not see the *My Corporation* widget** (reported for
@@ -465,7 +486,8 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   to holders of `structures.add_structure_owner`: a Director or Station
   Manager without them follows the link and finds no box.
 - Nothing was looked at in a browser: the pages need a login. The JS files
-  (`filter.js`, `view.js`, `copy.js`), the tiles (the new check tiles
+  (`filter.js`, `view.js`, `copy.js`, the paging in `tables.js`), the
+  unknown characters list, the tiles (the new check tiles
   included), the table, the footer, the navbar tabs, the two dashboard
   widgets and their borders, the CSV download, the audit lists, the visiting
   cards, the notice box, the scope tooltip and the sovereignty hint are covered by tests of the rendered HTML (and of
@@ -497,15 +519,15 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   The dev DB has one account and no service links: every service number is 0.
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
   Comes), nothing switched off, ESI on, *Only characters in the Alliance*
-  off, the notice empty. The Celery worker runs the 0.0.8 code since
-  2026-09-30 (restarted after migration 0008, not after 0.0.9 or 0.0.10:
-  their changes are rendering only and build the same snapshot - restart it before the
-  next change to the build), started detached by a script (`setsid nohup
+  off, the notice empty. The Celery worker runs the 0.0.11 build code since
+  2026-10-09 (restarted after the snapshot gained `in_auth`; restart it
+  before the next change to the build), started detached by a script (`setsid nohup
   ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo` in
   `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`); one worker, check
   `ps` before the next restart. **No Celery beat runs** in the dev instance,
-  so the beat entry never fires and the stored snapshot (2026-09-30 10:07 UTC,
-  with `directors`) stays until *Rebuild now*. `runserver` reloads by itself.
+  so the beat entry never fires and the stored snapshot (2026-09-30 11:11 UTC,
+  with `directors`, without `in_auth`: the unknown characters list shows
+  "-" as status for all 275 of Ether Element) stays until *Rebuild now*. `runserver` reloads by itself.
   Rendered against `aa_dev`, the account's 3 problem links on *My account* go
   to `/charlink/`. Ether Element: 279 in the member list,
   290 in Auth's count, 14 Directors named by ESI; Nah vi is one of them and
