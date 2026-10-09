@@ -18,6 +18,7 @@ urlpatterns = [
     path("service/<str:service_key>/", views.service, name="service"),
     path("character-audit/", views.character_audit, name="character_audit"),
     path("directors/<str:group_key>/", views.directors, name="directors"),
+    path("unknown-characters/", views.unknown_characters, name="unknown_characters"),
     path("settings/", views.settings, name="settings"),
     path("rebuild/", views.rebuild, name="rebuild"),
     path("rebuild/progress/", views.rebuild_progress, name="rebuild_progress"),

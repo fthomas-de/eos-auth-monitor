@@ -414,7 +414,7 @@ class TestCockpit(MonitorTestCase):
             [("Discord", 1, 2, 50, "discord"), ("QQ", 0, 2, 0, "qq")],
         )
 
-    def test_should_count_unknown_members_as_mains_that_linked_nothing(self):
+    def test_should_count_unknown_members_apart_from_the_mains(self):
         strangers = [{"id": n, "name": f"Stranger {n}"} for n in range(3)]
         corporations = [
             {
@@ -422,17 +422,28 @@ class TestCockpit(MonitorTestCase):
                 "member_count": 6,
                 "unregistered": strangers,
             },
-            # no member list read: only its registered mains can be counted
+            # no member list read: nobody unknown can be named
             corporation_row(2002, [account_row(3, 301, services={"discord": True})]),
         ]
         found = report(corporations, services=["discord"])
+        gauges = self.gauges(corporations, services=["discord"])
 
-        self.assertEqual(self.gauges(corporations, services=["discord"])["Discord"], (2, 6, 33))
+        # the service shares count the mains only, everywhere
+        self.assertEqual(gauges["Discord"], (2, 3, 67))
         gauge = found.corporation(2001).service_gauges[0]
-        self.assertEqual((gauge.part, gauge.total), (1, 5))
-        self.assertEqual([(row.part, row.total) for row in found.corporation(2001).service_counts], [(1, 5)])
-        # the connections tile counts what is linked, unknown members add nothing
+        self.assertEqual((gauge.part, gauge.total), (1, 2))
+        self.assertEqual([(row.part, row.total) for row in found.corporation(2001).service_counts], [(1, 2)])
+        # the unknown members are the gap of Members registered, of the members whose list was read
+        self.assertEqual(gauges["Members registered"][:2], (3, 6))
+        self.assertNotIn("Unknown characters", gauges)
         self.assertEqual([linked for _, linked in found.connections()], [2])
+
+    def test_should_open_the_unknown_characters_from_members_registered(self):
+        corporations = [{**corporation_row(2001), "member_count": 1, "unregistered": [{"id": 1, "name": "x"}]}]
+
+        gauge = next(gauge for gauge in report(corporations).cockpit() if str(gauge.label) == "Members registered")
+
+        self.assertEqual(gauge.url, reverse("eos_auth_monitor:unknown_characters"))
 
     def test_should_show_only_gauges_of_checks_that_ran(self):
         self.assertEqual(self.gauges([corporation_row(2001)]), {})
@@ -441,6 +452,32 @@ class TestCockpit(MonitorTestCase):
         gauges = self.gauges([corporation_row(2001)], services=["discord"])
 
         self.assertEqual(gauges["Discord"], (0, 0, None))
+
+
+class TestUnknownCharacters(MonitorTestCase):
+    def test_should_list_every_unknown_member_by_corporation_and_name(self):
+        corporations = [
+            {
+                **corporation_row(2002),
+                "member_count": 2,
+                "unregistered": [{"id": 2, "name": "zed", "in_auth": True}, {"id": 1, "name": "Abe", "in_auth": False}],
+            },
+            {**corporation_row(2001), "member_count": 1, "unregistered": [{"id": 3, "name": "Mia", "in_auth": False}]},
+        ]
+
+        rows = report(corporations).unknown_characters()
+
+        self.assertEqual(
+            [(corporation.id, character.name, character.in_auth) for corporation, character in rows],
+            [(2001, "Mia", False), (2002, "Abe", False), (2002, "zed", True)],
+        )
+
+    def test_should_not_guess_where_an_older_snapshot_did_not_say(self):
+        corporations = [{**corporation_row(2001), "member_count": 1, "unregistered": [{"id": 1, "name": "x"}]}]
+
+        (_, character), = report(corporations).unknown_characters()
+
+        self.assertIsNone(character.in_auth)
 
 
 class TestCharacterCount(MonitorTestCase):

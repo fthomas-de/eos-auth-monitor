@@ -61,8 +61,8 @@ def _members(corporation_ids, accounts_by_corporation, on_step) -> dict[int, dic
     """Per Corporation: its member count and the members outside its accounts.
 
     A member that belongs to an account whose main is in another Corporation
-    is reduced to that main; a member Auth does not know counts as a main of
-    its own.
+    is reduced to that main; a member Auth does not know, or one on an account
+    without a main, is listed as unregistered.
     """
     member_ids = {}
     for index, corporation_id in enumerate(corporation_ids):
@@ -96,7 +96,8 @@ def _members(corporation_ids, accounts_by_corporation, on_step) -> dict[int, dic
             if main is None:
                 # not in Auth, or an account without a main: nobody to reduce it to
                 name = ownership.character.character_name if ownership else names.get(member, str(member))
-                unregistered.append({"id": member, "name": name})
+                # in_auth tells the two apart: one has to register, the other to pick a main
+                unregistered.append({"id": member, "name": name, "in_auth": ownership is not None})
                 continue
             entry = other_mains.setdefault(
                 ownership.user_id,

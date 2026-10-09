@@ -48,20 +48,21 @@
                        data-eos-auth-monitor-filter=".eos-auth-monitor-corporation"
                        data-eos-auth-monitor-filter-problems="#eos-auth-monitor-problems-only"
                        data-eos-auth-monitor-filter-empty=".eos-auth-monitor-filter-empty">
-                {# view.js switches between the two and remembers the choice per browser #}
+                {# view.js switches between the two and remembers the choice per browser; the table comes first #}
                 <div class="btn-group btn-group-sm" role="group" aria-label="{% translate 'View' context 'eos-auth-monitor' %}">
-                    <button type="button" class="btn btn-outline-secondary active" aria-pressed="true"
+                    <button type="button" class="btn btn-outline-secondary" aria-pressed="false"
                             data-eos-auth-monitor-view="tiles" title="{% translate 'Tiles' %}" aria-label="{% translate 'Tiles' %}">
                         <i class="fas fa-grip"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" aria-pressed="false"
+                    <button type="button" class="btn btn-outline-secondary active" aria-pressed="true"
                             data-eos-auth-monitor-view="table" title="{% translate 'Table' %}" aria-label="{% translate 'Table' %}">
                         <i class="fas fa-table-list"></i>
                     </button>
                 </div>
             {% endif %}
         </div>
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3" data-eos-auth-monitor-view-pane="tiles">
+        {# without a table line the tiles stay, they carry the notice that there is no Corporation #}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3{% if table_lines %} d-none{% endif %}" data-eos-auth-monitor-view-pane="tiles">
             {% for corporation in report.corporations_by_problems %}
                 <div class="col eos-auth-monitor-corporation" data-eos-auth-monitor-filter-text="{{ corporation.name }} {{ corporation.ticker }}"
                      data-eos-auth-monitor-problems="{% if corporation.has_problems %}1{% else %}0{% endif %}">
@@ -102,7 +103,7 @@
 
         {% if table_lines %}
             {# the same Corporations, one line each, for reading a large Alliance at a glance #}
-            <div class="card d-none" data-eos-auth-monitor-view-pane="table">
+            <div class="card" data-eos-auth-monitor-view-pane="table">
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-sm table-hover align-middle mb-0 eos-auth-monitor-sortable eos-auth-monitor-no-search eos-auth-monitor-overview-table">

@@ -1,0 +1,63 @@
+{% extends "eos_auth_monitor/base.html" %}
+{% load i18n %}
+{% load evelinks %}
+
+{% block details %}
+    {% if unread %}
+        <div class="alert alert-info small">
+            {% blocktranslate count counter=unread|length context "EVE jargon" %}The member list of {{ counter }} Corporation could not be read, so its unknown characters are missing here.{% plural %}The member lists of {{ counter }} Corporations could not be read, so their unknown characters are missing here.{% endblocktranslate %}
+        </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header d-flex flex-wrap align-items-center gap-2">
+            <div class="card-title mb-0 me-auto"><i class="fas fa-user-secret"></i> {% translate "Unknown characters" %}</div>
+            <span class="small">
+                {% blocktranslate count counter=rows|length %}{{ counter }} character without a main in Auth{% plural %}{{ counter }} characters without a main in Auth{% endblocktranslate %}
+            </span>
+        </div>
+        <div class="card-body">
+            {% if rows %}
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
+                        <thead>
+                            <tr>
+                                <th>{% translate "Character" context "EVE jargon" %}</th>
+                                <th>{% translate "Corporation" context "EVE jargon" %}</th>
+                                <th>{% translate "Status" context "eos-auth-monitor" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for corporation, character in rows %}
+                                <tr class="eos-auth-monitor-unknown">
+                                    <td data-order="{{ character.name }}">
+                                        <div class="d-flex flex-wrap align-items-center gap-2">
+                                            <img src="{{ character.id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+                                            <span class="text-break">{{ character.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-break" data-order="{{ corporation.name }}">
+                                        <a href="{% url 'eos_auth_monitor:corporation' corporation.id %}">{{ corporation.name }}</a>
+                                        <span class="text-body-secondary small">[{{ corporation.ticker }}]</span>
+                                    </td>
+                                    {# not in Auth: the player registers; in Auth without a main: the player picks one #}
+                                    <td data-order="{% if character.in_auth is None %}2{% elif character.in_auth %}1{% else %}0{% endif %}">
+                                        {% if character.in_auth is None %}
+                                            -
+                                        {% elif character.in_auth %}
+                                            <span class="badge text-bg-warning eos-auth-monitor-no-main">{% translate "no main" %}</span>
+                                        {% else %}
+                                            <span class="badge text-bg-secondary eos-auth-monitor-not-in-auth">{% translate "not in Auth" %}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-success mb-0">{% translate "Every member has a main in Auth." %}</div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

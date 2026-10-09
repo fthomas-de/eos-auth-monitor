@@ -522,8 +522,18 @@ class TestMembers(MonitorTestCase):
     def test_should_count_an_unknown_member_as_a_main_of_its_own(self):
         row, _, lookup = self.build_with_members([7777], names={7777: "Stranger"})
 
-        self.assertEqual(row["unregistered"], [{"id": 7777, "name": "Stranger"}])
+        self.assertEqual(row["unregistered"], [{"id": 7777, "name": "Stranger", "in_auth": False}])
         self.assertEqual(lookup.call_args.args[0], [7777])
+
+    def test_should_tell_a_member_on_an_account_without_a_main_from_one_unknown_to_auth(self):
+        add_alt(AuthUtils.create_user("mainless"), 9003, "Mainless", corporation_id=2001)
+
+        row, _, _ = self.build_with_members([9003, 7777], names={7777: "Stranger"})
+
+        self.assertEqual(
+            row["unregistered"],
+            [{"id": 9003, "name": "Mainless", "in_auth": True}, {"id": 7777, "name": "Stranger", "in_auth": False}],
+        )
 
     def test_should_say_when_the_list_could_not_be_read(self):
         row, _, _ = self.build_with_members(None)

@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The cockpit tile *Members registered* opens a list of the rest: every
+  member of the Alliance without a main in Auth - not registered, or on an
+  account without a main - where the member list could be read, sortable,
+  with their Corporation and which of the two it is (after the next rebuild;
+  a stored result from before does not say).
+- The lists (service, audit, Director, unknown characters, the account's
+  characters) are split into pages of 100 rows; the page size can be changed
+  (25 to 500). A list of 25 rows or fewer shows no paging. The overview's
+  table of Corporations keeps its own filter and stays on one page.
+
+### Changed
+
+- The service shares (cockpit, Corporation tiles and table, Corporation page)
+  count the mains only: a member unknown to Auth no longer counts as a main
+  that linked nothing. Discord reads, for example, *12 of 40* instead of
+  *12 of 55*; the unknown members are what *Members registered* lacks.
+- The Alliance overview shows its Corporations as a table by default; the
+  tiles are one click away, and a browser that chose them before keeps them.
+
 ## [0.0.10] - 2026-09-30
 
 ### Changed

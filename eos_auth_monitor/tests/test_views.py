@@ -188,15 +188,15 @@ class TestPages(ViewTestCase):
                 self.assertContains(response, f'href="{url}" class="stretched-link" aria-label="{label}"')
         self.assertNotContains(response, reverse("services:services"))
 
-    def test_should_leave_the_members_registered_gauge_unlinked(self):
+    def test_should_link_the_members_registered_gauge_to_the_unknown_characters(self):
         snapshot = Snapshot.objects.get()
         snapshot.data["corporations"][0].update(member_count=1, unregistered=[])
         snapshot.save()
 
         response = self.get(self.leader, "index")
 
-        self.assertContains(response, "Members registered")
-        self.assertNotContains(response, 'aria-label="Members registered"')
+        url = reverse("eos_auth_monitor:unknown_characters")
+        self.assertContains(response, f'href="{url}" class="stretched-link" aria-label="Members registered"')
 
     def test_should_mark_a_corporation_without_a_director_token(self):
         snapshot = Snapshot.objects.get()
@@ -404,17 +404,6 @@ class TestPages(ViewTestCase):
         self.assertContains(response, "Visitor alt")
         self.assertContains(response, "Registered in Auth")
 
-    def test_should_leave_the_members_registered_gauge_without_a_link(self):
-        snapshot = Snapshot.objects.get()
-        snapshot.data["corporations"][0]["member_count"] = 3
-        snapshot.save()
-
-        response = self.get(self.leader, "index")
-
-        # it follows the Discord gauge, whose link must not carry over
-        self.assertContains(response, "Members registered")
-        self.assertNotContains(response, 'aria-label="Members registered"')
-
     def test_should_say_which_corporation_has_how_many_problem_accounts(self):
         response = self.get(self.leader, "index")
 
@@ -443,6 +432,23 @@ class TestPages(ViewTestCase):
         table = content[content.index("eos-auth-monitor-overview-table"):]
         self.assertLess(table.index("Corp 2002"), table.index("Corp 2001"))
         self.assertRegex(content, r"eos_auth_monitor/js/view[^\"]*\.js")
+
+    def test_should_show_the_table_first(self):
+        content = self.get(self.leader, "index").content.decode()
+
+        # the table pane visible, the tiles hidden, the table button pressed
+        self.assertIn('<div class="card" data-eos-auth-monitor-view-pane="table">', content)
+        self.assertRegex(content, r'class="[^"]*\bd-none" data-eos-auth-monitor-view-pane="tiles"')
+        self.assertRegex(content, r'active" aria-pressed="true"\s+data-eos-auth-monitor-view="table"')
+
+    def test_should_keep_the_tiles_where_there_is_no_corporation(self):
+        store_snapshot(snapshot_data([]))
+
+        content = self.get(self.leader, "index").content.decode()
+
+        self.assertNotIn('data-eos-auth-monitor-view-pane="table"', content)
+        self.assertRegex(content, r'g-3" data-eos-auth-monitor-view-pane="tiles"')
+        self.assertIn("No Corporation of the Alliance is known to Auth.", content)
 
     def test_should_offer_to_show_only_corporations_with_problems(self):
         response = self.get(self.leader, "index")
@@ -1622,6 +1628,58 @@ class TestDirectorList(ViewTestCase):
     def test_should_keep_everyone_but_leadership_out(self):
         self.assertEqual(self.get(self.ceo, "directors", "corptools_corporations").status_code, 302)
         self.assertEqual(self.get(self.leader, "directors", "corptools_corporations").status_code, 200)
+
+
+class TestUnknownCharacterList(ViewTestCase):
+    """Behind the Members registered tile: every member of the Alliance without a main in Auth."""
+
+    def setUp(self):
+        super().setUp()
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0].update(
+            member_count=3,
+            unregistered=[
+                {"id": 7001, "name": "Stranger A", "in_auth": False},
+                {"id": 7002, "name": "Mainless B", "in_auth": True},
+            ],
+        )
+        snapshot.save()
+
+    def test_should_have_no_tile_of_their_own_and_leave_them_out_of_the_service_totals(self):
+        response = self.get(self.leader, "index")
+
+        self.assertNotContains(response, "Unknown characters")
+        # Discord: one linked main of two, the unknown members left out of the total
+        discord = next(gauge for gauge in response.context["cockpit"] if gauge.service)
+        self.assertEqual((discord.part, discord.total), (1, 2))
+
+    def test_should_list_each_unknown_character_with_its_corporation_and_status(self):
+        response = self.get(self.leader, "unknown_characters")
+
+        content = response.content.decode()
+        self.assertContains(response, "2 characters without a main in Auth")
+        self.assertContains(response, '<small class="text-muted">Unknown characters</small>')
+        self.assertContains(response, 'class="eos-auth-monitor-unknown"', count=2)
+        # each row says which way it is unknown
+        stranger = content[content.index("Stranger A"):]
+        mainless = content[content.index("Mainless B"):]
+        self.assertIn('eos-auth-monitor-not-in-auth">not in Auth</span>', stranger[: stranger.index("</tr>")])
+        self.assertIn('eos-auth-monitor-no-main">no main</span>', mainless[: mainless.index("</tr>")])
+        self.assertContains(response, reverse("eos_auth_monitor:corporation", args=[2001]))
+        self.assertLess(content.index("Mainless B"), content.index("Stranger A"))
+        # 2002's member list was not read: its unknown characters cannot be named
+        self.assertContains(response, "The member list of 1 Corporation could not be read")
+
+    def test_should_not_exist_without_a_member_list(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["member_count"] = None
+        snapshot.save()
+
+        self.assertEqual(self.get(self.leader, "unknown_characters").status_code, 404)
+
+    def test_should_keep_everyone_but_leadership_out(self):
+        self.assertEqual(self.get(self.ceo, "unknown_characters").status_code, 302)
+        self.assertEqual(self.get(self.leader, "unknown_characters").status_code, 200)
 
 
 class TestVoluntaryServices(ViewTestCase):

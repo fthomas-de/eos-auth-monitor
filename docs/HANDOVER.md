@@ -150,6 +150,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - **Unknown members are mains that linked nothing**: the cockpit's and the
   tiles' service shares count them in the total wherever the member list
   could be read. The Connections tile still counts real links only.
+  **Reversed on 2026-10-09**, see there.
 - **Character count per Corporation** from `EveCorporationInfo.member_count`
   (Auth's own, no token); the member list wins where it was read.
 - **Everything is sorted by number of problems**, most first, then by name:
@@ -172,7 +173,8 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   tag *not in Auth*. Corporation Audit asks for a token with every
   Corporation-audit scope (the Director check's rule), Structures for an
   enabled `OwnerCharacter` of the Corporation's owner. The Members registered
-  tile and the Corporation tile rows have no link of their own.
+  tile (until 2026-10-09, see there) and the Corporation tile rows have no
+  link of their own.
 - **Gua Zi 2nd hand** (98827954, production), reported as not in the
   Alliance, is in it according to ESI since 2026-08-20: the overview is right.
   No exclusion list was asked for.
@@ -309,6 +311,32 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   `own=False` explicitly, a filter argument must exist); Discord - voluntary
   too, but not named - and Mumble stay red, and so does every tile on the
   account page others see. The dashboard widget's icons were grey already.
+
+2026-10-09 (not committed yet):
+
+- **Unknown characters apart** ("zähle charactere, die noch nicht im auth
+  sind und noch keinem main zugehörig sind ... nicht mit in die gesamtsumme,
+  sondern zeig sie separat an"): the service shares count mains only -
+  `Corporation.service_total` is gone, `service_counts` and the cockpit use
+  the mains. Asked where: the user chose **everywhere** (cockpit, Corporation
+  tiles and table, Corporation page). The cockpit's *Members registered* tile,
+  unlinked until now, opens `unknown_characters` (`view_all`, 404 without
+  any member list): every `unregistered` member with Corporation and status,
+  sortable. A tile *Unknown characters* of its own was built and dropped the
+  same day ("die ist ja doppelt mit registered"). The snapshot keeps
+  `in_auth` per unregistered member (False: not in Auth, True: account
+  without a main); an older snapshot shows "-" until the next rebuild.
+  Restart the Celery worker before rebuilding (build changed).
+- **Paging on every list** ("bau eine pagination bei allen listen ein mit
+  standard 100"): `tables.js` pages every sortable table longer than 25 rows,
+  100 per page, 25-500 to choose, with DataTables' info line. Not the
+  overview table (`eos-auth-monitor-no-search`): `filter.js` hides rows itself
+  and would miss those on other pages. Not looked at in a browser.
+- **Table first on the overview** ("mach die table ansicht in der alliance
+  overview zum default"): `index.html` renders the table pane visible and
+  the tiles hidden, the table button pressed; a choice stored by `view.js`
+  still wins. Without a table line (no Corporation) the tiles stay visible,
+  they carry the "No Corporation ..." notice.
 
 ## Pitfalls found
 

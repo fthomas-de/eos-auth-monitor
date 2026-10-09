@@ -2,7 +2,9 @@
  * View switch: buttons marked data-eos-auth-monitor-view="<name>" show the
  * element marked data-eos-auth-monitor-view-pane="<name>" and hide the other
  * panes. Used on the overview for tiles or table. The choice is kept per
- * browser; storage may be blocked, and then the tiles simply come first.
+ * browser; without one - never chosen, or storage blocked - the page shows
+ * what the server rendered first: the table, or the tiles where there is no
+ * table.
  */
 document.addEventListener("DOMContentLoaded", () => {
     "use strict";

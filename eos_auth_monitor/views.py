@@ -316,6 +316,25 @@ def directors(request, group_key):
     )
 
 
+@any_permission_required(VIEW_ALL)
+def unknown_characters(request):
+    """Every member of the Alliance without a main in Auth, behind the cockpit tile that counts them."""
+    report = _report()
+    if report is None or not report.has_member_lists:
+        raise Http404
+    return _render(
+        request,
+        "eos_auth_monitor/unknown_characters.html",
+        {
+            **_state(report),
+            "location": _("Unknown characters"),
+            "rows": report.unknown_characters(),
+            # the list knows only the Corporations whose member list could be read
+            "unread": [corporation for corporation in report.corporations if corporation.member_count is None],
+        },
+    )
+
+
 @any_permission_required(MANAGE_SETTINGS)
 def settings(request):
     form = MonitorConfigurationForm(request.POST or None, instance=MonitorConfiguration.get_solo())

@@ -240,6 +240,16 @@ class TodoRow:
 
 
 @dataclass
+class UnknownCharacter:
+    """A member of a Corporation with no main to count it under."""
+
+    id: int
+    name: str
+    # False: not in Auth; True: in Auth on an account without a main; None: a snapshot from before it was kept
+    in_auth: bool | None
+
+
+@dataclass
 class OtherMain:
     """A main in another Corporation that has characters in this one."""
 
@@ -273,14 +283,6 @@ class Corporation:
     def characters(self) -> int | None:
         """All characters of the Corporation: the member list where it could be read, else Auth's stored count."""
         return self.member_count if self.member_count is not None else self.member_total
-
-    @property
-    def service_total(self) -> int:
-        """What the service shares count: the mains, plus every member Auth does not know.
-
-        An unknown character is a main of its own that cannot have linked anything.
-        """
-        return self.mains + len(self.unregistered)
 
     @property
     def mains(self) -> int:
@@ -348,12 +350,17 @@ class Corporation:
 
     @property
     def service_counts(self) -> list[Row]:
+        """Per service the share of the mains that linked it.
+
+        Members unknown to Auth stay out: nobody can say whose they are, and
+        the cockpit and the Corporation page show them on their own.
+        """
         return [
             Row(
                 service.label,
                 service.icon,
                 sum(account.is_linked(service.key) for account in self.accounts),
-                self.service_total,
+                self.mains,
                 service=service,
             )
             for service in self.services
@@ -579,6 +586,22 @@ class Report:
             key=lambda row: (-row[1].problem_count, row[0].name.lower(), row[1].main_name.lower()),
         )
 
+    @property
+    def has_member_lists(self) -> bool:
+        """Whether any Corporation's member list was read - only those can name unknown members."""
+        return any(corporation.member_count is not None for corporation in self.corporations)
+
+    def unknown_characters(self) -> list[tuple[Corporation, UnknownCharacter]]:
+        """Every member of the Alliance without a main in Auth, with its Corporation; by Corporation, then name."""
+        return sorted(
+            (
+                (corporation, UnknownCharacter(entry["id"], entry["name"], entry.get("in_auth")))
+                for corporation in self.corporations
+                for entry in corporation.unregistered
+            ),
+            key=lambda row: (row[0].name.lower(), row[1].name.lower()),
+        )
+
     def has_director_list(self, group: str) -> bool:
         """Whether the checks of ``group`` ran, which is what gives it a list of Directors."""
         return group in CORPORATION_GROUP_LABELS and any(check.group == group for check in self.checks)
@@ -625,7 +648,8 @@ class Report:
             Gauge(
                 service.label,
                 sum(account.is_linked(service.key) for account in accounts),
-                sum(corporation.service_total for corporation in self.corporations),
+                # the mains only: the members unknown to Auth have a tile of their own
+                len(accounts),
                 service.icon,
                 service,
             )
@@ -640,6 +664,8 @@ class Report:
                     sum(corporation.registered for corporation in counted),
                     sum(corporation.member_count for corporation in counted),
                     "fas fa-user-plus",
+                    # the list of the rest: the members without a main in Auth
+                    url_name="eos_auth_monitor:unknown_characters",
                 )
             )
 

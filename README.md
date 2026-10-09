@@ -16,20 +16,22 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
 ## Features
 
 - **Cockpit**: percentages across the whole Alliance at a glance - share of
-  mains with Discord, Mumble, QQ and Telegram linked (members Auth does not
-  know count as mains that linked nothing, where the member list could be
-  read), share of members
+  mains with Discord, Mumble, QQ and Telegram linked (mains only: members
+  Auth does not know stay out), share of members
   registered in Auth, share of characters with a complete corptools
   Character Audit, share of Corporations with a working corptools
   Corporation Audit and aa-structures owner - and a tile with the number of
-  connections per service. Every tile but *Members registered* opens a list,
-  see *Service lists* and *Audit lists*
+  connections per service. Every tile opens a list, see *Service lists*,
+  *Audit lists* and *Unknown characters*
+- **Unknown characters** behind the *Members registered* tile: every member
+  of the Alliance without a main in Auth, with its Corporation and whether it
+  is *not in Auth* or in Auth on an account with *no main*; sortable
 - **Most problems first**: Corporation tiles, mains, characters and the service
   lists are ordered by the number of problems, then by name
 - **Filter** above the Corporations of the overview: name or ticker, and a
   switch to show only the Corporations with problems
-- **Tiles or table**: the Corporations of the overview as tiles or as one
-  sortable table line each; the browser remembers the choice
+- **Table or tiles**: the Corporations of the overview as one sortable table
+  line each (the default) or as tiles; the browser remembers the choice
 - **Service tiles** on the overview and on each Corporation page: the share of
   mains that linked Discord, Mumble, QQ or Telegram, each opening its list;
   on the Corporation page preceded by a tile per checked app (registered
@@ -53,7 +55,7 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   cards with keywords naming their problems (a main elsewhere whose alts
   here have problems too, marked "Main in ..."), the others as a compact list,
   members whose main is in another Corporation under that main, and members
-  unknown to Auth as a compact list, each counting as a main of its own
+  unknown to Auth as a compact list
 - **Account detail**: the characters with problems, with the details of
   each problem - which scopes are missing (the first two and how many more,
   the whole list as a tooltip), which sections are stale - and
@@ -104,7 +106,9 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
 - **Smart filter** for
   [allianceauth-securegroups](https://github.com/Solar-Helix-Independent-Transport/allianceauth-secure-groups),
   see [Smart filter](#smart-filter)
-- Sortable tables; the pages work on a phone
+- Sortable tables, in pages of 100 rows (25 to 500 to choose) where they are
+  longer than 25; the overview's Corporation table keeps its own filter and
+  no pages; the pages work on a phone
 - Checks and services of an app that is not installed are hidden
   automatically
 
@@ -128,8 +132,9 @@ the Corporation of every main on top of that.
 
 On the Corporation page, a member from the ESI member list is shown under
 its main when Auth knows its account. A member Auth does not know - or an
-account without a main - counts as a main of its own, "Not registered in
-Auth".
+account without a main - is listed as "Not registered in Auth". It stays out
+of the service shares, which count mains only; the cockpit's *Members
+registered* tile lists them all.
 
 ## Checks
 

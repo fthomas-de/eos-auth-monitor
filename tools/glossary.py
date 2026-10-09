@@ -681,6 +681,15 @@ TRANSLATIONS = {
     'token': ('Token', 'токен', '令牌'),
     'no token': ('kein Token', 'нет токена', '无令牌'),
     'not in Auth': ('nicht in Auth', 'нет в Auth', '不在 Auth 中'),
+    # the list of members without a main in Auth, behind Members registered
+    'Unknown characters': ('Unbekannte Characters', 'Неизвестные Character', '未知 Character'),
+    'Status': ('Status', 'Статус', '状态'),
+    'no main': ('kein Main', 'нет Main', '无 Main'),
+    'Every member has a main in Auth.': (
+        'Jedes Mitglied hat einen Main in Auth.',
+        'У каждого участника есть Main в Auth.',
+        '每个成员在 Auth 中都有 Main。',
+    ),
     # the notice to members on the settings page
     'Notice to members': ('Hinweis an die Mitglieder', 'Объявление для участников', '致成员的通知'),
     'Shown as an info box on My account and My Corporation. Leave it empty to show none.': (
@@ -748,6 +757,27 @@ PLURALS = {
             'Ни один токен Director не смог прочитать роли %(counter)s Corporation, поэтому их Director без токена здесь отсутствуют.',
         ],
         ['没有任何 Director 令牌能读取 %(counter)s 个 Corporation 的角色，因此这里缺少其中没有令牌的 Director。'],
+    ),
+    'The member list of %(counter)s Corporation could not be read, so its unknown characters are missing here.': (
+        [
+            'Die Mitgliederliste von %(counter)s Corporation konnte nicht gelesen werden; ihre unbekannten Characters fehlen hier.',
+            'Die Mitgliederlisten von %(counter)s Corporations konnten nicht gelesen werden; deren unbekannte Characters fehlen hier.',
+        ],
+        [
+            'Не удалось прочитать список участников %(counter)s Corporation, поэтому её неизвестные Character здесь отсутствуют.',
+            'Не удалось прочитать списки участников %(counter)s Corporation, поэтому их неизвестные Character здесь отсутствуют.',
+            'Не удалось прочитать списки участников %(counter)s Corporation, поэтому их неизвестные Character здесь отсутствуют.',
+        ],
+        ['无法读取 %(counter)s 个 Corporation 的成员列表，因此这里缺少其中的未知 Character。'],
+    ),
+    '%(counter)s character without a main in Auth': (
+        ['%(counter)s Character ohne Main in Auth', '%(counter)s Characters ohne Main in Auth'],
+        [
+            '%(counter)s Character без Main в Auth',
+            '%(counter)s Character без Main в Auth',
+            '%(counter)s Character без Main в Auth',
+        ],
+        ['%(counter)s 个 Character 在 Auth 中没有 Main'],
     ),
     # a list of scopes cut after the first two: "a, b and 3 more"
     'and %(count)d more': (
