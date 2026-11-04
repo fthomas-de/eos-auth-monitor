@@ -8,17 +8,17 @@ Last updated 2026-11-04.
 
 ## Release
 
-- Version **0.0.11** of 2026-10-09. New in 0.0.11, see `CHANGELOG.md`:
-  - **Service shares count mains only** (cockpit, Corporation tiles and
-    table, Corporation page); members unknown to Auth are no longer mains
-    that linked nothing.
-  - **Members registered opens `unknown_characters`**: every `unregistered`
-    member with Corporation and status (*not in Auth* / *no main*, from the
-    snapshot's new `in_auth`).
-  - **Paging** of every sortable list longer than 25 rows, 100 by default.
-  - **Table first** on the Alliance overview.
-  No migration, no new permission; changed static files (`tables.js`,
-  `view.js`: `collectstatic`); six new messages, translated.
+- Version **0.0.12** of 2026-11-04. New in 0.0.12, see `CHANGELOG.md`:
+  **eos-spy-network markers** per character for viewers with both
+  `eos_spy_network.view_suspects` and `view_evidence` - a *Spy network*
+  column in the overview table, a count tile and one to-do entry per marker
+  on the Corporation page, the markers on the account page. Display only.
+  Needs eos-spy-network **0.0.10** (released and pushed the same day, tag
+  `v0.0.10`); an older one is ignored. No migration, no new permission, no
+  static file; three new messages, translated.
+- New in 0.0.11: service shares count mains only; *Members registered* opens
+  `unknown_characters`; paging of every list longer than 25 rows; table
+  first on the overview (six messages, `tables.js`/`view.js`).
 - New in 0.0.10: *My account* greys out unlinked QQ and Telegram (`Service.
   grey_when_missing`, filter `link_colour`); Discord, Mumble and the
   account page others see stay red.
@@ -35,15 +35,17 @@ Last updated 2026-11-04.
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 347 tests without the translation tests, 3 translation tests, all green;
-  one of them (`test_should_find_the_page_of_the_installed_charlink`) runs
-  only with aa-charlink installed. Every check, access rule and feature was
+- 368 tests without the translation tests, 3 translation tests, all green;
+  `test_should_find_the_page_of_the_installed_charlink` runs only with
+  aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
+  with eos-spy-network installed. Every check, access rule and feature was
   counter-checked against broken code (a sabotage that stays green means the
   test is too weak - it happened seven times and each was fixed; 0.0.2 went 34
   for 34, 0.0.3 31 for 31, 0.0.4 3 for 3, 0.0.5 11 for 11, 0.0.6 41 for 41,
   0.0.7 11 for 11, 0.0.8 16 for 16, 0.0.9 7 for 7, 0.0.10 4 for 4, 0.0.11
   13 for 13 after one fix: the status badges were counted, not tied to
-  their rows).
+  their rows; 0.0.12 20 for 20 after two fixes: the order by marker count
+  and the to-do card opened by markers alone were untested).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -56,6 +58,7 @@ Last updated 2026-11-04.
 | Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_gauges`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems as cards (a visiting main marked "Main in ...", linked only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
+| eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link) and one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
 | Corporation service | as Corporation | One row per main of the Corporation, linked yes/no, no problems |
 | Service | `view_all` | Every main of the Alliance, linked yes/no |
 | Character Audit list (`character_audit`) | `view_all` | Every main of the Alliance with a tag per failed character check (`Account.keyword_counts`, "×n" for n characters), most problems first; 404 without character checks |
@@ -348,7 +351,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   still wins. Without a table line (no Corporation) the tiles stay visible,
   they carry the "No Corporation ..." notice.
 
-2026-11-04 (working tree, not committed):
+2026-11-04 (0.0.12):
 
 - **eos-spy-network integration** ("integration von eos spy network in den
   auth monitor"): for viewers with both `eos_spy_network.view_suspects` and
@@ -472,27 +475,40 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - A sabotage pattern must be unique in its file (`snapshot.py` builds
   `in_auth` for Directors too; the status template tests `in_auth` twice):
   the script asserts a single match and stops otherwise.
+- `test_aa_dev` is shared by every app's test runs: on 2026-11-04 an
+  eos-sig-checker run from another session broke the kept database mid-run
+  (a foreign migration failing, then "Unknown database"), and a sabotage
+  round showed "red" for that reason alone. Run with
+  `EOS_TEST_DB=test_eam_<topic>` while other sessions may test; check that a
+  red round failed in a test, not in the setup.
+- A sabotage round on `test_views` costs about a minute for the whole module;
+  scope it to the test class (`tests.test_views.TestSpyNetwork`) - seconds.
+- A sabotage that only adds an attribute the tests never look at (`hidden`
+  on a cell) proves nothing; break what a test can see.
+- To fake an uninstalled module that was already imported, setting
+  `sys.modules[name] = None` is not enough: `from package import api` takes
+  the package attribute first - remove that too, and put it back
+  (`test_should_ignore_a_release_without_the_read_api`).
 
 ## Open points / next steps
 
-- **eos-spy-network integration** (2026-11-04) is in the working tree only:
-  three new messages ("Spy network", "Characters with markers", "Characters
-  with markers in eos-spy-network") go into `tools/glossary.py` at `/commit`.
-  It needs eos-spy-network 0.0.10 (released separately). An older one is
-  recognised by what it offers, not by its version: without
-  `eos_spy_network.api` or with a part of it missing,
-  `sources.spy_network.is_installed()` is False and nothing of it shows (no
-  version is compared, nothing in the dependencies). Not looked at in a browser; the dev
-  instance shows markers only after eos-spy-network's snapshot was rebuilt
-  with 0.0.10.
+- **eos-spy-network markers not seen in a browser**: covered by tests of the
+  rendered HTML only. In the dev instance they show only after
+  eos-spy-network's own snapshot was rebuilt with 0.0.10 (its button or
+  `snapshot.update()`), and only for a user holding both of its view
+  permissions. The colour of the marker badges (`text-bg-warning` with
+  `fa-user-secret`) was Claude's choice, not asked.
+- The overview **tiles** have no spy number - the user asked for a column;
+  ask if the tiles should get it too.
 
 - **Rebuild the dev snapshot** (*Rebuild now*; the worker already runs the
   0.0.11 build): then the unknown characters list should show *not in Auth*
   or *no main* for every one of Ether Element's 275, and the paging (275 rows:
   three pages of 100) and the table-first overview can be looked at.
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.11 are to be deployed, with
-  migrations 0007 and 0008 and `collectstatic`. After deploying, *Rebuild now* (or the beat run) fills the
+- Production still runs 0.0.5: 0.0.6 to 0.0.12 are to be deployed, with
+  migrations 0007 and 0008 and `collectstatic` (for the spy markers also
+  eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
   without a snapshot it fails everyone.
 - **A CEO does not see the *My Corporation* widget** (reported for
@@ -571,6 +587,8 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   is flagged. The other Corporations have no token with the membership scope
   and carry "No Director token".
 - `collectstatic` was run after `view.js` and `copy.js` were added.
+- eos-spy-network is installed editable from `~/aa-dev/working/eos-spy-network`
+  (0.0.10, with `eos_spy_network.api`), so the spy tests run here.
 - Installed: allianceauth 5.3.1, allianceauth-corptools 3.5.0, django-solo
   2.5.1, django-esi 9.10.0. Target production per checklist: AA 5.4.0,
   corptools 3.5.0, aa-structures 4.0.1.
