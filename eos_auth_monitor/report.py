@@ -250,6 +250,12 @@ class SpyTodo:
 
     marker: object  # sources.spy_network.SpyMarker
     characters: list[Character]
+    # the account of each character, to link its name to the main's page
+    accounts: list[Account] = field(default_factory=list)
+
+    @property
+    def entries(self) -> list[tuple[Character, Account]]:
+        return list(zip(self.characters, self.accounts))
 
     @property
     def group(self) -> str:
@@ -338,9 +344,19 @@ class Corporation:
     def spy_todos(self) -> list[SpyTodo]:
         """Per eos-spy-network marker, in its order, the characters counted here that carry it."""
         by_kind: dict[str, SpyTodo] = {}
-        for character in self.spy_characters:
+        for account, character in sorted(
+            (
+                (account, character)
+                for account in self.evaluated_accounts
+                for character in account.characters
+                if character.spy
+            ),
+            key=lambda pair: pair[1].name.lower(),
+        ):
             for marker in character.spy:
-                by_kind.setdefault(marker.kind, SpyTodo(marker, [])).characters.append(character)
+                todo = by_kind.setdefault(marker.kind, SpyTodo(marker, []))
+                todo.characters.append(character)
+                todo.accounts.append(account)
         return [by_kind[kind] for kind in self.spy_kinds or () if kind in by_kind]
 
     @property

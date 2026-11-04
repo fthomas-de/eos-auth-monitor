@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The names in the *Spy network* to-do groups of a Corporation page link to the
+  account page of their main, like the names in the other groups.
+
 ## [0.0.12] - 2026-11-04
 
 ### Added

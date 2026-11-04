@@ -96,7 +96,9 @@
                                     {% include "eos_auth_monitor/partials/copy-button.html" with names=todo.names %}
                                     {% include "eos_auth_monitor/partials/csv-button.html" with group=todo.group %}
                                 </div>
-                                <div class="small text-break">{{ todo.names }}</div>
+                                <div class="small text-break">
+                                    {% for character, account in todo.entries %}{% if account.visiting and not can_view_all %}{{ character.name }}{% else %}<a href="{% url 'eos_auth_monitor:account' account.user_id %}">{{ character.name }}</a>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                </div>
                             </li>
                         {% endfor %}
                     </ul>
