@@ -4,16 +4,25 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-04 (0.0.13).
+Last updated 2026-11-04 (0.0.14).
 
 ## Release
 
-- Version **0.0.13** of 2026-11-04. New in 0.0.13, see `CHANGELOG.md`: the
-  names in the *Spy network* to-do groups of a Corporation page link to the
-  account page of their main (`SpyTodo.entries`), with the same rule as the
-  other groups: a main elsewhere stays text unless the viewer has
-  `view_all`. Template and report only; no new test (the suite stays at 368),
-  no migration, no message, not seen in a browser.
+- Version **0.0.14** of 2026-11-04: an internal clean-up the user asked for
+  ("mit dem ponytail skill durch coding ... optimierungen"), every point
+  chosen by the user, nothing visible changes - see `CHANGELOG.md`. One
+  `report.Row` for tile lines and statistic tiles (`Gauge`, `service_gauges`
+  and `check_gauges` are gone; the Corporation page uses `check_rows` and
+  `service_counts`, `Row.url` links a tile), the Connections tile reads the
+  cockpit's service tiles (`Report.connections()` gone), `charlink_url` set
+  in `views._render` for every page, `sources.corptools._missing_scopes`,
+  `snapshot.NO_MEMBERS`. The suite stays at 368; the Connections test now
+  checks the count (sabotaged and seen red). No migration, no message.
+- New in 0.0.13: the names in the *Spy network* to-do groups of a
+  Corporation page link to the account page of their main
+  (`SpyTodo.entries`), with the same rule as the other groups: a main
+  elsewhere stays text unless the viewer has `view_all`. Not seen in a
+  browser.
 - New in 0.0.12:
   **eos-spy-network markers** per character for viewers with both
   `eos_spy_network.view_suspects` and `view_evidence` - a *Spy network*
@@ -61,7 +70,7 @@ Last updated 2026-11-04 (0.0.13).
 | Page | Permission | What |
 |---|---|---|
 | Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares; *Members registered* opens the unknown characters), then the Corporations, most problems first, as a table (the default since 0.0.11) or as tiles (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
-| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_gauges`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems as cards (a visiting main marked "Main in ...", linked only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
+| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems as cards (a visiting main marked "Main in ...", linked only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
 | eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link) and one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
@@ -272,7 +281,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   without a link. Without aa-charlink the apps stay the links.
 - **Corporation page: the checks' apps as tiles** ("mache aus den drei
   buttons char audit corp audit und structures, jeweils mit prozentzahl eine
-  kachel"): `Corporation.check_gauges` before the service tiles, in the same
+  kachel"): `Corporation.check_rows` before the service tiles, in the same
   grid; *Registered in Auth* goes along, being a line of the same kind. The
   tiles have no link (the Alliance-wide lists need `view_all`). The account
   page and the service lists keep the lines in the header.
@@ -512,7 +521,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   or *no main* for every one of Ether Element's 275, and the paging (275 rows:
   three pages of 100) and the table-first overview can be looked at.
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.13 are to be deployed, with
+- Production still runs 0.0.5: 0.0.6 to 0.0.14 are to be deployed, with
   migrations 0007 and 0008 and `collectstatic` (for the spy markers also
   eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
