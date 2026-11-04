@@ -4,11 +4,17 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-04.
+Last updated 2026-11-04 (0.0.13).
 
 ## Release
 
-- Version **0.0.12** of 2026-11-04. New in 0.0.12, see `CHANGELOG.md`:
+- Version **0.0.13** of 2026-11-04. New in 0.0.13, see `CHANGELOG.md`: the
+  names in the *Spy network* to-do groups of a Corporation page link to the
+  account page of their main (`SpyTodo.entries`), with the same rule as the
+  other groups: a main elsewhere stays text unless the viewer has
+  `view_all`. Template and report only; no new test (the suite stays at 368),
+  no migration, no message, not seen in a browser.
+- New in 0.0.12:
   **eos-spy-network markers** per character for viewers with both
   `eos_spy_network.view_suspects` and `view_evidence` - a *Spy network*
   column in the overview table, a count tile and one to-do entry per marker
@@ -506,7 +512,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   or *no main* for every one of Ether Element's 275, and the paging (275 rows:
   three pages of 100) and the table-first overview can be looked at.
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.12 are to be deployed, with
+- Production still runs 0.0.5: 0.0.6 to 0.0.13 are to be deployed, with
   migrations 0007 and 0008 and `collectstatic` (for the spy markers also
   eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
