@@ -17,6 +17,7 @@ from eos_auth_monitor.checks import is_app_installed
 from eos_auth_monitor.forms import MonitorConfigurationForm
 from eos_auth_monitor.models import MonitorConfiguration, Snapshot
 from eos_auth_monitor.permissions import APP_PERMISSIONS, BASIC_ACCESS, MANAGE_SETTINGS, VIEW_ALL, VIEW_OWN
+from eos_auth_monitor.sources import spy_network
 
 from .base import (
     ALLIANCE_ID,
@@ -1718,3 +1719,128 @@ class TestVoluntaryServices(ViewTestCase):
 
         match = re.search(r'<i class="fab fa-discord fa-lg mb-2"></i>\s*<div class="fs-3 fw-bold ([^"]+)">', content)
         self.assertEqual(match.group(1), "text-danger")
+
+
+SPY_MARKERS = {
+    # the alt of 2001's account is in 2002: it counts there
+    1102: [spy_network.SpyMarker("wallet", "ISK with hostiles", "Wallet entries with hostiles.")],
+    2201: [
+        spy_network.SpyMarker("membership", "Hostile membership", "In a hostile Corporation."),
+        spy_network.SpyMarker("wallet", "ISK with hostiles", "Wallet entries with hostiles."),
+    ],
+}
+
+
+@skipUnless(apps.is_installed("eos_spy_network"), "eos-spy-network is not installed")
+class TestSpyNetwork(ViewTestCase):
+    """eos-spy-network's markers for viewers with both of its view permissions; the reader is a stand-in."""
+
+    def setUp(self):
+        super().setUp()
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["accounts"][0]["characters"].append(character_row(1102, corporation_id=2002))
+        snapshot.save()
+        markers = patch.object(spy_network, "character_markers", return_value=SPY_MARKERS)
+        kinds = patch.object(spy_network, "kinds", return_value=("membership", "corp_changes", "wallet"))
+        markers.start()
+        kinds.start()
+        self.addCleanup(markers.stop)
+        self.addCleanup(kinds.stop)
+        spy = ("eos_spy_network.view_suspects", "eos_spy_network.view_evidence")
+        self.spy_leader = make_user("spyleader", VIEW_ALL, *spy, corporation_id=2001)
+        self.spy_ceo = make_user("spyceo", BASIC_ACCESS, *spy, corporation_id=2002)
+        self.half_spy = make_user("halfspy", VIEW_ALL, "eos_spy_network.view_suspects", corporation_id=2001)
+
+    def test_should_add_the_column_to_the_overview_table(self):
+        content = self.get(self.spy_leader, "index").content.decode()
+        table = content[content.index("eos-auth-monitor-overview-table"):]
+
+        self.assertIn("Spy network</th>", table)
+        counts = re.findall(
+            r'<td data-order="(\d+)" class="[^"]*eos-auth-monitor-spy-count[^"]*">\s*<a href="([^"]+)" class="text-reset">(\d+)</a>',
+            table,
+        )
+        # the sort key is the count itself
+        self.assertEqual(
+            sorted(counts),
+            sorted(
+                [
+                    ("0", reverse("eos_spy_network:corporation", args=[2001]), "0"),
+                    ("2", reverse("eos_spy_network:corporation", args=[2002]), "2"),
+                ]
+            ),
+        )
+
+    def test_should_hide_everything_without_both_spy_permissions(self):
+        for user in (self.leader, self.half_spy):
+            with self.subTest(user.username):
+                for page, args in (("index", ()), ("corporation", (2002,)), ("account", (22,))):
+                    response = self.get(user, page, *args)
+                    self.assertNotContains(response, "Spy network")
+                    self.assertNotContains(response, "ISK with hostiles")
+
+    def test_should_show_the_tile_linking_to_the_spy_corporation(self):
+        content = self.get(self.spy_leader, "corporation", 2002).content.decode()
+        tile = content[content.index("eos-auth-monitor-spy-tile"):content.index("eos-auth-monitor-todos")]
+
+        self.assertRegex(tile, r'<div class="fs-3 fw-bold text-danger">2</div>')
+        self.assertIn(f'href="{reverse("eos_spy_network:corporation", args=[2002])}"', tile)
+
+    def test_should_show_a_clean_corporation_with_a_green_zero(self):
+        content = self.get(self.spy_leader, "corporation", 2001).content.decode()
+
+        self.assertRegex(content, r'eos-auth-monitor-spy-tile[\s\S]*?<div class="fs-3 fw-bold text-success">0</div>')
+        self.assertNotIn("eos-auth-monitor-spy-todo", content)
+
+    def test_should_list_a_todo_per_marker_with_the_characters(self):
+        content = self.get(self.spy_ceo, "corporation", 2002).content.decode()
+        todos = content[content.index("eos-auth-monitor-todos"):content.index("Mains of this Corporation")]
+
+        self.assertEqual(todos.count("eos-auth-monitor-spy-todo"), 2)
+        self.assertLess(todos.index("Hostile membership"), todos.index("ISK with hostiles"))
+        self.assertIn('data-eos-auth-monitor-copy="Char 2201"', todos)
+        self.assertIn('data-eos-auth-monitor-copy="Char 1102, Char 2201"', todos)
+        url = reverse("eos_auth_monitor:corporation_export", args=[2002])
+        self.assertIn(f'href="{url}?group=spy_wallet"', todos)
+
+    def test_should_show_the_todo_card_for_markers_alone(self):
+        # 2001 has no problem and no unregistered member: only the marker opens the card
+        SPY_MARKERS[1101] = SPY_MARKERS[1102]
+        self.addCleanup(SPY_MARKERS.pop, 1101)
+
+        content = self.get(self.spy_leader, "corporation", 2001).content.decode()
+
+        self.assertIn("eos-auth-monitor-todos", content)
+        self.assertIn('data-eos-auth-monitor-copy="Char 1101"', content)
+
+    def test_should_export_a_marker_group_only_for_spy_viewers(self):
+        self.client.force_login(self.spy_leader)
+        url = reverse("eos_auth_monitor:corporation_export", args=[2002])
+        response = self.client.get(url, {"group": "spy_wallet"})
+        self.assertEqual(response.content.decode("utf-8-sig").split(), ["Name", "Char", "1102", "Char", "2201"])
+
+        self.client.force_login(self.leader)
+        self.assertEqual(self.client.get(url, {"group": "spy_wallet"}).status_code, 404)
+        self.assertNotIn("ISK with hostiles", self.client.get(url).content.decode("utf-8-sig"))
+
+    def test_should_show_the_markers_beside_the_characters_on_the_account_page(self):
+        content = self.get(self.spy_leader, "account", 11).content.decode()
+        table = content[content.index("<tbody>"):content.index("</tbody>")]
+
+        # 1102 has no problem of its own: the markers bring it into the table
+        self.assertIn("Char 1102", table)
+        self.assertIn("ISK with hostiles", table)
+        self.assertIn(f'href="{reverse("eos_spy_network:corporation", args=[2001])}"', table)
+
+    def test_should_never_show_the_markers_on_my_account(self):
+        owner = make_user("owner", VIEW_OWN, "eos_spy_network.view_suspects", "eos_spy_network.view_evidence")
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["accounts"].append(account_row(owner.pk, owner.profile.main_character.character_id))
+        snapshot.save()
+        SPY_MARKERS[owner.profile.main_character.character_id] = SPY_MARKERS[2201]
+        self.addCleanup(SPY_MARKERS.pop, owner.profile.main_character.character_id)
+
+        response = self.get(owner, "own_account")
+
+        self.assertContains(response, "None of your characters has a problem.")
+        self.assertNotContains(response, "ISK with hostiles")

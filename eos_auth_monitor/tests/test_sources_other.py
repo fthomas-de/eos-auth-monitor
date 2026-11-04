@@ -4,9 +4,14 @@ their models are stood in for by fakes that answer the same queries."""
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+from unittest import skipUnless
+
+from django.apps import apps
 from django.test import SimpleTestCase
 
-from eos_auth_monitor.sources import services, structures
+from eos_auth_monitor.sources import services, spy_network, structures
+
+from .base import MonitorTestCase, make_user
 
 STRUCTURES_KEYS = {
     "structures_no_owner",
@@ -115,3 +120,92 @@ class TestServices(SimpleTestCase):
         _, _, filters, _ = self.linked("telegram")
 
         self.assertEqual(filters["telegram_user_id__isnull"], False)
+
+
+SPY_INSTALLED = apps.is_installed("eos_spy_network")
+VIEW_SUSPECTS = "eos_spy_network.view_suspects"
+VIEW_EVIDENCE = "eos_spy_network.view_evidence"
+
+
+def fake_spy_api(found):
+    return SimpleNamespace(
+        KINDS=("membership", "mails", "wallet"),
+        label=lambda kind: f"Label {kind}",
+        description=lambda kind: f"Description {kind}",
+        character_markers=lambda: found,
+    )
+
+
+class TestSpyNetworkReader(SimpleTestCase):
+    def test_should_turn_the_kinds_into_markers_in_the_apps_order(self):
+        api = fake_spy_api({9001: ["membership", "wallet"], 9002: ["mails", "gone"]})
+        with patch.object(spy_network, "is_installed", return_value=True), patch.object(
+            spy_network, "_api", return_value=api
+        ):
+            found = spy_network.character_markers()
+            kinds = spy_network.kinds()
+
+        self.assertEqual(kinds, ("membership", "mails", "wallet"))
+        self.assertEqual(
+            found,
+            {
+                9001: [
+                    spy_network.SpyMarker("membership", "Label membership", "Description membership"),
+                    spy_network.SpyMarker("wallet", "Label wallet", "Description wallet"),
+                ],
+                # a kind a later release dropped is left out
+                9002: [spy_network.SpyMarker("mails", "Label mails", "Description mails")],
+            },
+        )
+
+    def test_should_read_nothing_without_the_app(self):
+        with patch.object(spy_network, "is_installed", return_value=False), patch.object(
+            spy_network, "_api", side_effect=AssertionError("imported")
+        ):
+            self.assertEqual(spy_network.character_markers(), {})
+            self.assertEqual(spy_network.kinds(), ())
+
+
+class TestSpyNetworkPermissions(MonitorTestCase):
+    def test_should_not_show_anything_without_the_app(self):
+        user = make_user("nobody")
+        with patch.object(spy_network, "is_installed", return_value=False):
+            self.assertFalse(spy_network.can_view(user))
+
+    @skipUnless(SPY_INSTALLED, "eos-spy-network is not installed")
+    def test_should_ignore_a_release_without_the_read_api(self):
+        import sys
+
+        import eos_spy_network
+
+        user = make_user("both", VIEW_SUSPECTS, VIEW_EVIDENCE)
+        real = sys.modules.get("eos_spy_network.api")
+        # before 0.0.10: no module at all - the import must fail, not reuse the loaded one
+        with patch.dict(sys.modules, {"eos_spy_network.api": None}):
+            had = hasattr(eos_spy_network, "api")
+            if had:
+                delattr(eos_spy_network, "api")
+            try:
+                self.assertFalse(spy_network.is_installed())
+                self.assertFalse(spy_network.can_view(user))
+                self.assertEqual(spy_network.character_markers(), {})
+            finally:
+                if had:
+                    eos_spy_network.api = real
+        # a module that lacks a part of the contract counts as missing as well
+        with patch.dict(sys.modules, {"eos_spy_network.api": SimpleNamespace(KINDS=())}):
+            had = hasattr(eos_spy_network, "api")
+            if had:
+                delattr(eos_spy_network, "api")
+            try:
+                self.assertFalse(spy_network.can_view(user))
+            finally:
+                if had:
+                    eos_spy_network.api = real
+        self.assertTrue(spy_network.can_view(user))
+
+    @skipUnless(SPY_INSTALLED, "eos-spy-network is not installed")
+    def test_should_need_both_view_permissions(self):
+        self.assertTrue(spy_network.can_view(make_user("both", VIEW_SUSPECTS, VIEW_EVIDENCE)))
+        self.assertFalse(spy_network.can_view(make_user("suspects", VIEW_SUSPECTS)))
+        self.assertFalse(spy_network.can_view(make_user("evidence", VIEW_EVIDENCE)))

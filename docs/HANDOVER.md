@@ -4,7 +4,7 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-10-09.
+Last updated 2026-11-04.
 
 ## Release
 
@@ -348,6 +348,32 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   still wins. Without a table line (no Corporation) the tiles stay visible,
   they carry the "No Corporation ..." notice.
 
+2026-11-04 (working tree, not committed):
+
+- **eos-spy-network integration** ("integration von eos spy network in den
+  auth monitor"): for viewers with both `eos_spy_network.view_suspects` and
+  `view_evidence` (`sources.spy_network.can_view`) on top of the page's own
+  permission: a *Spy network* column in the overview **table** (not on the
+  tiles - the user asked for a column), a count tile on the Corporation page
+  linking to `eos_spy_network:corporation`, a to-do entry per marker kind
+  (group `spy_<kind>`, copy and CSV like the others, also in the whole-list
+  CSV), and on the **account page** (the user's "Main-Übersicht") each
+  character's markers; a character with markers but no problem moves into
+  the table (`Account.listed_characters`). Answers of the user: count
+  **characters with markers** (column and tile alike), each character **in
+  its own Corporation** like the checks; **display only** - no problem
+  count, sorting, border, dashboard widget or smart filter; *My account*
+  never shows them (`own_account` calls `_report()` without the user).
+- The markers per character need eos-spy-network to store the characters
+  behind each marker; the user had that done **in a separate session** in
+  eos-spy-network (0.0.10: `character_ids` per stored marker,
+  `eos_spy_network/api.py` with `character_markers()`, `label()`,
+  `description()`, `KINDS`). The auth monitor reads that API on every page
+  view (`views._report(user)` -> `Report.add_spy_markers`); nothing goes into
+  its own snapshot. The Corporation and account objects share the
+  `Character` instances, which is why setting `character.spy` once reaches
+  every page.
+
 ## Pitfalls found
 
 - `CharacterAudit.is_active()` **saves** the audit. "Audit inactive" is
@@ -448,6 +474,17 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   the script asserts a single match and stops otherwise.
 
 ## Open points / next steps
+
+- **eos-spy-network integration** (2026-11-04) is in the working tree only:
+  three new messages ("Spy network", "Characters with markers", "Characters
+  with markers in eos-spy-network") go into `tools/glossary.py` at `/commit`.
+  It needs eos-spy-network 0.0.10 (released separately). An older one is
+  recognised by what it offers, not by its version: without
+  `eos_spy_network.api` or with a part of it missing,
+  `sources.spy_network.is_installed()` is False and nothing of it shows (no
+  version is compared, nothing in the dependencies). Not looked at in a browser; the dev
+  instance shows markers only after eos-spy-network's snapshot was rebuilt
+  with 0.0.10.
 
 - **Rebuild the dev snapshot** (*Rebuild now*; the worker already runs the
   0.0.11 build): then the unknown characters list should show *not in Auth*

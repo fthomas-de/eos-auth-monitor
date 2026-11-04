@@ -29,6 +29,7 @@ from .permissions import (
     own_corporation_id,
 )
 from .report import CORPORATION_GROUP_LABELS, PHASE_LABELS, Report
+from .sources import spy_network
 from .tasks import update_snapshot
 
 
@@ -73,9 +74,15 @@ def _corporation_nav(user, corporation_id) -> str:
     return NAV_CORPORATION if corporation_id == own_corporation_id(user) else NAV_ALLIANCE
 
 
-def _report() -> Report | None:
+def _report(user=None) -> Report | None:
+    """The stored snapshot; with ``user``, eos-spy-network's markers added where that viewer may see them."""
     snapshot = snapshots.current()
-    return Report(snapshot) if snapshot else None
+    if not snapshot:
+        return None
+    report = Report(snapshot)
+    if user is not None and spy_network.can_view(user):
+        report.add_spy_markers(spy_network.character_markers(), spy_network.kinds())
+    return report
 
 
 def _state(report: Report | None) -> dict:
@@ -112,7 +119,7 @@ def index(request):
             return redirect("eos_auth_monitor:own_account")
         return redirect("eos_auth_monitor:settings")
 
-    report = _report()
+    report = _report(user)
     table_columns, table_lines = report.overview_table() if report else ([], [])
     return _render(
         request,
@@ -129,7 +136,7 @@ def index(request):
 
 @any_permission_required(BASIC_ACCESS, VIEW_ALL)
 def corporation(request, corporation_id):
-    report = _report()
+    report = _report(request.user)
     context = _state(report)
     context["corporation"] = _visible_corporation(request, report, corporation_id)
     context["charlink_url"] = _charlink_url()
@@ -147,7 +154,7 @@ def corporation_export(request, corporation_id):
     For a spreadsheet or a mail merge, where the copy button's comma list does
     not fit. Only what the Corporation page shows, to the same viewers.
     """
-    report = _report()
+    report = _report(request.user)
     corporation = _visible_corporation(request, report, corporation_id)
     if corporation is None:
         raise Http404
@@ -180,7 +187,7 @@ def _csv_cell(value: str) -> str:
 
 @any_permission_required(BASIC_ACCESS, VIEW_ALL)
 def account(request, user_id):
-    report = _report()
+    report = _report(request.user)
     if report is None:
         raise Http404
     corporation, account = report.account(user_id)

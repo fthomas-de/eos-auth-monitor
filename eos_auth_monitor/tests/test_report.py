@@ -1,6 +1,7 @@
 from django.urls import reverse
 
 from eos_auth_monitor.report import Gauge, Report, _problems, describe, shorten
+from eos_auth_monitor.sources.spy_network import SpyMarker
 
 from .base import MonitorTestCase, account_row, character_row, corporation_row, snapshot_data, store_snapshot
 
@@ -528,3 +529,89 @@ class TestTileRows(MonitorTestCase):
 
     def test_should_leave_out_what_did_not_run(self):
         self.assertEqual(self.rows(corporation_row(2001)), {})
+
+
+MEMBERSHIP = SpyMarker("membership", "Hostile membership", "In a hostile Corporation.")
+WALLET = SpyMarker("wallet", "ISK with hostiles", "Wallet entries with hostiles.")
+SPY_KINDS = ("membership", "corp_changes", "wallet")
+
+
+class TestSpyMarkers(MonitorTestCase):
+    """eos-spy-network's markers per character: shown where the character counts, never a problem."""
+
+    def found(self, markers=None):
+        found = report(
+            [
+                corporation_row(
+                    2001,
+                    [
+                        account_row(
+                            11,
+                            1101,
+                            [
+                                character_row(1101, [AUDIT_MISSING]),
+                                character_row(1102),
+                                # counts in 2002, where it is
+                                character_row(1103, corporation_id=2002),
+                            ],
+                        )
+                    ],
+                ),
+                corporation_row(2002, [account_row(22, 2201, corporation_id=2002)]),
+            ],
+            checks=["char_audit_missing"],
+        )
+        if markers is not None:
+            found.add_spy_markers(markers, SPY_KINDS)
+        return found
+
+    def test_should_show_nothing_until_added(self):
+        found = self.found()
+
+        self.assertFalse(found.spy_shown)
+        self.assertFalse(found.corporation(2001).spy_shown)
+        self.assertEqual(found.corporation(2001).spy_todos, [])
+
+    def test_should_count_each_character_in_its_own_corporation(self):
+        found = self.found({1102: [WALLET], 1103: [MEMBERSHIP, WALLET], 2201: [WALLET]})
+
+        self.assertTrue(found.spy_shown)
+        self.assertEqual([character.id for character in found.corporation(2001).spy_characters], [1102])
+        self.assertEqual([character.id for character in found.corporation(2002).spy_characters], [1103, 2201])
+
+    def test_should_group_the_todos_by_marker_in_the_apps_order(self):
+        corporation = self.found({1103: [WALLET, MEMBERSHIP], 2201: [WALLET]}).corporation(2002)
+
+        self.assertEqual(
+            [(todo.group, todo.names) for todo in corporation.spy_todos],
+            [("spy_membership", "Char 1103"), ("spy_wallet", "Char 1103, Char 2201")],
+        )
+
+    def test_should_add_the_markers_to_the_export_rows(self):
+        corporation = self.found({1102: [WALLET]}).corporation(2001)
+
+        self.assertEqual(
+            [(row.group, str(row.label), row.name) for row in corporation.todo_rows],
+            [("char_audit_missing", "Audit missing", "Char 1101"), ("spy_wallet", "ISK with hostiles", "Char 1102")],
+        )
+
+    def test_should_change_no_problem_count(self):
+        plain = self.found().corporation(2001)
+        marked = self.found({1101: [WALLET], 1102: [WALLET]}).corporation(2001)
+
+        self.assertEqual(marked.problem_count, plain.problem_count)
+        self.assertEqual(len(marked.problem_accounts), len(plain.problem_accounts))
+        self.assertEqual([todo.check.key for todo in marked.todos], [todo.check.key for todo in plain.todos])
+
+    def test_should_list_a_marked_character_on_the_account_page(self):
+        _corporation, account = self.found({1102: [WALLET]}).account(11)
+
+        self.assertEqual([character.id for character in account.listed_characters], [1101, 1102])
+        self.assertEqual([character.id for character in account.problem_free_characters], [1103])
+        self.assertEqual([character.id for character in account.problem_characters], [1101])
+
+    def test_should_list_problems_first_then_most_markers(self):
+        _corporation, account = self.found({1102: [WALLET], 1103: [MEMBERSHIP, WALLET]}).account(11)
+
+        # 1103 before 1102 for its second marker, though the name would put it after
+        self.assertEqual([character.id for character in account.listed_characters], [1101, 1103, 1102])

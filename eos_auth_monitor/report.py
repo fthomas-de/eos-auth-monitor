@@ -89,6 +89,8 @@ class Character:
     alliance_name: str
     is_main: bool
     problems: list[Problem]
+    # eos-spy-network's markers (sources.spy_network.SpyMarker), filled for its viewers only; never a problem
+    spy: list = field(default_factory=list)
 
 
 @dataclass
@@ -153,10 +155,26 @@ class Account:
         return [character for character in self.characters_by_problems if character.problems]
 
     @property
-    def problem_free_characters(self) -> list[Character]:
-        """The characters without a problem: the main first, then by name."""
+    def listed_characters(self) -> list[Character]:
+        """The account page's table: the characters with problems or eos-spy-network markers.
+
+        Most problems first, then most markers; the markers only show, they rank no account.
+        """
         return sorted(
-            (character for character in self.characters if not character.problems),
+            (character for character in self.characters if character.problems or character.spy),
+            key=lambda character: (
+                -len(character.problems),
+                -len(character.spy),
+                not character.is_main,
+                character.name.lower(),
+            ),
+        )
+
+    @property
+    def problem_free_characters(self) -> list[Character]:
+        """The characters without a problem or marker: the main first, then by name."""
+        return sorted(
+            (character for character in self.characters if not character.problems and not character.spy),
             key=lambda character: (not character.is_main, character.name.lower()),
         )
 
@@ -226,8 +244,26 @@ class Todo:
         )
 
 
+@dataclass
+class SpyTodo:
+    """An eos-spy-network marker and the characters counted here that carry it."""
+
+    marker: object  # sources.spy_network.SpyMarker
+    characters: list[Character]
+
+    @property
+    def group(self) -> str:
+        return SPY_GROUP_PREFIX + self.marker.kind
+
+    @property
+    def names(self) -> str:
+        return ", ".join(character.name for character in self.characters)
+
+
 # the to-do group of the members Auth does not know; the others are check keys
 UNREGISTERED = "unregistered"
+# the to-do groups of eos-spy-network's markers: this prefix and the marker kind
+SPY_GROUP_PREFIX = "spy_"
 
 
 @dataclass
@@ -278,6 +314,34 @@ class Corporation:
     directors: list[Director] = field(default_factory=list)
     # accounts whose main is in another Corporation, each with only its characters in this one
     visiting: list[Account] = field(default_factory=list)
+    # eos-spy-network's marker kinds in its order once its markers were added for the viewer; None: not shown
+    spy_kinds: tuple | None = None
+
+    @property
+    def spy_shown(self) -> bool:
+        return self.spy_kinds is not None
+
+    @property
+    def spy_characters(self) -> list[Character]:
+        """The characters counted here with an eos-spy-network marker, by name."""
+        return sorted(
+            (
+                character
+                for account in self.evaluated_accounts
+                for character in account.characters
+                if character.spy
+            ),
+            key=lambda character: character.name.lower(),
+        )
+
+    @property
+    def spy_todos(self) -> list[SpyTodo]:
+        """Per eos-spy-network marker, in its order, the characters counted here that carry it."""
+        by_kind: dict[str, SpyTodo] = {}
+        for character in self.spy_characters:
+            for marker in character.spy:
+                by_kind.setdefault(marker.kind, SpyTodo(marker, [])).characters.append(character)
+        return [by_kind[kind] for kind in self.spy_kinds or () if kind in by_kind]
 
     @property
     def characters(self) -> int | None:
@@ -326,7 +390,8 @@ class Corporation:
 
     @property
     def todo_rows(self) -> list[TodoRow]:
-        """The to-do list name by name, in the order of the page: the checks, then the unregistered members."""
+        """The to-do list name by name, in the order of the page: the checks, the unregistered members, then
+        eos-spy-network's markers where they were added for the viewer."""
         rows = [
             TodoRow(todo.check.key, todo.check.label, account.main_name)
             for todo in self.todos
@@ -334,6 +399,11 @@ class Corporation:
         ]
         rows += [
             TodoRow(UNREGISTERED, _("Not registered in Auth"), character["name"]) for character in self.unregistered
+        ]
+        rows += [
+            TodoRow(todo.group, todo.marker.label, character.name)
+            for todo in self.spy_todos
+            for character in todo.characters
         ]
         return rows
 
@@ -451,6 +521,8 @@ class Report:
         self.services = [SERVICES_BY_KEY[key] for key in data["services"] if key in SERVICES_BY_KEY]
         self.stale_after_days = data.get("stale_after_days")
         self.members_fetched = data.get("members_fetched", False)
+        # set by add_spy_markers: the viewer may see eos-spy-network's markers
+        self.spy_shown = False
         rows = data["corporations"]
         # the whole accounts, by the Corporation of their main: the account pages and the Alliance-wide lists
         self._accounts = {
@@ -571,6 +643,19 @@ class Report:
         if account is None:
             return None, None
         return self._corporations_by_id[account.corporation_id], account
+
+    def add_spy_markers(self, markers: dict, kinds: tuple) -> None:
+        """Give each character its eos-spy-network markers (EVE ID -> SpyMarkers), for a viewer who may see them.
+
+        The Corporations share the characters with the whole accounts, so each
+        page sees them wherever the character counts.
+        """
+        for account in self._accounts.values():
+            for character in account.characters:
+                character.spy = markers.get(character.id, [])
+        for corporation in self.corporations:
+            corporation.spy_kinds = tuple(kinds)
+        self.spy_shown = True
 
     def service(self, service_key: str) -> Service | None:
         return next((service for service in self.services if service.key == service_key), None)

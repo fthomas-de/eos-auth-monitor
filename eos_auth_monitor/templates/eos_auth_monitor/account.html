@@ -55,7 +55,7 @@
         </div>
 
         <div class="card-body">
-            {% if account.problem_characters %}
+            {% if account.listed_characters %}
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
                         <thead>
@@ -67,7 +67,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for character in account.problem_characters_by_problems %}
+                            {% for character in account.listed_characters %}
                                 <tr>
                                     <td data-order="{{ character.name }}">
                                         {% include "eos_auth_monitor/partials/character-cell.html" %}
@@ -82,6 +82,19 @@
                                                 {% if problem.detail %}<div class="small text-break"{% if problem.full_detail %} title="{{ problem.full_detail }}"{% endif %}>{{ problem.detail }}</div>{% endif %}
                                                 {# character problems only: the Corporation header keeps the links to the apps #}
                                                 {% include "eos_auth_monitor/partials/problem-hint.html" with charlink=charlink_url %}
+                                            </div>
+                                        {% endfor %}
+                                        {# eos-spy-network's markers, for its viewers only; it ranks them by the main's Corporation #}
+                                        {% for marker in character.spy %}
+                                            <div class="mb-2 eos-auth-monitor-spy-marker">
+                                                <span class="badge text-bg-warning text-wrap"><i class="fas fa-user-secret"></i> {{ marker.label }}</span>
+                                                <span class="small text-body-secondary">{{ marker.description }}</span>
+                                                {% if forloop.last %}
+                                                    {% url 'eos_spy_network:corporation' account.corporation_id as spy_link %}
+                                                    {% if spy_link %}
+                                                        <div class="small"><a href="{{ spy_link }}" class="text-nowrap">{% translate "Spy network" %} <i class="fas fa-arrow-up-right-from-square fa-xs"></i></a></div>
+                                                    {% endif %}
+                                                {% endif %}
                                             </div>
                                         {% endfor %}
                                     </td>

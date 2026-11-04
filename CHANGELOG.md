@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- eos-spy-network's markers, for viewers holding both of its view
+  permissions (`view_suspects` and `view_evidence`) and only where
+  eos-spy-network 0.0.10 or newer is installed: a column *Spy network* in the
+  overview table with the number of characters with markers per Corporation;
+  on the Corporation page a tile with that number, opening the Corporation in
+  eos-spy-network, and a to-do entry per marker with the characters (copy and
+  CSV buttons as for the other entries); on the account page each character's
+  markers beside its problems. Each character counts in the Corporation it is
+  in. The markers are only shown: they change no problem count, order,
+  colour, dashboard widget or smart filter, and *My account* never shows them.
+  An older eos-spy-network, without its read API, is left alone: nothing of
+  it shows, and the pages keep working.
+
 ## [0.0.11] - 2026-10-09
 
 ### Added

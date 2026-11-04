@@ -699,6 +699,14 @@ TRANSLATIONS = {
         '在“我的账号”和“我的 Corporation”页面上以信息框显示。留空则不显示。',
     ),
     'Settings saved.': ('Einstellungen gespeichert.', 'Настройки сохранены.', '设置已保存。'),
+    # eos-spy-network's markers: overview column, Corporation tile, account link
+    'Spy network': ('Spy Network', 'Spy Network', 'Spy Network'),
+    'Characters with markers': ('Characters mit Markern', 'Character с маркерами', '有标记的 Character'),
+    'Characters with markers in eos-spy-network': (
+        'Characters mit Markern in eos-spy-network',
+        'Character с маркерами в eos-spy-network',
+        '在 eos-spy-network 中有标记的 Character',
+    ),
 }
 
 PLURALS = {

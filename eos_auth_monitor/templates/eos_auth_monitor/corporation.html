@@ -14,11 +14,30 @@
         {% else %}
             {% include "eos_auth_monitor/partials/corporation-header.html" with hide_rows=True %}
 
-            {% if corporation.check_gauges or corporation.service_gauges %}
+            {% if corporation.check_gauges or corporation.service_gauges or corporation.spy_shown %}
                 <div class="row row-cols-2 row-cols-md-4 row-cols-xl-6 g-3 mb-4">
                     {% for gauge in corporation.check_gauges %}
                         <div class="col">{% include "eos_auth_monitor/partials/gauge.html" %}</div>
                     {% endfor %}
+                    {% if corporation.spy_shown %}
+                        {# a count, not a share: one marked character is one too many #}
+                        {% with spy_count=corporation.spy_characters|length %}
+                            <div class="col">
+                                <div class="card h-100 text-center eos-auth-monitor-spy-tile">
+                                    <div class="card-body position-relative">
+                                        <i class="fas fa-user-secret fa-lg mb-2"></i>
+                                        <div class="fs-3 fw-bold {% if spy_count %}text-danger{% else %}text-success{% endif %}">{{ spy_count }}</div>
+                                        <div class="small">{% translate "Spy network" %}</div>
+                                        <div class="small text-body-secondary">{% translate "Characters with markers" %}</div>
+                                        {% url 'eos_spy_network:corporation' corporation.id as spy_link %}
+                                        {% if spy_link %}
+                                            <a href="{{ spy_link }}" class="stretched-link" aria-label="{% translate 'Spy network' %}"></a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endwith %}
+                    {% endif %}
                     {% for gauge in corporation.service_gauges %}
                         <div class="col">
                             {% url 'eos_auth_monitor:corporation_service' corporation.id gauge.service.key as gauge_link %}
@@ -28,7 +47,7 @@
                 </div>
             {% endif %}
 
-            {% if corporation.todos or corporation.unregistered %}
+            {% if corporation.todos or corporation.unregistered or corporation.spy_todos %}
                 {# what the leadership can chase, grouped so that one EVE mail reaches everyone concerned #}
                 <div class="card border-danger mb-4 eos-auth-monitor-todos">
                     <div class="card-header d-flex flex-wrap align-items-center gap-2">
@@ -67,6 +86,19 @@
                                 </div>
                             </li>
                         {% endif %}
+                        {% for todo in corporation.spy_todos %}
+                            {# eos-spy-network's markers, per character where it counts; only for its viewers #}
+                            <li class="list-group-item eos-auth-monitor-spy-todo">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                    <span class="badge text-bg-warning text-wrap"><i class="fas fa-user-secret"></i> {{ todo.marker.label }}</span>
+                                    <span class="badge text-bg-secondary">{{ todo.characters|length }}</span>
+                                    <span class="small text-body-secondary me-auto">{{ todo.marker.description }}</span>
+                                    {% include "eos_auth_monitor/partials/copy-button.html" with names=todo.names %}
+                                    {% include "eos_auth_monitor/partials/csv-button.html" with group=todo.group %}
+                                </div>
+                                <div class="small text-break">{{ todo.names }}</div>
+                            </li>
+                        {% endfor %}
                     </ul>
                 </div>
             {% endif %}

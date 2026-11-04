@@ -103,6 +103,16 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
 - **Settings page**: the Alliance, chosen from a searchable dropdown; a
   switch for every check, grouped by app, and for every service; which
   corptools sections and scopes the checks count; the notice to members
+- **eos-spy-network markers** where
+  [eos-spy-network](https://github.com/fthomas-de/eos-spy-network) 0.0.10 or
+  newer is installed, for viewers holding both its `view_suspects` and
+  `view_evidence`: a *Spy network* column in the overview table (characters
+  with markers per Corporation), a tile with that number on the Corporation
+  page opening the Corporation in eos-spy-network, a to-do entry per marker
+  with the characters, and each character's markers on the account page.
+  Each character counts in the Corporation it is in. Only shown: the markers
+  are no problems here and change no count, order, colour, dashboard widget
+  or smart filter; *My account* never shows them
 - **Smart filter** for
   [allianceauth-securegroups](https://github.com/Solar-Helix-Independent-Transport/allianceauth-secure-groups),
   see [Smart filter](#smart-filter)
@@ -258,7 +268,7 @@ is not part of the figures.
 |---|---|
 | Alliance Auth | 5.1.4 or newer, below 6 (the migrations need `eveonline` 0025, first in 5.1.4) |
 | Python | 3.10 or newer |
-| Optional | allianceauth-corptools, aa-structures, aa-qqbot, aa-discord-telegram-bridge, the Discord and Mumble services of Alliance Auth |
+| Optional | allianceauth-corptools, aa-structures, aa-qqbot, aa-discord-telegram-bridge, eos-spy-network (0.0.10 or newer), the Discord and Mumble services of Alliance Auth |
 
 None of the optional apps is a dependency of the package. `pip install` will
 not pull them in, nor upgrade the ones you have.
@@ -331,6 +341,11 @@ the page says so; its dashboard widget is not shown.
 The dashboard widget of the Corporation follows `basic_access` only:
 leadership with `view_all` alone sees no widget.
 
+eos-spy-network's markers (overview column, Corporation tile and to-dos,
+account page, their CSV export) need both of its permissions
+`eos_spy_network.view_suspects` and `eos_spy_network.view_evidence` on top
+of the page's own; without them nothing of eos-spy-network shows.
+
 ## Settings
 
 Everything is set on the settings page in the app; there is nothing else to
@@ -367,6 +382,10 @@ permissions above, alts and cross-Corporation mains included (see
 [Permissions](#permissions)). It stores whether a service is linked, not the
 Discord, QQ or Telegram account itself. Every run replaces the result, so a
 member who left is gone from it after the next run; nothing is kept longer.
+
+eos-spy-network's markers are not stored here: each page reads them from
+eos-spy-network's own stored result while it is shown, and only for viewers
+holding both of its view permissions.
 
 ## Languages
 
