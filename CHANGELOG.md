@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Internal clean-up without a visible change: one `Row` class for tile lines
+  and statistic tiles (`Gauge` is gone), the cockpit's Connections tile reads
+  its numbers from the service tiles (`Report.connections()` is gone), the
+  unused `Account.characters_by_problems` removed, `charlink_url` set once
+  for every page, a shorter `any_permission_required`, and one helper for the
+  missing-scopes rule of *Scopes missing* and *Director token missing*.
+
 ## [0.0.13] - 2026-11-04
 
 ### Changed

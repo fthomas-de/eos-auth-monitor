@@ -142,6 +142,15 @@ def _is_fresh(value, time_ref) -> bool:
     return updated is not None and updated > time_ref
 
 
+def _missing_scopes(tokens, required: set) -> list[str] | None:
+    """None where one token carries every scope; else what the token closest to complete lacks."""
+    if any(required <= scopes for scopes in tokens):
+        return None
+    # the token closest to complete says what re-adding one would fix
+    best = max(tokens, key=lambda scopes: len(scopes & required), default=set())
+    return sorted(required - best)
+
+
 def character_problems(
     character_ids,
     keys,
@@ -209,18 +218,11 @@ def character_problems(
             if stale:
                 found.append(problem("char_audit_inactive", [CHARACTER_SECTION_LABELS.get(key, key) for key in stale]))
 
-        if "char_scopes_missing" in keys:
-            tokens = scopes_per_token.get(character_id, {}).values()
-            if not any(required <= scopes for scopes in tokens):
-                # the token closest to complete says what re-adding one would fix
-                best = max(tokens, key=lambda scopes: len(scopes & required), default=set())
-                found.append(problem("char_scopes_missing", sorted(required - best)))
-
-        if character_id in directors:
-            tokens = scopes_per_token.get(character_id, {}).values()
-            if not any(required_corporation <= scopes for scopes in tokens):
-                best = max(tokens, key=lambda scopes: len(scopes & required_corporation), default=set())
-                found.append(problem("char_director_token_missing", sorted(required_corporation - best)))
+        tokens = scopes_per_token.get(character_id, {}).values()
+        if "char_scopes_missing" in keys and (missing := _missing_scopes(tokens, required)) is not None:
+            found.append(problem("char_scopes_missing", missing))
+        if character_id in directors and (missing := _missing_scopes(tokens, required_corporation)) is not None:
+            found.append(problem("char_director_token_missing", missing))
 
         if found:
             result[character_id] = found

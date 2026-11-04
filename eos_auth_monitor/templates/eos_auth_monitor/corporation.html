@@ -14,9 +14,9 @@
         {% else %}
             {% include "eos_auth_monitor/partials/corporation-header.html" with hide_rows=True %}
 
-            {% if corporation.check_gauges or corporation.service_gauges or corporation.spy_shown %}
+            {% if corporation.check_rows or corporation.service_counts or corporation.spy_shown %}
                 <div class="row row-cols-2 row-cols-md-4 row-cols-xl-6 g-3 mb-4">
-                    {% for gauge in corporation.check_gauges %}
+                    {% for gauge in corporation.check_rows %}
                         <div class="col">{% include "eos_auth_monitor/partials/gauge.html" %}</div>
                     {% endfor %}
                     {% if corporation.spy_shown %}
@@ -38,7 +38,7 @@
                             </div>
                         {% endwith %}
                     {% endif %}
-                    {% for gauge in corporation.service_gauges %}
+                    {% for gauge in corporation.service_counts %}
                         <div class="col">
                             {% url 'eos_auth_monitor:corporation_service' corporation.id gauge.service.key as gauge_link %}
                             {% include "eos_auth_monitor/partials/gauge.html" with link=gauge_link %}

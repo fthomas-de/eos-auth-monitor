@@ -139,20 +139,8 @@ class Account:
         return sum(len(character.problems) for character in self.characters)
 
     @property
-    def characters_by_problems(self) -> list[Character]:
-        """Most problems first; the main before its alts and then by name where they are equal."""
-        return sorted(
-            self.characters,
-            key=lambda character: (-len(character.problems), not character.is_main, character.name.lower()),
-        )
-
-    @property
     def has_problems(self) -> bool:
         return bool(self.problem_characters)
-
-    @property
-    def problem_characters_by_problems(self) -> list[Character]:
-        return [character for character in self.characters_by_problems if character.problems]
 
     @property
     def listed_characters(self) -> list[Character]:
@@ -204,7 +192,7 @@ class Account:
 
 @dataclass
 class Row:
-    """One line of a Corporation tile: an app and how complete it is."""
+    """An app and how complete it is: a line of a Corporation tile, or a statistic tile of its own."""
 
     label: str
     icon: str
@@ -213,12 +201,27 @@ class Row:
     # corporation-level checks pass or fail as a whole: None, or the problems
     problems: list[Problem] | None = None
     service: Service | None = None
+    # the list behind a tile that is not a service's: a URL name and its arguments
+    url_name: str | None = None
+    url_args: tuple = ()
 
     @property
     def percent(self) -> int | None:
         if self.problems is not None:
             return 0 if self.problems else 100
         return percent(self.part or 0, self.total or 0)
+
+    @property
+    def url(self) -> str:
+        """Where the tile leads; "" for a tile without a list."""
+        if self.service is not None:
+            return reverse("eos_auth_monitor:service", args=[self.service.key])
+        if self.url_name is None:
+            return ""
+        try:
+            return reverse(self.url_name, args=self.url_args)
+        except NoReverseMatch:
+            return ""
 
 
 @dataclass
@@ -453,16 +456,6 @@ class Corporation:
         ]
 
     @property
-    def service_gauges(self) -> list["Gauge"]:
-        """Per service the share of this Corporation's mains that linked it, as on the overview."""
-        return [Gauge(row.label, row.part, row.total, row.icon, row.service) for row in self.service_counts]
-
-    @property
-    def check_gauges(self) -> list["Gauge"]:
-        """The apps whose checks ran as tiles, before the service tiles of the Corporation page."""
-        return [Gauge(row.label, row.part, row.total, row.icon, problems=row.problems) for row in self.check_rows]
-
-    @property
     def rows(self) -> list[Row]:
         """What the tile lists: every app that ran, with its share of complete entries."""
         return self.check_rows + self.service_counts
@@ -493,38 +486,6 @@ class Corporation:
     @property
     def has_problems(self) -> bool:
         return bool(self.problems) or bool(self.problem_accounts)
-
-
-@dataclass
-class Gauge:
-    label: str
-    part: int
-    total: int
-    icon: str
-    service: Service | None = None
-    # the list behind a tile that is not a service's: a URL name and its arguments
-    url_name: str | None = None
-    url_args: tuple = ()
-    # a Corporation-level check passes or fails as a whole: None, or the problems, as on a Row
-    problems: list[Problem] | None = None
-
-    @property
-    def percent(self) -> int | None:
-        if self.problems is not None:
-            return 0 if self.problems else 100
-        return percent(self.part, self.total)
-
-    @property
-    def url(self) -> str:
-        """Where the tile leads; "" for a tile without a list."""
-        if self.service is not None:
-            return reverse("eos_auth_monitor:service", args=[self.service.key])
-        if self.url_name is None:
-            return ""
-        try:
-            return reverse(self.url_name, args=self.url_args)
-        except NoReverseMatch:
-            return ""
 
 
 class Report:
@@ -651,7 +612,7 @@ class Report:
         return sorted(self.corporations, key=lambda corporation: (-corporation.problem_count, corporation.name.lower()))
 
     def corporation(self, corporation_id: int) -> Corporation | None:
-        return next((corporation for corporation in self.corporations if corporation.id == corporation_id), None)
+        return self._corporations_by_id.get(corporation_id)
 
     def account(self, user_id: int) -> tuple[Corporation, Account] | tuple[None, None]:
         """The whole account and the Corporation of its main."""
@@ -738,21 +699,17 @@ class Report:
             lines.append((corporation, [rows.get(key) for key in keys]))
         return columns, lines
 
-    def connections(self) -> list[tuple[Service, int]]:
-        """Linked accounts per service across the Alliance, for the cockpit."""
-        accounts = self.accounts
-        return [(service, sum(account.is_linked(service.key) for account in accounts)) for service in self.services]
-
-    def cockpit(self) -> list[Gauge]:
+    def cockpit(self) -> list[Row]:
+        """The cockpit's tiles; the service ones also feed its Connections tile."""
         accounts = self.accounts
         gauges = [
-            Gauge(
+            Row(
                 service.label,
+                service.icon,
                 sum(account.is_linked(service.key) for account in accounts),
                 # the mains only: the members unknown to Auth have a tile of their own
                 len(accounts),
-                service.icon,
-                service,
+                service=service,
             )
             for service in self.services
         ]
@@ -760,11 +717,11 @@ class Report:
         counted = [corporation for corporation in self.corporations if corporation.member_count is not None]
         if counted:
             gauges.append(
-                Gauge(
+                Row(
                     _("Members registered"),
+                    "fas fa-user-plus",
                     sum(corporation.registered for corporation in counted),
                     sum(corporation.member_count for corporation in counted),
-                    "fas fa-user-plus",
                     # the list of the rest: the members without a main in Auth
                     url_name="eos_auth_monitor:unknown_characters",
                 )
@@ -773,11 +730,11 @@ class Report:
         if self.has_character_checks:
             characters = [character for account in accounts for character in account.characters]
             gauges.append(
-                Gauge(
+                Row(
                     _("Character Audit complete"),
+                    "fas fa-user-check",
                     sum(not character.problems for character in characters),
                     len(characters),
-                    "fas fa-user-check",
                     url_name="eos_auth_monitor:character_audit",
                 )
             )
@@ -785,14 +742,14 @@ class Report:
         for group, label, icon in CORPORATION_GROUPS:
             if any(check.group == group for check in self.checks):
                 gauges.append(
-                    Gauge(
+                    Row(
                         _("%(app)s working") % {"app": label},
+                        icon,
                         sum(
                             not any(problem.check.group == group for problem in corporation.problems)
                             for corporation in self.corporations
                         ),
                         len(self.corporations),
-                        icon,
                         url_name="eos_auth_monitor:directors",
                         url_args=(group,),
                     )

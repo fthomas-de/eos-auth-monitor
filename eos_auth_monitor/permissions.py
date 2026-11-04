@@ -1,7 +1,5 @@
 """Who may use the app and which Corporations they see."""
 
-from functools import wraps
-
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 BASIC_ACCESS = "eos_auth_monitor.basic_access"
@@ -21,13 +19,7 @@ def any_permission_required(*perms):
     """login_required plus at least one of ``perms``."""
 
     def decorator(view):
-        @login_required
-        @user_passes_test(lambda user: any(user.has_perm(perm) for perm in perms))
-        @wraps(view)
-        def wrapper(request, *args, **kwargs):
-            return view(request, *args, **kwargs)
-
-        return wrapper
+        return login_required(user_passes_test(lambda user: any(user.has_perm(perm) for perm in perms))(view))
 
     return decorator
 

@@ -33,6 +33,8 @@ from .sources import structures as structures_source
 logger = get_extension_logger(__name__)
 
 IN_CHUNK = 1000
+# a Corporation whose member list was not read
+NO_MEMBERS = {"member_count": None, "other_mains": [], "unregistered": []}
 
 
 def _no_progress(phase, done=0, total=1):
@@ -82,7 +84,7 @@ def _members(corporation_ids, accounts_by_corporation, on_step) -> dict[int, dic
     result = {}
     for corporation_id, members in member_ids.items():
         if members is None:
-            result[corporation_id] = {"member_count": None, "other_mains": [], "unregistered": []}
+            result[corporation_id] = NO_MEMBERS
             continue
 
         own_users = {account["user_id"] for account in accounts_by_corporation.get(corporation_id, [])}
@@ -349,7 +351,6 @@ def build(config, on_step=_no_progress) -> dict | None:
         members = {}
 
     on_step("store")
-    no_members = {"member_count": None, "other_mains": [], "unregistered": []}
     return {
         "alliance_id": alliance_id,
         "alliance_name": alliance.alliance_name,
@@ -371,7 +372,7 @@ def build(config, on_step=_no_progress) -> dict | None:
                         accounts_by_corporation.get(corporation_id, []),
                         key=lambda account: account["main_name"].lower(),
                     ),
-                    **members.get(corporation_id, no_members),
+                    **members.get(corporation_id, NO_MEMBERS),
                 }
                 for corporation_id in corporation_ids
             ),

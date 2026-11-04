@@ -5,24 +5,25 @@
 
 {% block details %}
     {% if report %}
-        {% if cockpit or connections %}
+        {% if cockpit %}
             <h5>{% translate "Cockpit" %}</h5>
             <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 row-cols-xxl-6 g-3 mb-4">
-                {% if connections %}
+                {% if report.services %}
                     <div class="col">
                         <div class="card h-100">
                             <div class="card-body">
                                 <div class="text-center mb-2"><i class="fas fa-plug fa-lg"></i></div>
                                 <div class="small text-center mb-2">{% translate "Connections" %}</div>
                                 <ul class="list-unstyled small mb-0">
-                                    {% for service, linked in connections %}
+                                    {# the service tiles of the cockpit: linked accounts per service #}
+                                    {% for gauge in cockpit %}{% if gauge.service %}
                                         <li class="d-flex justify-content-between gap-2">
-                                            <a href="{% url 'eos_auth_monitor:service' service.key %}" class="text-reset text-decoration-none text-truncate">
-                                                <i class="{{ service.icon }} fa-fw"></i> {{ service.label }}
+                                            <a href="{{ gauge.url }}" class="text-reset text-decoration-none text-truncate">
+                                                <i class="{{ gauge.icon }} fa-fw"></i> {{ gauge.label }}
                                             </a>
-                                            <span class="fw-bold">{{ linked }}</span>
+                                            <span class="fw-bold">{{ gauge.part }}</span>
                                         </li>
-                                    {% endfor %}
+                                    {% endif %}{% endfor %}
                                 </ul>
                             </div>
                         </div>

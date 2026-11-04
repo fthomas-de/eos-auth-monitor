@@ -1,6 +1,6 @@
 from django.urls import reverse
 
-from eos_auth_monitor.report import Gauge, Report, _problems, describe, shorten
+from eos_auth_monitor.report import Report, Row, _problems, describe, shorten
 from eos_auth_monitor.sources.spy_network import SpyMarker
 
 from .base import MonitorTestCase, account_row, character_row, corporation_row, snapshot_data, store_snapshot
@@ -49,8 +49,8 @@ class TestGaugeTargets(MonitorTestCase):
         )
 
     def test_should_leave_a_gauge_unlinked_when_its_page_does_not_resolve(self):
-        self.assertEqual(Gauge("Somewhere", 1, 1, "fas fa-x", url_name="nowhere:page").url, "")
-        self.assertEqual(Gauge("Nothing", 1, 1, "fas fa-x").url, "")
+        self.assertEqual(Row("Somewhere", "fas fa-x", 1, 1, url_name="nowhere:page").url, "")
+        self.assertEqual(Row("Nothing", "fas fa-x", 1, 1).url, "")
 
 
 def director_row(character_id, tokens=None, in_auth=True, user_id=None, main_name=None):
@@ -176,7 +176,7 @@ class TestCorporationLists(MonitorTestCase):
     def test_should_split_the_characters_of_an_account(self):
         account = self.corporation().accounts[1]
 
-        self.assertEqual([character.name for character in account.problem_characters_by_problems], ["Char 1202"])
+        self.assertEqual([character.name for character in account.listed_characters], ["Char 1202"])
         self.assertEqual([character.name for character in account.problem_free_characters], ["Char 1201"])
 
     def test_should_give_every_check_a_hint(self):
@@ -329,7 +329,8 @@ class TestAccounts(MonitorTestCase):
         ]
         _, found = report([corporation_row(2001, [account_row(1, 101, characters=characters)])]).account(1)
 
-        self.assertEqual([character.id for character in found.characters_by_problems], [102, 104, 101, 103])
+        self.assertEqual([character.id for character in found.listed_characters], [102, 104])
+        self.assertEqual([character.id for character in found.problem_free_characters], [101, 103])
 
     def test_should_rank_corporations_by_their_own_problems_plus_those_of_their_accounts(self):
         broken_account = account_row(
@@ -398,9 +399,12 @@ class TestCockpit(MonitorTestCase):
             corporation_row(2001, [account_row(1, 101, services={"discord": True, "qq": True}), account_row(2, 201)]),
         ]
 
-        connections = report(corporations, services=["discord", "qq"]).connections()
+        cockpit = report(corporations, services=["discord", "qq"]).cockpit()
 
-        self.assertEqual([(service.key, linked) for service, linked in connections], [("discord", 1), ("qq", 1)])
+        # the Connections tile reads the linked accounts off the service tiles
+        self.assertEqual(
+            [(gauge.service.key, gauge.part) for gauge in cockpit if gauge.service], [("discord", 1), ("qq", 1)]
+        )
 
     def test_should_give_a_corporation_a_gauge_per_service_over_its_own_mains(self):
         corporations = [
@@ -408,7 +412,7 @@ class TestCockpit(MonitorTestCase):
             corporation_row(2002, [account_row(3, 301, services={"discord": True, "qq": True})]),
         ]
 
-        gauges = report(corporations, services=["discord", "qq"]).corporation(2001).service_gauges
+        gauges = report(corporations, services=["discord", "qq"]).corporation(2001).service_counts
 
         self.assertEqual(
             [(str(gauge.label), gauge.part, gauge.total, gauge.percent, gauge.service.key) for gauge in gauges],
@@ -431,13 +435,10 @@ class TestCockpit(MonitorTestCase):
 
         # the service shares count the mains only, everywhere
         self.assertEqual(gauges["Discord"], (2, 3, 67))
-        gauge = found.corporation(2001).service_gauges[0]
-        self.assertEqual((gauge.part, gauge.total), (1, 2))
         self.assertEqual([(row.part, row.total) for row in found.corporation(2001).service_counts], [(1, 2)])
         # the unknown members are the gap of Members registered, of the members whose list was read
         self.assertEqual(gauges["Members registered"][:2], (3, 6))
         self.assertNotIn("Unknown characters", gauges)
-        self.assertEqual([linked for _, linked in found.connections()], [2])
 
     def test_should_open_the_unknown_characters_from_members_registered(self):
         corporations = [{**corporation_row(2001), "member_count": 1, "unregistered": [{"id": 1, "name": "x"}]}]

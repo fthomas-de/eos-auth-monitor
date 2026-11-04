@@ -64,6 +64,8 @@ def _render(request, template, context=None, nav=NAV_ALLIANCE):
             "nav_corporation_id": (
                 own_corporation_id(user) if user.has_perm(BASIC_ACCESS) or user.has_perm(VIEW_ALL) else None
             ),
+            # problems link to aa-charlink, where a player adds a character to every app at once
+            "charlink_url": _charlink_url(),
             **(context or {}),
         },
     )
@@ -127,7 +129,6 @@ def index(request):
         {
             **_state(report),
             "cockpit": report.cockpit() if report else [],
-            "connections": report.connections() if report else [],
             "table_columns": table_columns,
             "table_lines": table_lines,
         },
@@ -139,7 +140,6 @@ def corporation(request, corporation_id):
     report = _report(request.user)
     context = _state(report)
     context["corporation"] = _visible_corporation(request, report, corporation_id)
-    context["charlink_url"] = _charlink_url()
     # the cards and to-dos of mains elsewhere link to their account only for those who may see it
     context["can_view_all"] = request.user.has_perm(VIEW_ALL)
     return _render(
@@ -203,8 +203,6 @@ def account(request, user_id):
             "corporation": corporation,
             "account": account,
             "own": False,
-            # the player fixes their characters and the Director the Corporation's tokens in aa-charlink
-            "charlink_url": _charlink_url(),
         },
         _corporation_nav(request.user, corporation.id),
     )
@@ -232,8 +230,6 @@ def own_account(request):
             "account": account,
             "own": True,
             "location": _("My account"),
-            # a member fixes their own tokens in aa-charlink; without it the check's own app stays the link
-            "charlink_url": _charlink_url(),
         },
         NAV_OWN,
     )
@@ -254,8 +250,6 @@ def corporation_service(request, corporation_id, service_key):
             "corporation": corporation,
             "service": service,
             "location": service.label,
-            # the Corporation header links its problems to aa-charlink, as on the Corporation page
-            "charlink_url": _charlink_url(),
         },
         _corporation_nav(request.user, corporation_id),
     )
@@ -387,7 +381,7 @@ def rebuild(request):
     target = request.POST.get("next", "")
     if not url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}):
         target = "eos_auth_monitor:index"
-    return redirect(target or "eos_auth_monitor:index")
+    return redirect(target)
 
 
 @any_permission_required(*APP_PERMISSIONS)

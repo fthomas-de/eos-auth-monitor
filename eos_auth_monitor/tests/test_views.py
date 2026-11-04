@@ -369,6 +369,8 @@ class TestPages(ViewTestCase):
         response = self.get(self.leader, "index")
 
         self.assertContains(response, "Connections")
+        # one of the two accounts linked Discord
+        self.assertContains(response, '<span class="fw-bold">1</span>', count=1, html=True)
 
     def test_should_make_the_tables_sortable(self):
         pages = [("account", 22), ("corporation_service", 2002, "discord"), ("service", "discord"), ("index",)]
