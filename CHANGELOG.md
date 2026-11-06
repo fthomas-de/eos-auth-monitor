@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The *GM transactions* link on the account page opens eos-tax's
+  *GM Transactions* page searched for the account's main name, in quotes so
+  only that name matches (`?search=`; eos-tax versions without it ignore the
+  parameter).
+
 ## [0.0.16] - 2026-11-06
 
 ### Added

@@ -102,7 +102,7 @@
                                             <div class="mb-2 eos-auth-monitor-gm-marker">
                                                 <span class="badge text-wrap text-white" style="background-color: var(--bs-pink)"><i class="fas fa-sack-dollar"></i> {% translate "GM transactions" %}</span>
                                                 <span class="small text-body-secondary">{% translate "A GM moved ISK for this character." %}</span>
-                                                <div class="small"><a href="{% url 'eos_tax:gm_transactions' %}" class="text-nowrap">{% translate "GM transactions" %} <i class="fas fa-arrow-up-right-from-square fa-xs"></i></a></div>
+                                                <div class="small"><a href="{% url 'eos_tax:gm_transactions' %}?search=%22{{ account.main_name|urlencode }}%22" class="text-nowrap">{% translate "GM transactions" %} <i class="fas fa-arrow-up-right-from-square fa-xs"></i></a></div>
                                             </div>
                                         {% endif %}
                                     </td>

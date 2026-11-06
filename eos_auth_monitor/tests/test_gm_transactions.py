@@ -210,4 +210,5 @@ class TestViews(ViewTestCase):
         # 1102 has no problem of its own: the GM transaction brings it into the table
         self.assertIn("Char 1102", table)
         self.assertIn("eos-auth-monitor-gm-marker", table)
-        self.assertIn(f'href="{self.gm_page}"', table)
+        # eos-tax opens its page searched for the main's name, as a phrase
+        self.assertIn(f'href="{self.gm_page}?search=%22Char%201101%22"', table)
