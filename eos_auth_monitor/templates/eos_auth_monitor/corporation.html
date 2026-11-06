@@ -20,23 +20,8 @@
                         <div class="col">{% include "eos_auth_monitor/partials/gauge.html" %}</div>
                     {% endfor %}
                     {% if corporation.spy_shown %}
-                        {# a count, not a share: one marked character is one too many #}
-                        {% with spy_count=corporation.spy_characters|length %}
-                            <div class="col">
-                                <div class="card h-100 text-center eos-auth-monitor-spy-tile">
-                                    <div class="card-body position-relative">
-                                        <i class="fas fa-user-secret fa-lg mb-2"></i>
-                                        <div class="fs-3 fw-bold {% if spy_count %}text-danger{% else %}text-success{% endif %}">{{ spy_count }}</div>
-                                        <div class="small">{% translate "Spy network" %}</div>
-                                        <div class="small text-body-secondary">{% translate "Characters with markers" %}</div>
-                                        {% url 'eos_spy_network:corporation' corporation.id as spy_link %}
-                                        {% if spy_link %}
-                                            <a href="{{ spy_link }}" class="stretched-link" aria-label="{% translate 'Spy network' %}"></a>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        {% endwith %}
+                        {% url 'eos_spy_network:corporation' corporation.id as spy_link %}
+                        <div class="col">{% include "eos_auth_monitor/partials/spy-tile.html" with spy_count=corporation.spy_characters|length %}</div>
                     {% endif %}
                     {% if corporation.gm_shown %}
                         <div class="col">{% include "eos_auth_monitor/partials/gm-tile.html" with gm_count=corporation.gm_characters|length %}</div>

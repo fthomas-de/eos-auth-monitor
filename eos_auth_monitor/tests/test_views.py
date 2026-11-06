@@ -1792,6 +1792,14 @@ class TestSpyNetwork(ViewTestCase):
                     self.assertNotContains(response, "Spy network")
                     self.assertNotContains(response, "ISK with hostiles")
 
+    def test_should_show_the_cockpit_tile_with_the_alliance_count(self):
+        content = self.get(self.spy_leader, "index").content.decode()
+        tile = content[content.index("eos-auth-monitor-spy-tile"):content.index("eos-auth-monitor-view-pane")]
+
+        # the column's sum: 2002's two, 2001's none
+        self.assertRegex(tile, r'<div class="fs-3 fw-bold text-danger">2</div>')
+        self.assertIn(f'href="{reverse("eos_spy_network:corporations")}"', tile)
+
     def test_should_show_the_tile_linking_to_the_spy_corporation(self):
         content = self.get(self.spy_leader, "corporation", 2002).content.decode()
         tile = content[content.index("eos-auth-monitor-spy-tile"):content.index("eos-auth-monitor-todos")]

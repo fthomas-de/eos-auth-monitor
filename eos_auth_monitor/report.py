@@ -679,6 +679,11 @@ class Report:
         """Every character of the Alliance with a GM transaction."""
         return [character for account in self.accounts for character in account.characters if character.gm]
 
+    @property
+    def spy_characters(self) -> list[Character]:
+        """Every character with an eos-spy-network marker, each in the Corporation it counts in: the column's sum."""
+        return [character for corporation in self.corporations for character in corporation.spy_characters]
+
     def service(self, service_key: str) -> Service | None:
         return next((service for service in self.services if service.key == service_key), None)
 

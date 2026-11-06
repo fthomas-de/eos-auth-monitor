@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A *Spy network* cockpit tile on the overview for viewers with both
+  `eos_spy_network.view_suspects` and `view_evidence`: the Alliance's
+  characters with markers (the sum of the *Spies* column), linked to
+  eos-spy-network's Corporations page. The Corporation page's spy tile now
+  uses the same template.
+
 ## [0.0.15] - 2026-11-06
 
 ### Added

@@ -5,7 +5,7 @@
 
 {% block details %}
     {% if report %}
-        {% if cockpit or report.gm_shown %}
+        {% if cockpit or report.spy_shown or report.gm_shown %}
             <h5>{% translate "Cockpit" %}</h5>
             <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 row-cols-xxl-6 g-3 mb-4">
                 {% if report.services %}
@@ -34,6 +34,10 @@
                         {% include "eos_auth_monitor/partials/gauge.html" with link=gauge.url %}
                     </div>
                 {% endfor %}
+                {% if report.spy_shown %}
+                    {% url 'eos_spy_network:corporations' as spy_link %}
+                    <div class="col">{% include "eos_auth_monitor/partials/spy-tile.html" with spy_count=report.spy_characters|length %}</div>
+                {% endif %}
                 {% if report.gm_shown %}
                     <div class="col">{% include "eos_auth_monitor/partials/gm-tile.html" with gm_count=report.gm_characters|length %}</div>
                 {% endif %}

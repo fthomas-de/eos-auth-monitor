@@ -1,0 +1,13 @@
+{% load i18n %}
+{# eos-spy-network's marked characters as a count (`spy_count`), linked to `spy_link` where the app has that page; a count, not a share: one marked character is one too many #}
+<div class="card h-100 text-center eos-auth-monitor-spy-tile">
+    <div class="card-body position-relative">
+        <i class="fas fa-user-secret fa-lg mb-2"></i>
+        <div class="fs-3 fw-bold {% if spy_count %}text-danger{% else %}text-success{% endif %}">{{ spy_count }}</div>
+        <div class="small">{% translate "Spy network" %}</div>
+        <div class="small text-body-secondary">{% translate "Characters with markers" %}</div>
+        {% if spy_link %}
+            <a href="{{ spy_link }}" class="stretched-link" aria-label="{% translate 'Spy network' %}"></a>
+        {% endif %}
+    </div>
+</div>
