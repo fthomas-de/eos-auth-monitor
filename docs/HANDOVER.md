@@ -4,11 +4,18 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-06 (0.0.16).
+Last updated 2026-11-06 (0.0.17).
 
 ## Release
 
-- Version **0.0.16** of 2026-11-06: a **Spy network cockpit tile** on the
+- Version **0.0.17** of 2026-11-06: the account page's **GM transactions
+  link** opens eos-tax's GM Transactions page searched for the main's name
+  (`?search="<main>"`, see `CHANGELOG.md` and the decisions of 2026-11-06
+  below). eos-tax reads `?search=` only from its own matching change (a
+  separate eos-tax session); until that is released the link opens the page
+  unfiltered. No migration, no static file, no new message. Not seen in a
+  browser.
+- New in 0.0.16: a **Spy network cockpit tile** on the
   overview (see `CHANGELOG.md` and the decisions of 2026-11-06 below) - the
   sum of the *Spies* column, linked to eos-spy-network's Corporations page,
   for viewers with both of its view permissions; the Corporation page's spy
@@ -88,7 +95,7 @@ Last updated 2026-11-06 (0.0.16).
 | Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems as cards (a visiting main marked "Main in ...", linked only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
-| eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview cockpit tile (`partials/spy-tile.html`, `Report.spy_characters`: the column's sum, linked to `eos_spy_network:corporations`, since Unreleased); overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link) and one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
+| eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview cockpit tile (`partials/spy-tile.html`, `Report.spy_characters`: the column's sum, linked to `eos_spy_network:corporations`, since 0.0.16); overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link) and one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
 | eos-tax GM transactions (on Overview, Corporation, export, Account) | the page's own plus `eos_tax.admin_view` or `eos_tax.gm_bots_access` (`sources.gm_transactions.can_view`) | Cockpit tile (Alliance count) and Corporation tile (`partials/gm-tile.html`), both linked to `eos_tax:gm_transactions`; overview table column *GM* (count, no link); pink to-do with the mains (`Corporation.gm_accounts`, group `gm_transactions` in the CSV); pink marker per character with an eos-tax link on the account page (searched for the main's name, `?search="<main>"`). Read per page view by `views._report(user)` -> `Report.add_gm_transactions`; never on *My account*, the dashboard widgets or the smart filter |
 | Corporation service | as Corporation | One row per main of the Corporation, linked yes/no, no problems |
 | Service | `view_all` | Every main of the Alliance, linked yes/no |
@@ -426,7 +433,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   user asked for a warning colour "nicht gelb oder orange", so it differs
   from the yellow spy markers. A spy count in the cockpit was left for a
   separate session (the user's choice). Display only, like the spy markers.
-- **GM link searched for the main** (Unreleased): the account page's GM
+- **GM link searched for the main** (0.0.17): the account page's GM
   link carries `?search="<main name>"`, which eos-tax takes as the initial
   DataTables search (phrase match). Not the Corporation name too: alts in
   other Corporations would be hidden; not a filter on the Main column only:
@@ -571,6 +578,8 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - **eos-tax GM transactions not seen in a browser**, nor the pink in AA's
   dark theme. In dev they need eos-tax's GM report (its *Recalculate* on
   GM Transactions) and a user with `eos_tax.gm_bots_access` or `admin_view`.
+  Once eos-tax reads `?search=`, check in a browser that the account page's
+  GM link opens that page filtered to the main (and to its alts).
 - `sources.gm_transactions.character_ids()` builds eos-tax's whole GM page
   per page view (`shortcut:` comment): if it gets slow, give eos-tax a small
   read API like eos-spy-network's `api.py` - in an eos-tax session.
