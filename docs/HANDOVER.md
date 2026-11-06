@@ -4,11 +4,19 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-04 (0.0.14).
+Last updated 2026-11-06 (0.0.15).
 
 ## Release
 
-- Version **0.0.14** of 2026-11-04: an internal clean-up the user asked for
+- Version **0.0.15** of 2026-11-06: **eos-tax GM transactions** (see
+  `CHANGELOG.md` and the decisions of 2026-11-06 below) - cockpit tile,
+  overview column *GM*, Corporation tile, pink to-do with the mains, pink
+  marker on the account page, for viewers of eos-tax's GM Transactions tab.
+  The overview table heads are shorter (*Corp*, *Chars*, *Char Audit*,
+  *Spies*, *GM*; the whole name as tooltip, filter `abbreviate`). No
+  migration, no static file; six new messages, translated. Not seen in a
+  browser.
+- New in 0.0.14: an internal clean-up the user asked for
   ("mit dem ponytail skill durch coding ... optimierungen"), every point
   chosen by the user, nothing visible changes - see `CHANGELOG.md`. One
   `report.Row` for tile lines and statistic tiles (`Gauge`, `service_gauges`
@@ -50,17 +58,18 @@ Last updated 2026-11-04 (0.0.14).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 368 tests without the translation tests, 3 translation tests, all green;
+- 387 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
-  with eos-spy-network installed. Every check, access rule and feature was
+  with eos-spy-network installed, the source and view tests of
+  `test_gm_transactions` only with eos-tax installed. Every check, access rule and feature was
   counter-checked against broken code (a sabotage that stays green means the
   test is too weak - it happened seven times and each was fixed; 0.0.2 went 34
   for 34, 0.0.3 31 for 31, 0.0.4 3 for 3, 0.0.5 11 for 11, 0.0.6 41 for 41,
   0.0.7 11 for 11, 0.0.8 16 for 16, 0.0.9 7 for 7, 0.0.10 4 for 4, 0.0.11
   13 for 13 after one fix: the status badges were counted, not tied to
   their rows; 0.0.12 20 for 20 after two fixes: the order by marker count
-  and the to-do card opened by markers alone were untested).
+  and the to-do card opened by markers alone were untested; 0.0.15 6 for 6).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -74,6 +83,7 @@ Last updated 2026-11-04 (0.0.14).
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
 | eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link) and one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
+| eos-tax GM transactions (on Overview, Corporation, export, Account) | the page's own plus `eos_tax.admin_view` or `eos_tax.gm_bots_access` (`sources.gm_transactions.can_view`) | Cockpit tile (Alliance count) and Corporation tile (`partials/gm-tile.html`), both linked to `eos_tax:gm_transactions`; overview table column *GM* (count, no link); pink to-do with the mains (`Corporation.gm_accounts`, group `gm_transactions` in the CSV); pink marker per character with an eos-tax link on the account page. Read per page view by `views._report(user)` -> `Report.add_gm_transactions`; never on *My account*, the dashboard widgets or the smart filter |
 | Corporation service | as Corporation | One row per main of the Corporation, linked yes/no, no problems |
 | Service | `view_all` | Every main of the Alliance, linked yes/no |
 | Character Audit list (`character_audit`) | `view_all` | Every main of the Alliance with a tag per failed character check (`Account.keyword_counts`, "×n" for n characters), most problems first; 404 without character checks |
@@ -392,7 +402,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   `Character` instances, which is why setting `character.spy` once reaches
   every page.
 
-2026-11-06 (unreleased):
+2026-11-06 (0.0.15):
 
 - **eos-tax GM transactions** ("integration von eos tax gm transactions"):
   `sources/gm_transactions.py` reads eos-tax's stored GM report on every page
@@ -402,14 +412,20 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   `Character.gm`, only for characters whose Corporation is in the overview
   ("noch in der corp der allianz"). Visible with `eos_tax.admin_view` or
   `gm_bots_access`, eos-tax's own rule for the tab. Cockpit tile and
-  Corporation tile (`partials/gm-tile.html`) link to `eos_tax:gm_transactions`,
-  an overview table column, a pink to-do with the **mains** (group
-  `gm_transactions`), a pink marker with an eos-tax link on the account
-  page. **Pink** (`var(--bs-pink)`, inline; first orange, then "nicht gelb oder orange") so it differs from the
-  yellow spy markers - the user's choice. Spy network in the cockpit is left
-  for a separate session (the user's choice). Display only, like the spy
-  markers. Tests in `tests/test_gm_transactions.py` (18, six sabotages red).
-  New messages not yet in `tools/glossary.py`; that happens at `/commit`.
+  Corporation tile (`partials/gm-tile.html`) link to `eos_tax:gm_transactions`;
+  the overview column *GM* has **no link** ("das macht die kachel oben ja
+  schon"); a pink to-do with the **mains** (group `gm_transactions`), each
+  linked to its account page; a pink marker with an eos-tax link on the
+  account page. **Pink** (`var(--bs-pink)`, inline): first orange, then the
+  user asked for a warning colour "nicht gelb oder orange", so it differs
+  from the yellow spy markers. A spy count in the cockpit is left for a
+  separate session (the user's choice). Display only, like the spy markers.
+- **Shorter overview table heads** ("die tabelle in corp overview wird
+  langsam etwas groß"): "Corporation" -> "Corp", "Character" -> "Char" in
+  the heads only (filter `abbreviate`, on the translated text - the jargon
+  stays English in every catalogue), the whole name as tooltip; the spy
+  column reads *Spies*, the GM column *GM*. Tiles and other pages keep the
+  long names.
 
 ## Pitfalls found
 
@@ -534,13 +550,25 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   `fa-user-secret`) was Claude's choice, not asked.
 - The overview **tiles** have no spy number - the user asked for a column;
   ask if the tiles should get it too.
+- **Spy network cockpit tile** (count + link, like the GM one): the user
+  wants it, in a session of its own.
+- **eos-tax GM transactions not seen in a browser**, nor the pink in AA's
+  dark theme. In dev they need eos-tax's GM report (its *Recalculate* on
+  GM Transactions) and a user with `eos_tax.gm_bots_access` or `admin_view`.
+- `sources.gm_transactions.character_ids()` builds eos-tax's whole GM page
+  per page view (`shortcut:` comment): if it gets slow, give eos-tax a small
+  read API like eos-spy-network's `api.py` - in an eos-tax session.
+- **Overview table still wide**; ideas offered, none chosen yet: services in
+  one column as coloured icons (shares in the tooltip), Spies and GM in one
+  *Flags* column, Mains and Chars as "12 / 40", icon-only heads, rare columns
+  hidden on narrow screens.
 
 - **Rebuild the dev snapshot** (*Rebuild now*; the worker already runs the
   0.0.11 build): then the unknown characters list should show *not in Auth*
   or *no main* for every one of Ether Element's 275, and the paging (275 rows:
   three pages of 100) and the table-first overview can be looked at.
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.14 are to be deployed, with
+- Production still runs 0.0.5: 0.0.6 to 0.0.15 are to be deployed, with
   migrations 0007 and 0008 and `collectstatic` (for the spy markers also
   eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
