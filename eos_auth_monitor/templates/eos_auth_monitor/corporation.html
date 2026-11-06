@@ -14,7 +14,7 @@
         {% else %}
             {% include "eos_auth_monitor/partials/corporation-header.html" with hide_rows=True %}
 
-            {% if corporation.check_rows or corporation.service_counts or corporation.spy_shown %}
+            {% if corporation.check_rows or corporation.service_counts or corporation.spy_shown or corporation.gm_shown %}
                 <div class="row row-cols-2 row-cols-md-4 row-cols-xl-6 g-3 mb-4">
                     {% for gauge in corporation.check_rows %}
                         <div class="col">{% include "eos_auth_monitor/partials/gauge.html" %}</div>
@@ -38,6 +38,9 @@
                             </div>
                         {% endwith %}
                     {% endif %}
+                    {% if corporation.gm_shown %}
+                        <div class="col">{% include "eos_auth_monitor/partials/gm-tile.html" with gm_count=corporation.gm_characters|length %}</div>
+                    {% endif %}
                     {% for gauge in corporation.service_counts %}
                         <div class="col">
                             {% url 'eos_auth_monitor:corporation_service' corporation.id gauge.service.key as gauge_link %}
@@ -47,7 +50,7 @@
                 </div>
             {% endif %}
 
-            {% if corporation.todos or corporation.unregistered or corporation.spy_todos %}
+            {% if corporation.todos or corporation.unregistered or corporation.spy_todos or corporation.gm_accounts %}
                 {# what the leadership can chase, grouped so that one EVE mail reaches everyone concerned #}
                 <div class="card border-danger mb-4 eos-auth-monitor-todos">
                     <div class="card-header d-flex flex-wrap align-items-center gap-2">
@@ -101,6 +104,21 @@
                                 </div>
                             </li>
                         {% endfor %}
+                        {% if corporation.gm_accounts %}
+                            {# eos-tax's GM transactions, per main whose characters here have one; only for its viewers #}
+                            <li class="list-group-item eos-auth-monitor-gm-todo">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                    <span class="badge text-wrap text-white" style="background-color: var(--bs-pink)"><i class="fas fa-sack-dollar"></i> {% translate "GM transactions" %}</span>
+                                    <span class="badge text-bg-secondary">{{ corporation.gm_accounts|length }}</span>
+                                    <span class="small text-body-secondary me-auto">{% translate "A GM moved ISK for a character of these mains." %}</span>
+                                    {% include "eos_auth_monitor/partials/copy-button.html" with names=corporation.gm_names %}
+                                    {% include "eos_auth_monitor/partials/csv-button.html" with group="gm_transactions" %}
+                                </div>
+                                <div class="small text-break">
+                                    {% for account in corporation.gm_accounts %}{% if account.visiting and not can_view_all %}{{ account.main_name }}{% else %}<a href="{% url 'eos_auth_monitor:account' account.user_id %}">{{ account.main_name }}</a>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                </div>
+                            </li>
+                        {% endif %}
                     </ul>
                 </div>
             {% endif %}

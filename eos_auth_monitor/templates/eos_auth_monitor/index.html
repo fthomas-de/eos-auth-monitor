@@ -5,7 +5,7 @@
 
 {% block details %}
     {% if report %}
-        {% if cockpit %}
+        {% if cockpit or report.gm_shown %}
             <h5>{% translate "Cockpit" %}</h5>
             <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 row-cols-xxl-6 g-3 mb-4">
                 {% if report.services %}
@@ -34,6 +34,9 @@
                         {% include "eos_auth_monitor/partials/gauge.html" with link=gauge.url %}
                     </div>
                 {% endfor %}
+                {% if report.gm_shown %}
+                    <div class="col">{% include "eos_auth_monitor/partials/gm-tile.html" with gm_count=report.gm_characters|length %}</div>
+                {% endif %}
             </div>
         {% endif %}
 
@@ -110,15 +113,20 @@
                         <table class="table table-sm table-hover align-middle mb-0 eos-auth-monitor-sortable eos-auth-monitor-no-search eos-auth-monitor-overview-table">
                             <thead>
                                 <tr>
-                                    <th>{% translate "Corporation" context "EVE jargon" %}</th>
+                                    {% translate "Corporation" context "EVE jargon" as corporation_label %}
+                                    {% translate "Characters" context "EVE jargon" as characters_label %}
+                                    <th title="{{ corporation_label }}">{{ corporation_label|abbreviate }}</th>
                                     <th title="{% translate 'Accounts with problems' %}"><i class="fas fa-triangle-exclamation fa-fw"></i> {% translate "Problems" %}</th>
                                     <th><i class="fas fa-user fa-fw"></i> {% translate "Mains" context "EVE jargon" %}</th>
-                                    <th><i class="fas fa-users fa-fw"></i> {% translate "Characters" context "EVE jargon" %}</th>
+                                    <th title="{{ characters_label }}"><i class="fas fa-users fa-fw"></i> {{ characters_label|abbreviate }}</th>
                                     {% for column in table_columns %}
-                                        <th><i class="{{ column.icon }} fa-fw"></i> {{ column.label }}</th>
+                                        <th title="{{ column.label }}"><i class="{{ column.icon }} fa-fw"></i> {{ column.label|abbreviate }}</th>
                                     {% endfor %}
                                     {% if report.spy_shown %}
-                                        <th title="{% translate 'Characters with markers in eos-spy-network' %}"><i class="fas fa-user-secret fa-fw"></i> {% translate "Spy network" %}</th>
+                                        <th title="{% translate 'Characters with markers in eos-spy-network' %}"><i class="fas fa-user-secret fa-fw"></i> {% translate "Spies" %}</th>
+                                    {% endif %}
+                                    {% if report.gm_shown %}
+                                        <th title="{% translate 'Characters with GM transactions in eos-tax' %}"><i class="fas fa-sack-dollar fa-fw"></i> GM</th>
                                     {% endif %}
                                 </tr>
                             </thead>
@@ -160,6 +168,11 @@
                                                     {% url 'eos_spy_network:corporation' corporation.id as spy_link %}
                                                     {% if spy_link %}<a href="{{ spy_link }}" class="text-reset">{{ spy_count }}</a>{% else %}{{ spy_count }}{% endif %}
                                                 </td>
+                                            {% endwith %}
+                                        {% endif %}
+                                        {% if report.gm_shown %}
+                                            {% with gm_count=corporation.gm_characters|length %}
+                                                <td data-order="{{ gm_count }}" class="fw-semibold eos-auth-monitor-gm-count{% if not gm_count %} text-success{% endif %}"{% if gm_count %} style="color: var(--bs-pink)"{% endif %}>{{ gm_count }}</td>
                                             {% endwith %}
                                         {% endif %}
                                     </tr>

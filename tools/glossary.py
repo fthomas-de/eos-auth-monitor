@@ -707,6 +707,29 @@ TRANSLATIONS = {
         'Character с маркерами в eos-spy-network',
         '在 eos-spy-network 中有标记的 Character',
     ),
+    'Spies': ('Spione', 'Шпионы', '间谍'),
+    # eos-tax's GM transactions: cockpit and Corporation tile, overview column, to-do, account marker
+    'GM transactions': ('GM-Transaktionen', 'GM-транзакции', 'GM 交易'),
+    'Characters with GM transactions': (
+        'Characters mit GM-Transaktionen',
+        'Character с GM-транзакциями',
+        '有 GM 交易的 Character',
+    ),
+    'Characters with GM transactions in eos-tax': (
+        'Characters mit GM-Transaktionen in eos-tax',
+        'Character с GM-транзакциями в eos-tax',
+        '在 eos-tax 中有 GM 交易的 Character',
+    ),
+    'A GM moved ISK for a character of these mains.': (
+        'Ein GM hat ISK für einen Character dieser Mains bewegt.',
+        'GM перевёл ISK для Character этих Main.',
+        'GM 为这些 Main 的某个 Character 转移了 ISK。',
+    ),
+    'A GM moved ISK for this character.': (
+        'Ein GM hat ISK für diesen Character bewegt.',
+        'GM перевёл ISK для этого Character.',
+        'GM 为这个 Character 转移了 ISK。',
+    ),
 }
 
 PLURALS = {

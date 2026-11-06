@@ -29,7 +29,7 @@ from .permissions import (
     own_corporation_id,
 )
 from .report import CORPORATION_GROUP_LABELS, PHASE_LABELS, Report
-from .sources import spy_network
+from .sources import gm_transactions, spy_network
 from .tasks import update_snapshot
 
 
@@ -77,13 +77,16 @@ def _corporation_nav(user, corporation_id) -> str:
 
 
 def _report(user=None) -> Report | None:
-    """The stored snapshot; with ``user``, eos-spy-network's markers added where that viewer may see them."""
+    """The stored snapshot; with ``user``, eos-spy-network's markers and eos-tax's GM transactions added where
+    that viewer may see them."""
     snapshot = snapshots.current()
     if not snapshot:
         return None
     report = Report(snapshot)
     if user is not None and spy_network.can_view(user):
         report.add_spy_markers(spy_network.character_markers(), spy_network.kinds())
+    if user is not None and gm_transactions.can_view(user):
+        report.add_gm_transactions(gm_transactions.character_ids())
     return report
 
 

@@ -1,0 +1,11 @@
+{% load i18n %}
+{# eos-tax's GM transactions as a count (`gm_count`), linked to its GM Transactions page; pink, apart from the yellow spy markers #}
+<div class="card h-100 text-center eos-auth-monitor-gm-tile">
+    <div class="card-body position-relative">
+        <i class="fas fa-sack-dollar fa-lg mb-2"></i>
+        <div class="fs-3 fw-bold{% if not gm_count %} text-success{% endif %}"{% if gm_count %} style="color: var(--bs-pink)"{% endif %}>{{ gm_count }}</div>
+        <div class="small">{% translate "GM transactions" %}</div>
+        <div class="small text-body-secondary">{% translate "Characters with GM transactions" %}</div>
+        <a href="{% url 'eos_tax:gm_transactions' %}" class="stretched-link" aria-label="{% translate 'GM transactions' %}"></a>
+    </div>
+</div>

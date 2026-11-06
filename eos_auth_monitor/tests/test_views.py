@@ -18,6 +18,7 @@ from eos_auth_monitor.forms import MonitorConfigurationForm
 from eos_auth_monitor.models import MonitorConfiguration, Snapshot
 from eos_auth_monitor.permissions import APP_PERMISSIONS, BASIC_ACCESS, MANAGE_SETTINGS, VIEW_ALL, VIEW_OWN
 from eos_auth_monitor.sources import spy_network
+from eos_auth_monitor.templatetags.eos_auth_monitor import abbreviate
 
 from .base import (
     ALLIANCE_ID,
@@ -1706,6 +1707,16 @@ class TestVoluntaryServices(ViewTestCase):
         self.assertEqual(tile_class("fab fa-discord", "Discord"), "text-body-secondary")
         self.assertEqual(tile_class("fas fa-headset", "Mumble"), "text-danger")
 
+    def test_should_shorten_the_heads_of_the_table(self):
+        content = self.get(self.leader, "index").content.decode()
+        head = content[content.index("eos-auth-monitor-overview-table"):content.index("</thead>")]
+
+        self.assertIn('<th title="Corporation">Corp</th>', head)
+        self.assertIn("</i> Chars</th>", head)
+        # the columns of the tiles go through the same filter; this snapshot has no character check
+        self.assertIn('<th title="Discord"><i class="fab fa-discord fa-fw"></i> Discord</th>', head)
+        self.assertEqual(abbreviate("Corporation Audit"), "Corp Audit")
+
     def test_should_show_a_voluntary_share_uncoloured_in_the_table(self):
         content = self.get(self.leader, "index").content.decode()
 
@@ -1757,7 +1768,7 @@ class TestSpyNetwork(ViewTestCase):
         content = self.get(self.spy_leader, "index").content.decode()
         table = content[content.index("eos-auth-monitor-overview-table"):]
 
-        self.assertIn("Spy network</th>", table)
+        self.assertIn("</i> Spies</th>", table)
         counts = re.findall(
             r'<td data-order="(\d+)" class="[^"]*eos-auth-monitor-spy-count[^"]*">\s*<a href="([^"]+)" class="text-reset">(\d+)</a>',
             table,

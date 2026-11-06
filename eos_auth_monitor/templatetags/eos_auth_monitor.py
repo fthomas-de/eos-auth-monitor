@@ -29,6 +29,12 @@ def row_class(row) -> str:
 
 
 @register.filter
+def abbreviate(label) -> str:
+    """A head of the overview table in short, to keep it narrow; EVE jargon stays English in every catalogue."""
+    return str(label).replace("Corporation", "Corp").replace("Character", "Char")
+
+
+@register.filter
 def link_colour(link, own) -> str:
     """Bootstrap colour of an account's service tile: on My account some services stay grey when unlinked."""
     if link.linked:

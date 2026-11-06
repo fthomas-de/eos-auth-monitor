@@ -392,6 +392,25 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   `Character` instances, which is why setting `character.spy` once reaches
   every page.
 
+2026-11-06 (unreleased):
+
+- **eos-tax GM transactions** ("integration von eos tax gm transactions"):
+  `sources/gm_transactions.py` reads eos-tax's stored GM report on every page
+  view through its own `get_gm_page` and keeps the rows with counterparty
+  `FLAGGED_PARTY` ("GM X"), the user's definition of a finding: the rows
+  shown with the "GM X" box ticked. `Report.add_gm_transactions` marks
+  `Character.gm`, only for characters whose Corporation is in the overview
+  ("noch in der corp der allianz"). Visible with `eos_tax.admin_view` or
+  `gm_bots_access`, eos-tax's own rule for the tab. Cockpit tile and
+  Corporation tile (`partials/gm-tile.html`) link to `eos_tax:gm_transactions`,
+  an overview table column, a pink to-do with the **mains** (group
+  `gm_transactions`), a pink marker with an eos-tax link on the account
+  page. **Pink** (`var(--bs-pink)`, inline; first orange, then "nicht gelb oder orange") so it differs from the
+  yellow spy markers - the user's choice. Spy network in the cockpit is left
+  for a separate session (the user's choice). Display only, like the spy
+  markers. Tests in `tests/test_gm_transactions.py` (18, six sabotages red).
+  New messages not yet in `tools/glossary.py`; that happens at `/commit`.
+
 ## Pitfalls found
 
 - `CharacterAudit.is_active()` **saves** the audit. "Audit inactive" is

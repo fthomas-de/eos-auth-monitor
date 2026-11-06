@@ -91,6 +91,8 @@ class Character:
     problems: list[Problem]
     # eos-spy-network's markers (sources.spy_network.SpyMarker), filled for its viewers only; never a problem
     spy: list = field(default_factory=list)
+    # a GM transaction against "GM X" in eos-tax, filled for its viewers only; never a problem
+    gm: bool = False
 
 
 @dataclass
@@ -144,15 +146,16 @@ class Account:
 
     @property
     def listed_characters(self) -> list[Character]:
-        """The account page's table: the characters with problems or eos-spy-network markers.
+        """The account page's table: the characters with problems, eos-spy-network markers or GM transactions.
 
         Most problems first, then most markers; the markers only show, they rank no account.
         """
         return sorted(
-            (character for character in self.characters if character.problems or character.spy),
+            (character for character in self.characters if character.problems or character.spy or character.gm),
             key=lambda character: (
                 -len(character.problems),
                 -len(character.spy),
+                not character.gm,
                 not character.is_main,
                 character.name.lower(),
             ),
@@ -162,7 +165,7 @@ class Account:
     def problem_free_characters(self) -> list[Character]:
         """The characters without a problem or marker: the main first, then by name."""
         return sorted(
-            (character for character in self.characters if not character.problems and not character.spy),
+            (character for character in self.characters if not character.problems and not character.spy and not character.gm),
             key=lambda character: (not character.is_main, character.name.lower()),
         )
 
@@ -273,6 +276,8 @@ class SpyTodo:
 UNREGISTERED = "unregistered"
 # the to-do groups of eos-spy-network's markers: this prefix and the marker kind
 SPY_GROUP_PREFIX = "spy_"
+# the to-do group of the mains with eos-tax GM transactions
+GM_GROUP = "gm_transactions"
 
 
 @dataclass
@@ -325,10 +330,29 @@ class Corporation:
     visiting: list[Account] = field(default_factory=list)
     # eos-spy-network's marker kinds in its order once its markers were added for the viewer; None: not shown
     spy_kinds: tuple | None = None
+    # set by Report.add_gm_transactions: the viewer may see eos-tax's GM transactions
+    gm_shown: bool = False
 
     @property
     def spy_shown(self) -> bool:
         return self.spy_kinds is not None
+
+    @property
+    def gm_characters(self) -> list[Character]:
+        """The characters counted here with a GM transaction."""
+        return [character for account in self.evaluated_accounts for character in account.characters if character.gm]
+
+    @property
+    def gm_accounts(self) -> list[Account]:
+        """The mains whose characters counted here have a GM transaction, by name - whom to look at."""
+        return sorted(
+            (account for account in self.evaluated_accounts if any(character.gm for character in account.characters)),
+            key=lambda account: account.main_name.lower(),
+        )
+
+    @property
+    def gm_names(self) -> str:
+        return ", ".join(account.main_name for account in self.gm_accounts)
 
     @property
     def spy_characters(self) -> list[Character]:
@@ -424,6 +448,7 @@ class Corporation:
             for todo in self.spy_todos
             for character in todo.characters
         ]
+        rows += [TodoRow(GM_GROUP, _("GM transactions"), account.main_name) for account in self.gm_accounts]
         return rows
 
     @property
@@ -500,6 +525,8 @@ class Report:
         self.members_fetched = data.get("members_fetched", False)
         # set by add_spy_markers: the viewer may see eos-spy-network's markers
         self.spy_shown = False
+        # set by add_gm_transactions: the viewer may see eos-tax's GM transactions
+        self.gm_shown = False
         rows = data["corporations"]
         # the whole accounts, by the Corporation of their main: the account pages and the Alliance-wide lists
         self._accounts = {
@@ -633,6 +660,24 @@ class Report:
         for corporation in self.corporations:
             corporation.spy_kinds = tuple(kinds)
         self.spy_shown = True
+
+    def add_gm_transactions(self, character_ids: set[int]) -> None:
+        """Mark the characters with an eos-tax GM transaction, for a viewer who may see them.
+
+        Only characters still in a Corporation of the overview: an alt
+        elsewhere has left the Alliance, whatever its main does.
+        """
+        for account in self._accounts.values():
+            for character in account.characters:
+                character.gm = character.id in character_ids and character.corporation_id in self._corporations_by_id
+        for corporation in self.corporations:
+            corporation.gm_shown = True
+        self.gm_shown = True
+
+    @property
+    def gm_characters(self) -> list[Character]:
+        """Every character of the Alliance with a GM transaction."""
+        return [character for account in self.accounts for character in account.characters if character.gm]
 
     def service(self, service_key: str) -> Service | None:
         return next((service for service in self.services if service.key == service_key), None)

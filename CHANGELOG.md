@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **eos-tax GM transactions** for viewers who see eos-tax's *GM Transactions*
+  tab (`eos_tax.admin_view` or `eos_tax.gm_bots_access`): a cockpit tile on
+  the overview with the Alliance's characters booked against "GM X", a *GM*
+  column in the overview table (count only, no link), a tile on the Corporation page
+  (both tiles open eos-tax's GM Transactions page), a pink to-do entry
+  naming the mains concerned, linked to their account pages (copy and CSV
+  like the others), and a pink marker with a link to eos-tax beside each
+  such character on the account page. Only characters still in a
+  Corporation of the Alliance count, each in its own Corporation. Display
+  only: no problem count, order, dashboard widget or smart filter changes,
+  and *My account* never shows them.
+
+### Changed
+
+- The overview table's heads say "Corp" and "Char" instead of "Corporation"
+  and "Character" (e.g. *Corp*, *Chars*, *Char Audit*), the whole name as
+  tooltip, to keep the table narrow. The *Spy network* column is headed
+  *Spies*.
+
 ## [0.0.14] - 2026-11-04
 
 ### Changed
