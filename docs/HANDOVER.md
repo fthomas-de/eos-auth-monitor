@@ -4,11 +4,17 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-06 (0.0.15).
+Last updated 2026-11-06 (0.0.16).
 
 ## Release
 
-- Version **0.0.15** of 2026-11-06: **eos-tax GM transactions** (see
+- Version **0.0.16** of 2026-11-06: a **Spy network cockpit tile** on the
+  overview (see `CHANGELOG.md` and the decisions of 2026-11-06 below) - the
+  sum of the *Spies* column, linked to eos-spy-network's Corporations page,
+  for viewers with both of its view permissions; the Corporation page's spy
+  tile now comes from the same `partials/spy-tile.html`. No migration, no
+  static file, no new message. Not seen in a browser.
+- New in 0.0.15: **eos-tax GM transactions** (see
   `CHANGELOG.md` and the decisions of 2026-11-06 below) - cockpit tile,
   overview column *GM*, Corporation tile, pink to-do with the mains, pink
   marker on the account page, for viewers of eos-tax's GM Transactions tab.
@@ -58,7 +64,7 @@ Last updated 2026-11-06 (0.0.15).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 387 tests without the translation tests, 3 translation tests, all green;
+- 388 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -69,7 +75,7 @@ Last updated 2026-11-06 (0.0.15).
   0.0.7 11 for 11, 0.0.8 16 for 16, 0.0.9 7 for 7, 0.0.10 4 for 4, 0.0.11
   13 for 13 after one fix: the status badges were counted, not tied to
   their rows; 0.0.12 20 for 20 after two fixes: the order by marker count
-  and the to-do card opened by markers alone were untested; 0.0.15 6 for 6).
+  and the to-do card opened by markers alone were untested; 0.0.15 6 for 6; 0.0.16 1 for 1).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -420,7 +426,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   user asked for a warning colour "nicht gelb oder orange", so it differs
   from the yellow spy markers. A spy count in the cockpit was left for a
   separate session (the user's choice). Display only, like the spy markers.
-- **Spy cockpit tile** (2026-11-06, after 0.0.15; "corporation overview
+- **Spy cockpit tile** (0.0.16; "corporation overview
   braucht auch eine spy kachel mit link zur app"): beside the GM tile, the
   sum of the *Spies* column, linked to `eos_spy_network:corporations`; the
   Corporation page's tile keeps its link to `eos_spy_network:corporation`,
@@ -557,8 +563,6 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   `fa-user-secret`) was Claude's choice, not asked.
 - The overview **tiles** have no spy number - the user asked for a column;
   ask if the tiles should get it too.
-- **Spy network cockpit tile** (count + link, like the GM one): the user
-  wants it, in a session of its own.
 - **eos-tax GM transactions not seen in a browser**, nor the pink in AA's
   dark theme. In dev they need eos-tax's GM report (its *Recalculate* on
   GM Transactions) and a user with `eos_tax.gm_bots_access` or `admin_view`.
@@ -575,7 +579,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   or *no main* for every one of Ether Element's 275, and the paging (275 rows:
   three pages of 100) and the table-first overview can be looked at.
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.15 are to be deployed, with
+- Production still runs 0.0.5: 0.0.6 to 0.0.16 are to be deployed, with
   migrations 0007 and 0008 and `collectstatic` (for the spy markers also
   eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
