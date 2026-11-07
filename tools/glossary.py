@@ -665,6 +665,12 @@ TRANSLATIONS = {
     ),
     'complete': ('vollständig', 'завершён', '已完成'),
     'Main in %(corporation)s': ('Main in %(corporation)s', 'Main в %(corporation)s', 'Main 在 %(corporation)s'),
+    # the crown on a main's card: a character of the account directs the main's Corporation
+    "Director of the main's Corporation": (
+        "Director der Corporation des Mains",
+        "Director Corporation этого Main",
+        "Main 所在 Corporation 的 Director",
+    ),
     'Only the Directors corptools knows are listed: it reads the roles of characters with a token alone. Switch on Fetch data from ESI in the settings to list every Director.': (
         'Nur die Director, die corptools kennt, stehen hier: Es liest die Rollen nur von Characters mit Token. Schalte in den Einstellungen Daten von ESI abrufen ein, um jeden Director aufzulisten.',
         'Показаны только Director, известные corptools: он читает роли лишь Character с токеном. Включи в настройках получение данных из ESI, чтобы видеть всех Director.',

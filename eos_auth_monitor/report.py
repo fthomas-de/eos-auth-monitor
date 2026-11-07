@@ -131,6 +131,8 @@ class Account:
     # on another Corporation's page: the account of a main elsewhere, with only the characters counted there
     visiting: bool = False
     main_corporation_name: str = ""
+    # the names of the account's characters that are Directors of its main's Corporation, alts elsewhere included
+    directors: list[str] = field(default_factory=list)
 
     @property
     def problem_characters(self) -> list[Character]:
@@ -530,7 +532,7 @@ class Report:
         rows = data["corporations"]
         # the whole accounts, by the Corporation of their main: the account pages and the Alliance-wide lists
         self._accounts = {
-            account["user_id"]: self._account(row["id"], account) for row in rows for account in row["accounts"]
+            account["user_id"]: self._account(row, account) for row in rows for account in row["accounts"]
         }
         self._counted = self._characters_by_corporation({row["id"] for row in rows})
         names = {row["id"]: row["name"] for row in rows}
@@ -551,12 +553,18 @@ class Report:
             ],
         }
 
-    def _account(self, corporation_id, account) -> Account:
+    def _account(self, row, account) -> Account:
+        # a snapshot from before the Director lists has none
+        director_ids = {director["id"] for director in row.get("directors", [])}
         return Account(
             user_id=account["user_id"],
             main_id=account["main_id"],
             main_name=account["main_name"],
-            corporation_id=corporation_id,
+            corporation_id=row["id"],
+            directors=sorted(
+                (character["name"] for character in account["characters"] if character["id"] in director_ids),
+                key=str.lower,
+            ),
             services=[ServiceLink(service, bool(account["services"].get(service.key))) for service in self.services],
             characters=[
                 Character(

@@ -1517,6 +1517,43 @@ class TestAltsInAnotherCorporation(ViewTestCase):
         self.assertContains(response, reverse("eos_auth_monitor:account", args=[22]))
 
 
+class TestDirectorIcon(ViewTestCase):
+    """A crown on a main's card or line when a character of the account directs the main's Corporation."""
+
+    def setUp(self):
+        super().setUp()
+        snapshot = Snapshot.objects.get()
+        for row, director_id in zip(snapshot.data["corporations"], [1101, 2201]):
+            row["directors"] = [{"id": director_id, "name": f"Char {director_id}", "in_auth": True,
+                                 "user_id": None, "main_name": None, "tokens": {}}]
+        snapshot.save()
+
+    def test_should_crown_the_card_of_a_main_with_problems(self):
+        content = self.get(self.leader, "corporation", 2002).content.decode()
+
+        # from the card up to its portrait: the crown sits in the corner, before everything else
+        card = content[content.index('class="card h-100 border-danger"'):]
+        card = card[:card.index("<img")]
+        self.assertIn("eos-auth-monitor-director position-absolute", card)
+        self.assertIn("Director of the main's Corporation: Char 2201", card)
+
+    def test_should_crown_the_line_of_a_main_without_problems(self):
+        content = self.get(self.leader, "corporation", 2001).content.decode()
+
+        line = content[content.index("eos-auth-monitor-problem-free"):]
+        self.assertIn("eos-auth-monitor-director position-relative", line)
+        self.assertIn("Director of the main's Corporation: Char 1101", line)
+
+    def test_should_crown_nobody_without_directors(self):
+        snapshot = Snapshot.objects.get()
+        for row in snapshot.data["corporations"]:
+            row["directors"] = []
+        snapshot.save()
+
+        self.assertNotContains(self.get(self.leader, "corporation", 2001), "eos-auth-monitor-director")
+        self.assertNotContains(self.get(self.leader, "corporation", 2002), "eos-auth-monitor-director")
+
+
 class TestCharacterAuditList(ViewTestCase):
     """Behind the Character Audit tile: every main with the checks its account fails."""
 

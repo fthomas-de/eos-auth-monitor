@@ -144,6 +144,35 @@ class TestDirectors(MonitorTestCase):
         self.assertFalse(found.has_director_list("corptools_characters"))
 
 
+class TestAccountDirectors(MonitorTestCase):
+    """The Directors of the main's Corporation among an account's characters, wherever those are."""
+
+    def found(self):
+        account = account_row(
+            11,
+            1101,
+            [
+                character_row(1102, corporation_id=2002),
+                character_row(1101),
+                character_row(1103, corporation_id=2002),
+                character_row(1104),
+            ],
+        )
+        main_corporation = {**corporation_row(2001, [account]), "directors": [director_row(1101), director_row(1102)]}
+        # a Director of the alt's own Corporation is none of the main's
+        alt_corporation = {**corporation_row(2002), "directors": [director_row(1103)]}
+        return report([main_corporation, alt_corporation])
+
+    def test_should_name_the_directors_of_the_mains_corporation(self):
+        self.assertEqual(self.found().account(11)[1].directors, ["Char 1101", "Char 1102"])
+
+    def test_should_keep_them_on_the_card_of_a_visiting_main(self):
+        self.assertEqual(self.found().corporation(2002).visiting[0].directors, ["Char 1101", "Char 1102"])
+
+    def test_should_name_none_from_a_snapshot_without_directors(self):
+        self.assertEqual(report([corporation_row(2001, [account_row(11, 1101)])]).account(11)[1].directors, [])
+
+
 class TestCorporationLists(MonitorTestCase):
     def corporation(self):
         return report(

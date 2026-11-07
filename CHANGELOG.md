@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.18] - 2026-11-07
+
+### Added
+
+- A crown on the Corporation page's main cards (top right) and in its list of
+  mains without problems when a character of the account - the main or any
+  alt - is a Director of the main's Corporation; the tooltip names them. Also
+  on the cards of mains from another Corporation. Directors are known only
+  where the Corporation Audit or Structures checks run (the Director lists'
+  data); display only, no problem.
+
 ## [0.0.17] - 2026-11-06
 
 ### Changed

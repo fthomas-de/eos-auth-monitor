@@ -116,6 +116,7 @@
                             <div class="col">
                                 <div class="card h-100 border-danger">
                                     <div class="card-body position-relative d-flex align-items-start gap-3">
+                                        {% include "eos_auth_monitor/partials/director-icon.html" with corner=True %}
                                         <img src="{{ account.main_id|character_portrait_url:64 }}" width="48" height="48" class="rounded flex-shrink-0" alt="">
                                         <div class="flex-grow-1 overflow-hidden">
                                             <h6 class="mb-1 text-truncate">
@@ -161,7 +162,7 @@
                                 <div class="col d-flex align-items-center gap-2">
                                     <img src="{{ account.main_id|character_portrait_url:32 }}" width="24" height="24" class="rounded flex-shrink-0" alt="">
                                     <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="text-truncate">{{ account.main_name }}</a>
-                                    <span class="ms-auto text-nowrap">{% include "eos_auth_monitor/partials/service-icons.html" with inline=True %}</span>
+                                    <span class="ms-auto text-nowrap">{% include "eos_auth_monitor/partials/director-icon.html" %} {% include "eos_auth_monitor/partials/service-icons.html" with inline=True %}</span>
                                 </div>
                             {% endfor %}
                         </div>

@@ -1,0 +1,7 @@
+{% load i18n %}
+{# Not a problem: whom to ask first. z-2 lifts it above a card's stretched link, or the tooltip would never show. #}
+{% if account.directors %}
+    {% translate "Director of the main's Corporation" as director_label %}
+    <i class="fas fa-crown text-warning z-2 eos-auth-monitor-director {% if corner %}position-absolute top-0 end-0 m-2{% else %}position-relative{% endif %}" role="img"
+       title="{{ director_label }}: {{ account.directors|join:', ' }}" aria-label="{{ director_label }}: {{ account.directors|join:', ' }}"></i>
+{% endif %}
