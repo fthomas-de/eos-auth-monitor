@@ -4,11 +4,20 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-06 (0.0.17).
+Last updated 2026-11-07 (0.0.18).
 
 ## Release
 
-- Version **0.0.17** of 2026-11-06: the account page's **GM transactions
+- Version **0.0.18** of 2026-11-07: a **Director crown** on the Corporation
+  page (see `CHANGELOG.md` and the decisions of 2026-11-07 below) - a
+  `fa-crown` icon top right on a main's card and before the service icons in
+  the *Without problems* list when a character of the account (the main
+  included) is a Director of the main's Corporation, the names as tooltip.
+  `Account.directors` (filled in `Report._account` from the snapshot's
+  `directors` of the main's Corporation), `partials/director-icon.html`. No
+  migration, no snapshot change, no static file; one new message,
+  translated. Not seen in a browser.
+- New in 0.0.17: the account page's **GM transactions
   link** opens eos-tax's GM Transactions page searched for the main's name
   (`?search="<main>"`, see `CHANGELOG.md` and the decisions of 2026-11-06
   below). eos-tax reads `?search=` only from its own matching change (a
@@ -71,7 +80,7 @@ Last updated 2026-11-06 (0.0.17).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 388 tests without the translation tests, 3 translation tests, all green;
+- 394 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -82,7 +91,8 @@ Last updated 2026-11-06 (0.0.17).
   0.0.7 11 for 11, 0.0.8 16 for 16, 0.0.9 7 for 7, 0.0.10 4 for 4, 0.0.11
   13 for 13 after one fix: the status badges were counted, not tied to
   their rows; 0.0.12 20 for 20 after two fixes: the order by marker count
-  and the to-do card opened by markers alone were untested; 0.0.15 6 for 6; 0.0.16 1 for 1).
+  and the to-do card opened by markers alone were untested; 0.0.15 6 for 6; 0.0.16 1 for 1;
+  0.0.18 5 for 5).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -133,7 +143,8 @@ the overview), `view.js` (tiles or table), `copy.js` (copy buttons, with an
 `execCommand` fallback for plain HTTP). Partials: `gauge.html` (a statistic
 tile), `corporation-rows.html`, `metrics.html`, `problem-count.html`,
 `no-director.html`, `problem-hint.html`, `copy-button.html`, `csv-button.html`,
-`service-icons.html`, `row-title.html` (tooltip of a tile row or table cell),
+`service-icons.html`, `director-icon.html` (the crown, `corner=True` on a card),
+`row-title.html` (tooltip of a tile row or table cell),
 `missing-characters.html` (My account's question).
 The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 (a URL name, dropped when it does not resolve) about the player,
@@ -452,6 +463,20 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   column reads *Spies*, the GM column *GM*. Tiles and other pages keep the
   long names.
 
+2026-11-07 (0.0.18):
+
+- **Director crown on the main cards** ("zeige bei kacheln von mains in der
+  oberen rechten ecke an, wenn sich ein corp director der haupt corp (corp
+  des mains) unter den chars befindet"). The user's answers: on the problem
+  cards **and** in the compact *Without problems* list (not the account
+  page, the overview or the dashboard); **icon with tooltip** naming the
+  characters; the **main counts** too; on the card of a main from another
+  Corporation ("Main in ...") the check is against the main's own
+  Corporation, with all the account's characters. **Data source as it is**:
+  the snapshot's `directors`, which exist only while the Corporation Audit
+  or Structures checks run (`director_lists`) - without them, or where no
+  roles could be read, no crown and no hint. Display only, no problem.
+
 ## Pitfalls found
 
 - `CharacterAudit.is_active()` **saves** the audit. "Audit inactive" is
@@ -565,7 +590,15 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   the package attribute first - remove that too, and put it back
   (`test_should_ignore_a_release_without_the_read_api`).
 
+- `{% translate "..." as var %}` gives a safe string: `{{ var }}` renders an
+  apostrophe as `'`, not `&#x27;` - assert on the plain text.
+
 ## Open points / next steps
+
+- **Director crown not seen in a browser**: a long main name may run under
+  the corner crown on a card (no padding reserved); `text-warning` in AA's
+  dark theme unchecked. In dev it shows only after *Rebuild now* fills the
+  `directors` (Ether Element: 14 Directors by ESI).
 
 - **eos-spy-network markers not seen in a browser**: covered by tests of the
   rendered HTML only. In the dev instance they show only after
@@ -593,7 +626,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   or *no main* for every one of Ether Element's 275, and the paging (275 rows:
   three pages of 100) and the table-first overview can be looked at.
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.16 are to be deployed, with
+- Production still runs 0.0.5: 0.0.6 to 0.0.18 are to be deployed, with
   migrations 0007 and 0008 and `collectstatic` (for the spy markers also
   eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
