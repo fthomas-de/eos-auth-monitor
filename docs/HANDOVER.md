@@ -4,11 +4,20 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-07 (0.0.18).
+Last updated 2026-11-09 (0.0.19).
 
 ## Release
 
-- Version **0.0.18** of 2026-11-07: a **Director crown** on the Corporation
+- Version **0.0.19** of 2026-11-09: **scope warnings** (see `CHANGELOG.md`
+  and the decisions of 2026-11-09 below) - setting *Scopes missing: a problem
+  from* (`critical_scope_count`, default 5, migration 0009); a *Scopes
+  missing* with fewer missing scopes is a warning: yellow on the Corporation
+  page (card, to-do group `char_scopes_missing_warning`), the account pages
+  and the dashboard widgets, a problem nowhere. Four new messages,
+  translated. **Behaviour change for existing installations**: one to four
+  missing scopes turn from red to yellow after the next rebuild. Not seen in
+  a browser.
+- New in 0.0.18: a **Director crown** on the Corporation
   page (see `CHANGELOG.md` and the decisions of 2026-11-07 below) - a
   `fa-crown` icon top right on a main's card and before the service icons in
   the *Without problems* list when a character of the account (the main
@@ -76,11 +85,11 @@ Last updated 2026-11-07 (0.0.18).
   Corporation header linking to aa-charlink, the check tiles of the
   Corporation page, character names linking to the Character Audit, Discord,
   QQ and Telegram voluntary.
-- Migrations **0001-0008** applied in `aa_dev` (0008 adds `member_notice`; 0007 adds
+- Migrations **0001-0009** applied in `aa_dev` (0009 adds `critical_scope_count`; 0008 adds `member_notice`; 0007 adds
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 394 tests without the translation tests, 3 translation tests, all green;
+- 412 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -92,7 +101,7 @@ Last updated 2026-11-07 (0.0.18).
   13 for 13 after one fix: the status badges were counted, not tied to
   their rows; 0.0.12 20 for 20 after two fixes: the order by marker count
   and the to-do card opened by markers alone were untested; 0.0.15 6 for 6; 0.0.16 1 for 1;
-  0.0.18 5 for 5).
+  0.0.18 5 for 5; 0.0.19 24 for 24).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -114,7 +123,7 @@ Last updated 2026-11-07 (0.0.18).
 | Unknown characters (`unknown_characters`) | `view_all` | Behind *Members registered*: every `unregistered` member of the Alliance (`Report.unknown_characters`) with Corporation and status - *not in Auth*, *no main* (account without a main), "-" for a snapshot from before 0.0.11 -, by Corporation and name; a notice naming how many Corporations' member lists were unread; 404 without any member list |
 | My account (`own_account`) | `view_own` | The viewer's own account on `account.html` with `own=True`: service tiles linking to Alliance Auth's `services:services`, no Corporation header, the problems with hints linking to aa-charlink (the check's app without it), the left-out count; a notice when the account is not in the snapshot. `view_own` alone is sent here from the index |
 | Dashboard widgets (`views.dashboard_own`, `views.dashboard_corporation`) | `view_own` / `basic_access` | On Alliance Auth's dashboard, order 4 like eos-invoices, own before Corporation (registration order). Own: failed checks with the number of characters (`Account.keyword_counts`), service icons, link to My account. Corporation: its own problems, each to-do group with the number of mains, the unregistered count, link to the Corporation page. Red border with anything to do, green without. `""` without the permission or when the snapshot has nothing about the viewer |
-| Settings | `manage_settings` | Alliance (Tom Select), stale limit, ESI member lists on/off (also switches the roles call), only characters in the Alliance on/off, check and service switches, corptools sections and scopes, the notice to members (saving only a changed notice starts no rebuild: `form.changed_data`) |
+| Settings | `manage_settings` | Alliance (Tom Select), stale limit, scope threshold (*Scopes missing: a problem from*), ESI member lists on/off (also switches the roles call), only characters in the Alliance on/off, check and service switches, corptools sections and scopes, the notice to members (saving only a changed notice starts no rebuild: `form.changed_data`) |
 | Rebuild (POST) / progress (JSON) | `view_all` or `manage_settings` / any app permission | Start the task / state for the progress bar |
 
 Every page has a footer with the cost of the last rebuild (`view_all` or
@@ -477,7 +486,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   or Structures checks run (`director_lists`) - without them, or where no
   roles could be read, no crown and no hint. Display only, no problem.
 
-2026-11-09 (unreleased):
+2026-11-09 (0.0.19):
 
 - **Scope warnings** ("erlaube ein setting für eine kritische anzahl scope
   fehler und weniger kritische ... in der corp details ansicht aber schon
@@ -613,14 +622,23 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 
 - `{% translate "..." as var %}` gives a safe string: `{{ var }}` renders an
   apostrophe as `'`, not `&#x27;` - assert on the plain text.
+- `assertRegex(text, pattern, re.DOTALL)` passes the flag as the failure
+  *message*: compile the pattern (`re.compile(..., re.DOTALL)`).
+- A settings test that posts only some fields leaves a required field out
+  and the form invalid - it then "keeps" every state because nothing was
+  saved, and stays green. Since 0.0.19 `critical_scope_count` is required:
+  post it (or `TestSettings.unchanged`), and assert the redirect.
+- From PowerShell, `wsl.exe ... bash -lc '...'` loses the double quotes
+  inside (a `grep -E "^(...)"` becomes a bash syntax error): put such
+  commands into a script file in the scratchpad and run it by path.
 
 ## Open points / next steps
 
 - **Scope warnings not seen in a browser**, nor the yellow in AA's dark
   theme. In dev they show only after *Rebuild now* (the stored snapshot has no
-  threshold and rates every missing scope a problem). Two new messages for
-  the glossary at `/commit`: "%(check)s (warning)", "Warnings", plus the
-  setting's label and help text.
+  threshold and rates every missing scope a problem). The to-do card of the
+  Corporation page keeps its red border even when it holds only warnings
+  (and spy or GM entries) - not asked; ask if it should turn yellow.
 
 - **Director crown not seen in a browser**: a long main name may run under
   the corner crown on a card (no padding reserved); `text-warning` in AA's
@@ -653,8 +671,8 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   or *no main* for every one of Ether Element's 275, and the paging (275 rows:
   three pages of 100) and the table-first overview can be looked at.
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.18 are to be deployed, with
-  migrations 0007 and 0008 and `collectstatic` (for the spy markers also
+- Production still runs 0.0.5: 0.0.6 to 0.0.19 are to be deployed, with
+  migrations 0007 to 0009 and `collectstatic` (for the spy markers also
   eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
   without a snapshot it fails everyone.
@@ -719,12 +737,12 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   The dev DB has one account and no service links: every service number is 0.
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
   Comes), nothing switched off, ESI on, *Only characters in the Alliance*
-  off, the notice empty. The Celery worker runs the 0.0.11 build code since
-  2026-10-09 (restarted after the snapshot gained `in_auth`; restart it
-  before the next change to the build), started detached by a script (`setsid nohup
-  ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo` in
-  `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`); one worker, check
-  `ps` before the next restart. **No Celery beat runs** in the dev instance,
+  off, the notice empty, `critical_scope_count` 5 (the migration's
+  default). **No Celery worker was running** on 2026-11-09 (`ps` found none):
+  *Rebuild now* queues for nobody until one is started detached by a script
+  (`setsid nohup ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo`
+  in `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`); one worker,
+  check `ps` first. **No Celery beat runs** in the dev instance,
   so the beat entry never fires and the stored snapshot (2026-09-30 11:11 UTC,
   with `directors`, without `in_auth`: the unknown characters list shows
   "-" as status for all 275 of Ether Element) stays until *Rebuild now*. `runserver` reloads by itself.
