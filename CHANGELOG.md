@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.19] - 2026-11-09
+
+### Added
+
+- Setting *Scopes missing: a problem from* (default 5, migration 0009): a
+  character lacking fewer Character Audit scopes gets a **warning** instead
+  of a problem. Warnings show in the warning colour on the Corporation page
+  (a yellow-bordered main card while the main has no problem, a to-do group
+  *Scopes missing (warning)* with copy and CSV), on the account page, on
+  *My account* and in the dashboard widgets (yellow border while nothing is
+  worse). They count nowhere else: overview, cockpit, percentages, problem
+  counts, sorting, the Character Audit list and the smart filter ignore them.
+  *Director token missing* is unaffected.
+
+### Changed
+
+- With the default of 5, *Scopes missing* with one to four missing scopes is
+  a warning after the update, no longer a problem; set the threshold to 1 to
+  keep the old rating. A stored result from before the update keeps rating
+  every missing scope a problem until the next rebuild.
+
 ## [0.0.18] - 2026-11-07
 
 ### Added

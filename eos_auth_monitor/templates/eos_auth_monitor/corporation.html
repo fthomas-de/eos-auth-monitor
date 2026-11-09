@@ -35,7 +35,7 @@
                 </div>
             {% endif %}
 
-            {% if corporation.todos or corporation.unregistered or corporation.spy_todos or corporation.gm_accounts %}
+            {% if corporation.listed_todos or corporation.unregistered or corporation.spy_todos or corporation.gm_accounts %}
                 {# what the leadership can chase, grouped so that one EVE mail reaches everyone concerned #}
                 <div class="card border-danger mb-4 eos-auth-monitor-todos">
                     <div class="card-header d-flex flex-wrap align-items-center gap-2">
@@ -44,15 +44,15 @@
                         {% include "eos_auth_monitor/partials/csv-button.html" %}
                     </div>
                     <ul class="list-group list-group-flush">
-                        {% for todo in corporation.todos %}
-                            <li class="list-group-item">
+                        {% for todo in corporation.listed_todos %}
+                            <li class="list-group-item{% if todo.warning %} eos-auth-monitor-warning-todo{% endif %}">
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                    <span class="badge text-bg-danger text-wrap" title="{{ todo.check.description }}">{{ todo.check.label }}</span>
+                                    <span class="badge {% if todo.warning %}text-bg-warning{% else %}text-bg-danger{% endif %} text-wrap" title="{{ todo.check.description }}">{{ todo.label }}</span>
                                     <span class="badge text-bg-secondary">{{ todo.accounts|length }}</span>
                                     {# the players add their characters in aa-charlink where it is installed - unless one of them lacks a scope CharLink never asks for #}
                                     <span class="small text-body-secondary me-auto">{% if charlink_url and not todo.beyond_charlink %}{% firstof todo.check.charlink_hint todo.check.hint %}{% else %}{{ todo.check.hint }}{% endif %}</span>
                                     {% include "eos_auth_monitor/partials/copy-button.html" with names=todo.names %}
-                                    {% include "eos_auth_monitor/partials/csv-button.html" with group=todo.check.key %}
+                                    {% include "eos_auth_monitor/partials/csv-button.html" with group=todo.group %}
                                 </div>
                                 <div class="small text-break">
                                     {# a main elsewhere: its account page belongs to its own Corporation's viewers #}
@@ -109,12 +109,13 @@
             {% endif %}
 
             <h6>{% translate "Mains of this Corporation" %} <span class="badge text-bg-secondary">{{ corporation.mains }}</span></h6>
-            {% if corporation.problem_accounts %}
+            {% if corporation.problem_accounts or corporation.warning_accounts %}
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3 mb-3">
                     {% for account in corporation.accounts_by_problems %}
-                        {% if account.has_problems %}
+                        {% if account.has_problems or account.has_warnings %}
                             <div class="col">
-                                <div class="card h-100 border-danger">
+                                {# warnings alone are open but no problem; any problem keeps the card red #}
+                                <div class="card h-100 {% if account.has_problems %}border-danger{% else %}border-warning eos-auth-monitor-warning-card{% endif %}">
                                     <div class="card-body position-relative d-flex align-items-start gap-3">
                                         {% include "eos_auth_monitor/partials/director-icon.html" with corner=True %}
                                         <img src="{{ account.main_id|character_portrait_url:64 }}" width="48" height="48" class="rounded flex-shrink-0" alt="">
@@ -138,6 +139,9 @@
                                             <div class="d-flex flex-wrap gap-1">
                                                 {% for check in account.keywords %}
                                                     <span class="badge text-bg-danger text-wrap">{{ check.label }}</span>
+                                                {% endfor %}
+                                                {% for check in account.warning_keywords %}
+                                                    <span class="badge text-bg-warning text-wrap">{{ check.label }}</span>
                                                 {% endfor %}
                                             </div>
                                             {% include "eos_auth_monitor/partials/service-icons.html" %}

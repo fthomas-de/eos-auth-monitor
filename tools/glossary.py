@@ -192,6 +192,16 @@ TRANSLATIONS = {
         "Через сколько дней раздел аудита Corporation в corptools считается устаревшим. Пусто: тот же срок, что corptools использует для Character.",
         "corptools Corporation 审计的某个部分在多少天后被视为过期。留空：使用 corptools 对 Character 采用的同一期限。",
     ),
+    "Scopes missing: a problem from": (
+        "Scopes fehlen: ein Problem ab",
+        "Не хватает скоупов: проблема начиная с",
+        "缺少 Scope：从此数量起视为问题",
+    ),
+    "A character lacking at least this many Character Audit scopes is a problem. Fewer is only a warning: shown, but no problem on the overview. 1: every missing scope is a problem.": (
+        "Fehlen einem Character mindestens so viele Scopes des Character-Audits, ist das ein Problem. Weniger ist nur eine Warnung: angezeigt, aber kein Problem in der Übersicht. 1: jeder fehlende Scope ist ein Problem.",
+        "Если у Character не хватает хотя бы стольких скоупов аудита Character, это проблема. Меньше - только предупреждение: оно показывается, но в обзоре проблемой не считается. 1: каждый недостающий скоуп - проблема.",
+        "Character 缺少的 Character 审计 Scope 达到此数量即为问题。少于此数量只是警告：会显示，但在概览中不算问题。1：每个缺少的 Scope 都是问题。",
+    ),
     "Fetch data from ESI": (
         "Daten von ESI abrufen",
         "Получать данные из ESI",
@@ -237,6 +247,8 @@ TRANSLATIONS = {
     "Character": ("Character", "Character", "Character"),
     "Corporation": ("Corporation", "Corporation", "Corporation"),
     "Problems": ("Probleme", "Проблемы", "问题"),
+    "Warnings": ("Warnungen", "Предупреждения", "警告"),
+    "%(check)s (warning)": ("%(check)s (Warnung)", "%(check)s (предупреждение)", "%(check)s（警告）"),
     "Settings": ("Einstellungen", "Настройки", "设置"),
     "This Corporation is not part of the overview.": (
         "Diese Corporation gehört nicht zur Übersicht.",

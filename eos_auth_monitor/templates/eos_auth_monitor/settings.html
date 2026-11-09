@@ -15,6 +15,9 @@
                 {% if form.stale_after_days %}
                     {% bootstrap_field form.stale_after_days %}
                 {% endif %}
+                {% if form.critical_scope_count %}
+                    {% bootstrap_field form.critical_scope_count %}
+                {% endif %}
                 {% bootstrap_field form.fetch_members %}
                 {% bootstrap_field form.alliance_characters_only %}
             </div>

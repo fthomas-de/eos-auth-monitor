@@ -10,7 +10,7 @@ from django.urls import NoReverseMatch, reverse
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext, pgettext_lazy
 
-from .checks import CHARACTER, CHECKS_BY_KEY, SERVICES_BY_KEY, Check, Service
+from .checks import CHARACTER, CHECKS_BY_KEY, SERVICES_BY_KEY, WARNING_CHECK, Check, Service
 
 # corporation-level check groups: (group key, label, cockpit icon)
 CORPORATION_GROUPS = (
@@ -79,6 +79,11 @@ def _problems(items) -> list[Problem]:
     return [_problem(item) for item in items if item["check"] in CHECKS_BY_KEY]
 
 
+def _is_warning(item: dict, critical_scope_count: int) -> bool:
+    """Scopes missing below the setting's number: a to-do on the Corporation and account pages, never a problem."""
+    return item["check"] == WARNING_CHECK and len(item["detail"]) < critical_scope_count
+
+
 @dataclass
 class Character:
     id: int
@@ -89,6 +94,8 @@ class Character:
     alliance_name: str
     is_main: bool
     problems: list[Problem]
+    # problems below the setting's threshold (_is_warning): shown in the warning colour, counted nowhere
+    warnings: list[Problem] = field(default_factory=list)
     # eos-spy-network's markers (sources.spy_network.SpyMarker), filled for its viewers only; never a problem
     spy: list = field(default_factory=list)
     # a GM transaction against "GM X" in eos-tax, filled for its viewers only; never a problem
@@ -147,15 +154,29 @@ class Account:
         return bool(self.problem_characters)
 
     @property
-    def listed_characters(self) -> list[Character]:
-        """The account page's table: the characters with problems, eos-spy-network markers or GM transactions.
+    def warning_count(self) -> int:
+        return sum(len(character.warnings) for character in self.characters)
 
-        Most problems first, then most markers; the markers only show, they rank no account.
+    @property
+    def has_warnings(self) -> bool:
+        return any(character.warnings for character in self.characters)
+
+    @property
+    def listed_characters(self) -> list[Character]:
+        """The account page's table: the characters with problems, warnings, eos-spy-network markers or GM
+        transactions.
+
+        Most problems first, then most warnings and markers; those only show, they rank no account.
         """
         return sorted(
-            (character for character in self.characters if character.problems or character.spy or character.gm),
+            (
+                character
+                for character in self.characters
+                if character.problems or character.warnings or character.spy or character.gm
+            ),
             key=lambda character: (
                 -len(character.problems),
+                -len(character.warnings),
                 -len(character.spy),
                 not character.gm,
                 not character.is_main,
@@ -165,31 +186,50 @@ class Account:
 
     @property
     def problem_free_characters(self) -> list[Character]:
-        """The characters without a problem or marker: the main first, then by name."""
+        """The characters without a problem, warning or marker: the main first, then by name."""
         return sorted(
-            (character for character in self.characters if not character.problems and not character.spy and not character.gm),
+            (
+                character
+                for character in self.characters
+                if not (character.problems or character.warnings or character.spy or character.gm)
+            ),
             key=lambda character: (not character.is_main, character.name.lower()),
         )
 
-    @property
-    def keywords(self) -> list[Check]:
-        """Each check failed by any character of the account, once, in check order."""
-        failed = {problem.check.key for character in self.characters for problem in character.problems}
+    def _checks(self, kind: str) -> list[Check]:
+        """Each check in the characters' `kind` ("problems" or "warnings"), once, in check order."""
+        failed = {problem.check.key for character in self.characters for problem in getattr(character, kind)}
         return [check for key, check in CHECKS_BY_KEY.items() if key in failed]
 
-    @property
-    def keyword_counts(self) -> list[tuple[Check, int]]:
-        """Each failed check with the number of characters failing it - the account in short."""
+    def _counts(self, kind: str) -> list[tuple[Check, int]]:
         return [
             (
                 check,
                 sum(
-                    any(problem.check.key == check.key for problem in character.problems)
+                    any(problem.check.key == check.key for problem in getattr(character, kind))
                     for character in self.characters
                 ),
             )
-            for check in self.keywords
+            for check in self._checks(kind)
         ]
+
+    @property
+    def keywords(self) -> list[Check]:
+        """Each check failed by any character of the account, once, in check order."""
+        return self._checks("problems")
+
+    @property
+    def keyword_counts(self) -> list[tuple[Check, int]]:
+        """Each failed check with the number of characters failing it - the account in short."""
+        return self._counts("problems")
+
+    @property
+    def warning_keywords(self) -> list[Check]:
+        return self._checks("warnings")
+
+    @property
+    def warning_counts(self) -> list[tuple[Check, int]]:
+        return self._counts("warnings")
 
     def is_linked(self, service_key: str) -> bool:
         return any(link.linked for link in self.services if link.service.key == service_key)
@@ -235,10 +275,21 @@ class Todo:
 
     check: Check
     accounts: list[Account]
+    # the mains with the check's warnings, not its problems
+    warning: bool = False
 
     @property
     def names(self) -> str:
         return ", ".join(account.main_name for account in self.accounts)
+
+    @property
+    def group(self) -> str:
+        """The key of the group in the CSV export."""
+        return self.check.key + WARNING_GROUP_SUFFIX if self.warning else self.check.key
+
+    @property
+    def label(self) -> str:
+        return _("%(check)s (warning)") % {"check": self.check.label} if self.warning else str(self.check.label)
 
     @property
     def beyond_charlink(self) -> bool:
@@ -247,7 +298,7 @@ class Todo:
             problem.beyond_charlink
             for account in self.accounts
             for character in account.characters
-            for problem in character.problems
+            for problem in (character.warnings if self.warning else character.problems)
             if problem.check.key == self.check.key
         )
 
@@ -280,6 +331,8 @@ UNREGISTERED = "unregistered"
 SPY_GROUP_PREFIX = "spy_"
 # the to-do group of the mains with eos-tax GM transactions
 GM_GROUP = "gm_transactions"
+# the to-do group of a check's warnings: its key and this
+WARNING_GROUP_SUFFIX = "_warning"
 
 
 @dataclass
@@ -407,27 +460,50 @@ class Corporation:
         return [account for account in self.evaluated_accounts if account.has_problems]
 
     @property
+    def warning_accounts(self) -> list[Account]:
+        """The accounts with warnings and no problem: a card in the warning colour on the Corporation page."""
+        return [account for account in self.evaluated_accounts if account.has_warnings and not account.has_problems]
+
+    @property
     def accounts_by_problems(self) -> list[Account]:
-        """Most problems first; by name where they are equal."""
+        """Most problems first, then most warnings; by name where they are equal."""
         return sorted(
-            self.evaluated_accounts, key=lambda account: (-account.problem_count, account.main_name.lower())
+            self.evaluated_accounts,
+            key=lambda account: (-account.problem_count, -account.warning_count, account.main_name.lower()),
         )
 
     @property
     def problem_free_accounts(self) -> list[Account]:
         return sorted(
-            (account for account in self.accounts if not account.has_problems),
+            (account for account in self.accounts if not account.has_problems and not account.has_warnings),
             key=lambda account: account.main_name.lower(),
         )
+
+    def _todos(self, warning: bool) -> list[Todo]:
+        accounts_by_check: dict[str, list[Account]] = {}
+        for account in sorted(self.evaluated_accounts, key=lambda account: account.main_name.lower()):
+            for check in account.warning_keywords if warning else account.keywords:
+                accounts_by_check.setdefault(check.key, []).append(account)
+        return [
+            Todo(check, accounts_by_check[key], warning)
+            for key, check in CHECKS_BY_KEY.items()
+            if key in accounts_by_check
+        ]
 
     @property
     def todos(self) -> list[Todo]:
         """Per failed character check, in check order, the mains it concerns, by name."""
-        accounts_by_check: dict[str, list[Account]] = {}
-        for account in sorted(self.evaluated_accounts, key=lambda account: account.main_name.lower()):
-            for check in account.keywords:
-                accounts_by_check.setdefault(check.key, []).append(account)
-        return [Todo(check, accounts_by_check[key]) for key, check in CHECKS_BY_KEY.items() if key in accounts_by_check]
+        return self._todos(warning=False)
+
+    @property
+    def warning_todos(self) -> list[Todo]:
+        """Per check with warnings, the mains they concern - open, but no problem."""
+        return self._todos(warning=True)
+
+    @property
+    def listed_todos(self) -> list[Todo]:
+        """The to-do list's check groups: the problems, then the warnings."""
+        return self.todos + self.warning_todos
 
     @property
     def unregistered_names(self) -> str:
@@ -438,9 +514,7 @@ class Corporation:
         """The to-do list name by name, in the order of the page: the checks, the unregistered members, then
         eos-spy-network's markers where they were added for the viewer."""
         rows = [
-            TodoRow(todo.check.key, todo.check.label, account.main_name)
-            for todo in self.todos
-            for account in todo.accounts
+            TodoRow(todo.group, todo.label, account.main_name) for todo in self.listed_todos for account in todo.accounts
         ]
         rows += [
             TodoRow(UNREGISTERED, _("Not registered in Auth"), character["name"]) for character in self.unregistered
@@ -524,6 +598,8 @@ class Report:
         self.checks = [CHECKS_BY_KEY[key] for key in data["checks"] if key in CHECKS_BY_KEY]
         self.services = [SERVICES_BY_KEY[key] for key in data["services"] if key in SERVICES_BY_KEY]
         self.stale_after_days = data.get("stale_after_days")
+        # a snapshot from before the setting: every missing scope a problem, as it was built
+        self.critical_scope_count = data.get("critical_scope_count", 1)
         self.members_fetched = data.get("members_fetched", False)
         # set by add_spy_markers: the viewer may see eos-spy-network's markers
         self.spy_shown = False
@@ -575,7 +651,12 @@ class Report:
                     corporation_ticker=character["corporation_ticker"],
                     alliance_name=character["alliance_name"],
                     is_main=character["id"] == account["main_id"],
-                    problems=_problems(character["problems"]),
+                    problems=_problems(
+                        item for item in character["problems"] if not _is_warning(item, self.critical_scope_count)
+                    ),
+                    warnings=_problems(
+                        item for item in character["problems"] if _is_warning(item, self.critical_scope_count)
+                    ),
                 )
                 for character in account["characters"]
             ],

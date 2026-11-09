@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-07 17:57+0000\n"
-"PO-Revision-Date: 2026-11-07 17:57+0000\n"
+"POT-Creation-Date: 2026-11-09 15:06+0000\n"
+"PO-Revision-Date: 2026-11-09 15:06+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: de\n"
 "Language: de\n"
@@ -21,31 +21,31 @@ msgstr ""
 msgid "Auth Monitor"
 msgstr "Auth Monitor"
 
-#: checks.py:88
+#: checks.py:90
 msgid "corptools - Character Audit"
 msgstr "corptools - Character-Audit"
 
-#: checks.py:89
+#: checks.py:91
 msgid "corptools - Corporation Audit"
 msgstr "corptools - Corporation-Audit"
 
-#: checks.py:90
+#: checks.py:92
 msgid "aa-structures"
 msgstr "aa-structures"
 
-#: checks.py:101
+#: checks.py:103
 msgid "Audit missing"
 msgstr "Audit fehlt"
 
-#: checks.py:102
+#: checks.py:104
 msgid "The character has no corptools Character Audit."
 msgstr "Der Character hat kein corptools-Character-Audit."
 
-#: checks.py:103
+#: checks.py:105
 msgid "The player adds this character in the corptools Character Audit."
 msgstr "Der Spieler fügt diesen Character im corptools-Character-Audit hinzu."
 
-#: checks.py:105
+#: checks.py:107
 msgid ""
 "The player ticks Character Audit in CharLink and logs in with this "
 "character."
@@ -53,26 +53,26 @@ msgstr ""
 "Der Spieler setzt in CharLink den Haken bei Character Audit und loggt sich "
 "mit diesem Character ein."
 
-#: checks.py:106
+#: checks.py:108
 msgid "Tick Character Audit in CharLink and log in with this character."
 msgstr ""
 "Setze in CharLink den Haken bei Character Audit und logge dich mit diesem "
 "Character ein."
 
-#: checks.py:107
+#: checks.py:109
 msgid "Add this character in the corptools Character Audit."
 msgstr "Füge diesen Character im corptools-Character-Audit hinzu."
 
-#: checks.py:113
+#: checks.py:115
 msgid "Scopes missing"
 msgstr "Scopes fehlen"
 
-#: checks.py:114
+#: checks.py:116
 msgid "None of the character's tokens carries all scopes corptools asks for."
 msgstr ""
 "Keiner der Tokens des Characters trägt alle Scopes, die corptools verlangt."
 
-#: checks.py:116
+#: checks.py:118
 msgid ""
 "The player adds this character in the corptools Character Audit again and "
 "grants every scope it asks for."
@@ -80,7 +80,7 @@ msgstr ""
 "Der Spieler fügt diesen Character im corptools-Character-Audit erneut hinzu "
 "und erteilt alle verlangten Scopes."
 
-#: checks.py:121
+#: checks.py:123
 msgid ""
 "The player ticks Character Audit in CharLink, logs in with this character "
 "again and grants every scope it asks for."
@@ -88,7 +88,7 @@ msgstr ""
 "Der Spieler setzt in CharLink den Haken bei Character Audit, loggt sich "
 "erneut mit diesem Character ein und erteilt alle verlangten Scopes."
 
-#: checks.py:125
+#: checks.py:127
 msgid ""
 "Tick Character Audit in CharLink, log in with this character again and grant"
 " every scope it asks for."
@@ -96,7 +96,7 @@ msgstr ""
 "Setze in CharLink den Haken bei Character Audit, logge dich erneut mit "
 "diesem Character ein und erteile alle verlangten Scopes."
 
-#: checks.py:129
+#: checks.py:131
 msgid ""
 "Add this character in the corptools Character Audit again and grant every "
 "scope it asks for."
@@ -104,18 +104,18 @@ msgstr ""
 "Füge diesen Character im corptools-Character-Audit erneut hinzu und erteile "
 "alle verlangten Scopes."
 
-#: checks.py:137
+#: checks.py:139
 msgid "Audit inactive"
 msgstr "Audit inaktiv"
 
-#: checks.py:138
+#: checks.py:140
 msgid ""
 "corptools marks the audit inactive: a section has not updated for too long."
 msgstr ""
 "corptools markiert das Audit als inaktiv: Ein Abschnitt wurde zu lange nicht"
 " aktualisiert."
 
-#: checks.py:139
+#: checks.py:141
 msgid ""
 "The next corptools update usually clears this; if it stays, the player adds "
 "the character again."
@@ -123,7 +123,7 @@ msgstr ""
 "Meist behebt das die nächste corptools-Aktualisierung; bleibt es, fügt der "
 "Spieler den Character erneut hinzu."
 
-#: checks.py:142
+#: checks.py:144
 msgid ""
 "The next corptools update usually clears this; if it stays, the player ticks"
 " Character Audit in CharLink and logs in with this character again."
@@ -132,7 +132,7 @@ msgstr ""
 "Spieler in CharLink den Haken bei Character Audit und loggt sich erneut mit "
 "diesem Character ein."
 
-#: checks.py:146
+#: checks.py:148
 msgid ""
 "The next corptools update usually clears this; if it stays, tick Character "
 "Audit in CharLink and log in with this character again."
@@ -141,7 +141,7 @@ msgstr ""
 "CharLink den Haken bei Character Audit und logge dich erneut mit diesem "
 "Character ein."
 
-#: checks.py:149
+#: checks.py:151
 msgid ""
 "The next corptools update usually clears this; if it stays, add the "
 "character again."
@@ -149,11 +149,11 @@ msgstr ""
 "Meist behebt das die nächste corptools-Aktualisierung; bleibt es, füge den "
 "Character erneut hinzu."
 
-#: checks.py:155
+#: checks.py:157
 msgid "Director token missing"
 msgstr "Director-Token fehlt"
 
-#: checks.py:157
+#: checks.py:159
 msgid ""
 "The character is a Director of its Corporation, but none of its tokens "
 "carries all scopes corptools needs for the Corporation audit."
@@ -161,7 +161,7 @@ msgstr ""
 "Der Character ist Director seiner Corporation, aber keiner seiner Tokens "
 "trägt alle Scopes, die corptools für das Corporation-Audit braucht."
 
-#: checks.py:161
+#: checks.py:163
 msgid ""
 "The Director clicks Add Token in the corptools Corporation Audit, ticks "
 "every box and logs in with this character."
@@ -169,7 +169,7 @@ msgstr ""
 "Der Director klickt im corptools-Corporation-Audit auf Add Token, setzt alle"
 " Häkchen und loggt sich mit diesem Character ein."
 
-#: checks.py:166
+#: checks.py:168
 msgid ""
 "The Director ticks Corporation Audit in CharLink and logs in with this "
 "character."
@@ -177,13 +177,13 @@ msgstr ""
 "Der Director setzt in CharLink den Haken bei Corporation Audit und loggt "
 "sich mit diesem Character ein."
 
-#: checks.py:167
+#: checks.py:169
 msgid "Tick Corporation Audit in CharLink and log in with this character."
 msgstr ""
 "Setze in CharLink den Haken bei Corporation Audit und logge dich mit diesem "
 "Character ein."
 
-#: checks.py:169
+#: checks.py:171
 msgid ""
 "Click Add Token in the corptools Corporation Audit, tick every box and log "
 "in with this character."
@@ -191,20 +191,20 @@ msgstr ""
 "Klicke im corptools-Corporation-Audit auf Add Token, setze alle Häkchen und "
 "logge dich mit diesem Character ein."
 
-#: checks.py:180
+#: checks.py:182
 msgid "Corporation audit missing"
 msgstr "Corporation-Audit fehlt"
 
-#: checks.py:181
+#: checks.py:183
 msgid "The Corporation has no corptools Corporation Audit."
 msgstr "Die Corporation hat kein corptools-Corporation-Audit."
 
-#: checks.py:182
+#: checks.py:184
 msgid "A Director adds the Corporation in the corptools Corporation Audit."
 msgstr ""
 "Ein Director fügt die Corporation im corptools-Corporation-Audit hinzu."
 
-#: checks.py:184 checks.py:194
+#: checks.py:186 checks.py:196
 msgid ""
 "A Director ticks Corporation Audit in CharLink and logs in with the Director"
 " character."
@@ -212,11 +212,11 @@ msgstr ""
 "Ein Director setzt in CharLink den Haken bei Corporation Audit und loggt "
 "sich mit dem Director-Character ein."
 
-#: checks.py:190
+#: checks.py:192
 msgid "Corporation token missing"
 msgstr "Corporation-Token fehlt"
 
-#: checks.py:191
+#: checks.py:193
 msgid ""
 "No character of the Corporation has a token with the scopes the Corporation "
 "audit needs."
@@ -224,24 +224,24 @@ msgstr ""
 "Kein Character der Corporation hat einen Token mit den Scopes, die das "
 "Corporation-Audit braucht."
 
-#: checks.py:192
+#: checks.py:194
 msgid ""
 "A Director adds a Corporation token in the corptools Corporation Audit."
 msgstr ""
 "Ein Director fügt im corptools-Corporation-Audit einen Corporation-Token "
 "hinzu."
 
-#: checks.py:200
+#: checks.py:202
 msgid "Corporation data stale"
 msgstr "Corporation-Daten veraltet"
 
-#: checks.py:201
+#: checks.py:203
 msgid "A section of the Corporation audit has not updated within the limit."
 msgstr ""
 "Ein Abschnitt des Corporation-Audits wurde nicht innerhalb der Frist "
 "aktualisiert."
 
-#: checks.py:203
+#: checks.py:205
 msgid ""
 "A Director checks the Corporation token in the corptools Corporation Audit "
 "and adds a new one if it lost its roles."
@@ -249,7 +249,7 @@ msgstr ""
 "Ein Director prüft den Corporation-Token im corptools-Corporation-Audit und "
 "fügt einen neuen hinzu, falls er seine Rollen verloren hat."
 
-#: checks.py:208
+#: checks.py:210
 msgid ""
 "A Director ticks Corporation Audit in CharLink and logs in again with the "
 "Director character; the old token may have lost its roles."
@@ -258,15 +258,15 @@ msgstr ""
 "sich erneut mit dem Director-Character ein; der alte Token hat womöglich "
 "seine Rollen verloren."
 
-#: checks.py:216
+#: checks.py:218
 msgid "No structure owner"
 msgstr "Kein Structure-Owner"
 
-#: checks.py:217
+#: checks.py:219
 msgid "The Corporation is not set up as an owner in aa-structures."
 msgstr "Die Corporation ist in aa-structures nicht als Owner eingerichtet."
 
-#: checks.py:218
+#: checks.py:220
 msgid ""
 "A character with the Station Manager role adds the Corporation as an owner "
 "in aa-structures."
@@ -274,7 +274,7 @@ msgstr ""
 "Ein Character mit der Rolle Station Manager fügt die Corporation in aa-"
 "structures als Owner hinzu."
 
-#: checks.py:220 checks.py:238
+#: checks.py:222 checks.py:240
 msgid ""
 "A character with the Station Manager role ticks Structures in CharLink and "
 "logs in."
@@ -282,31 +282,31 @@ msgstr ""
 "Ein Character mit der Rolle Station Manager setzt in CharLink den Haken bei "
 "Structures und loggt sich ein."
 
-#: checks.py:226
+#: checks.py:228
 msgid "Structure owner inactive"
 msgstr "Structure-Owner inaktiv"
 
-#: checks.py:227
+#: checks.py:229
 msgid "The aa-structures owner of the Corporation is switched off."
 msgstr "Der aa-structures-Owner der Corporation ist ausgeschaltet."
 
-#: checks.py:228
+#: checks.py:230
 msgid "An admin switches the owner on again in the aa-structures admin."
 msgstr ""
 "Ein Admin schaltet den Owner in der aa-structures-Verwaltung wieder ein."
 
-#: checks.py:234
+#: checks.py:236
 msgid "No structure owner character"
 msgstr "Kein Structure-Owner-Character"
 
-#: checks.py:235
+#: checks.py:237
 msgid ""
 "The aa-structures owner has no enabled character left to fetch data with."
 msgstr ""
 "Dem aa-structures-Owner ist kein aktivierter Character mehr geblieben, mit "
 "dem Daten abgerufen werden können."
 
-#: checks.py:236
+#: checks.py:238
 msgid ""
 "A character with the Station Manager role adds itself to the owner in aa-"
 "structures."
@@ -314,15 +314,15 @@ msgstr ""
 "Ein Character mit der Rolle Station Manager fügt sich in aa-structures dem "
 "Owner hinzu."
 
-#: checks.py:244
+#: checks.py:246
 msgid "Structure sync failing"
 msgstr "Structure-Sync schlägt fehl"
 
-#: checks.py:245
+#: checks.py:247
 msgid "aa-structures reports a sync that is not up to date."
 msgstr "aa-structures meldet einen Sync, der nicht aktuell ist."
 
-#: checks.py:246
+#: checks.py:248
 msgid ""
 "Check the owner in aa-structures: its characters may have lost the Station "
 "Manager role."
@@ -330,7 +330,7 @@ msgstr ""
 "Den Owner in aa-structures prüfen: Seine Characters haben womöglich die "
 "Rolle Station Manager verloren."
 
-#: checks.py:249
+#: checks.py:251
 msgid ""
 "A character with the Station Manager role ticks Structures in CharLink and "
 "logs in again; the owner's characters may have lost the role."
@@ -339,19 +339,19 @@ msgstr ""
 "Structures und loggt sich erneut ein; die Characters des Owners haben "
 "womöglich die Rolle verloren."
 
-#: checks.py:257
+#: checks.py:259
 msgid "Discord"
 msgstr "Discord"
 
-#: checks.py:258
+#: checks.py:260
 msgid "Mumble"
 msgstr "Mumble"
 
-#: checks.py:259
+#: checks.py:261
 msgid "QQ"
 msgstr "QQ"
 
-#: checks.py:263
+#: checks.py:265
 msgid "Telegram"
 msgstr "Telegram"
 
@@ -395,21 +395,21 @@ msgstr "Corporation-Audit: benötigte Scopes"
 msgid "One token of a Corporation member must carry all of these."
 msgstr "Ein Token eines Corporation-Mitglieds muss alle diese tragen."
 
-#: forms.py:57 models.py:33 templates/eos_auth_monitor/account.html:65
+#: forms.py:57 models.py:34 templates/eos_auth_monitor/account.html:65
 #: templates/eos_auth_monitor/settings.html:11
 msgctxt "EVE jargon"
 msgid "Alliance"
 msgstr "Alliance"
 
-#: models.py:34
+#: models.py:35
 msgid "The Alliance whose accounts and Corporations are monitored."
 msgstr "Die Alliance, deren Accounts und Corporations überwacht werden."
 
-#: models.py:41
+#: models.py:42
 msgid "Stale after (days)"
 msgstr "Veraltet nach (Tagen)"
 
-#: models.py:43
+#: models.py:44
 msgid ""
 "Days after which a section of the corptools Corporation audit counts as "
 "stale. Empty: the same limit corptools uses for characters."
@@ -417,11 +417,25 @@ msgstr ""
 "Tage, nach denen ein Abschnitt des corptools-Corporation-Audits als veraltet"
 " gilt. Leer: dieselbe Frist, die corptools für Characters verwendet."
 
-#: models.py:59
+#: models.py:61
+msgid "Scopes missing: a problem from"
+msgstr "Scopes fehlen: ein Problem ab"
+
+#: models.py:63
+msgid ""
+"A character lacking at least this many Character Audit scopes is a problem. "
+"Fewer is only a warning: shown, but no problem on the overview. 1: every "
+"missing scope is a problem."
+msgstr ""
+"Fehlen einem Character mindestens so viele Scopes des Character-Audits, ist "
+"das ein Problem. Weniger ist nur eine Warnung: angezeigt, aber kein Problem "
+"in der Übersicht. 1: jeder fehlende Scope ist ein Problem."
+
+#: models.py:69
 msgid "Fetch data from ESI"
 msgstr "Daten von ESI abrufen"
 
-#: models.py:61
+#: models.py:71
 msgid ""
 "Reads each Corporation's member list and Director roles with tokens "
 "corptools already has, to show members that are not registered in Auth and "
@@ -431,11 +445,11 @@ msgstr ""
 "Tokens, die corptools bereits hat, um Mitglieder zu zeigen, die nicht in "
 "Auth registriert sind, und Director ohne Token."
 
-#: models.py:67
+#: models.py:77
 msgid "Only characters in the Alliance"
 msgstr "Nur Characters in der Alliance"
 
-#: models.py:69
+#: models.py:79
 msgid ""
 "Checks, shows and counts only the characters of an account that are in the "
 "Alliance; alts elsewhere are left out."
@@ -443,11 +457,11 @@ msgstr ""
 "Prüft, zeigt und zählt nur die Characters eines Accounts, die in der "
 "Alliance sind; Alts anderswo werden weggelassen."
 
-#: models.py:75 templates/eos_auth_monitor/settings.html:25
+#: models.py:85 templates/eos_auth_monitor/settings.html:28
 msgid "Notice to members"
 msgstr "Hinweis an die Mitglieder"
 
-#: models.py:76
+#: models.py:86
 msgid ""
 "Shown as an info box on My account and My Corporation. Leave it empty to "
 "show none."
@@ -455,16 +469,16 @@ msgstr ""
 "Wird als Infobox auf Mein Account und Meine Corporation angezeigt. Leer "
 "lassen, um keine anzuzeigen."
 
-#: models.py:81 models.py:84
+#: models.py:91 models.py:94
 msgid "Configuration"
 msgstr "Konfiguration"
 
-#: models.py:118
+#: models.py:128
 msgid "Pass accounts whose characters HAVE problems instead of those without."
 msgstr ""
 "Accounts durchlassen, deren Characters Probleme HABEN, statt solcher ohne."
 
-#: models.py:122
+#: models.py:132
 msgid "Smart Filter: Auth Monitor character problems"
 msgstr "Smart Filter: Auth-Monitor-Character-Probleme"
 
@@ -512,38 +526,43 @@ msgid_plural "and %(count)d more"
 msgstr[0] "und %(count)d weiterer"
 msgstr[1] "und %(count)d weitere"
 
-#: report.py:446 templates/eos_auth_monitor/corporation.html:66
-#: templates/eos_auth_monitor/corporation.html:205
+#: report.py:292
+#, python-format
+msgid "%(check)s (warning)"
+msgstr "%(check)s (Warnung)"
+
+#: report.py:520 templates/eos_auth_monitor/corporation.html:66
+#: templates/eos_auth_monitor/corporation.html:209
 #: templates/eos_auth_monitor/dashboard.corporation.html:33
 msgid "Not registered in Auth"
 msgstr "Nicht in Auth registriert"
 
-#: report.py:453 templates/eos_auth_monitor/account.html:103
-#: templates/eos_auth_monitor/account.html:105
+#: report.py:527 templates/eos_auth_monitor/account.html:112
+#: templates/eos_auth_monitor/account.html:114
 #: templates/eos_auth_monitor/corporation.html:96
 #: templates/eos_auth_monitor/partials/gm-tile.html:7
 #: templates/eos_auth_monitor/partials/gm-tile.html:9
 msgid "GM transactions"
 msgstr "GM-Transaktionen"
 
-#: report.py:495
+#: report.py:569
 msgid "Registered in Auth"
 msgstr "In Auth registriert"
 
-#: report.py:500 templates/eos_auth_monitor/character_audit.html:8
+#: report.py:574 templates/eos_auth_monitor/character_audit.html:8
 #: templates/eos_auth_monitor/character_audit.html:20 views.py:293
 msgid "Character Audit"
 msgstr "Character-Audit"
 
-#: report.py:779
+#: report.py:860
 msgid "Members registered"
 msgstr "Mitglieder registriert"
 
-#: report.py:792
+#: report.py:873
 msgid "Character Audit complete"
 msgstr "Character-Audit vollständig"
 
-#: report.py:804
+#: report.py:885
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s funktioniert"
@@ -604,26 +623,26 @@ msgstr "Corporation"
 msgid "Problems"
 msgstr "Probleme"
 
-#: templates/eos_auth_monitor/account.html:95
+#: templates/eos_auth_monitor/account.html:104
 #: templates/eos_auth_monitor/partials/spy-tile.html:7
 #: templates/eos_auth_monitor/partials/spy-tile.html:10
 msgid "Spy network"
 msgstr "Spy Network"
 
-#: templates/eos_auth_monitor/account.html:104
+#: templates/eos_auth_monitor/account.html:113
 msgid "A GM moved ISK for this character."
 msgstr "Ein GM hat ISK für diesen Character bewegt."
 
-#: templates/eos_auth_monitor/account.html:115
+#: templates/eos_auth_monitor/account.html:124
 msgid "None of your characters has a problem."
 msgstr "Keiner deiner Characters hat ein Problem."
 
-#: templates/eos_auth_monitor/account.html:115
-#: templates/eos_auth_monitor/dashboard.own.html:31
+#: templates/eos_auth_monitor/account.html:124
+#: templates/eos_auth_monitor/dashboard.own.html:39
 msgid "No character of this account has a problem."
 msgstr "Kein Character dieses Accounts hat ein Problem."
 
-#: templates/eos_auth_monitor/account.html:123
+#: templates/eos_auth_monitor/account.html:132
 #, python-format
 msgctxt "EVE jargon"
 msgid "%(counter)s character without problems"
@@ -631,7 +650,7 @@ msgid_plural "%(counter)s characters without problems"
 msgstr[0] "%(counter)s Character ohne Probleme"
 msgstr[1] "%(counter)s Characters ohne Probleme"
 
-#: templates/eos_auth_monitor/account.html:130
+#: templates/eos_auth_monitor/account.html:139
 #: templates/eos_auth_monitor/character_audit.html:18
 #: templates/eos_auth_monitor/corporation_service.html:18
 #: templates/eos_auth_monitor/directors.html:30
@@ -641,7 +660,7 @@ msgctxt "EVE jargon"
 msgid "Main"
 msgstr "Main"
 
-#: templates/eos_auth_monitor/account.html:144
+#: templates/eos_auth_monitor/account.html:153
 #, python-format
 msgctxt "EVE jargon"
 msgid ""
@@ -657,7 +676,7 @@ msgstr[1] ""
 "%(counter)s deiner Characters sind außerhalb der Alliance und werden hier "
 "weder angezeigt noch geprüft."
 
-#: templates/eos_auth_monitor/account.html:146
+#: templates/eos_auth_monitor/account.html:155
 #, python-format
 msgctxt "EVE jargon"
 msgid ""
@@ -728,14 +747,15 @@ msgstr "Ein GM hat ISK für einen Character dieser Mains bewegt."
 msgid "Mains of this Corporation"
 msgstr "Mains dieser Corporation"
 
-#: templates/eos_auth_monitor/corporation.html:132
+#: templates/eos_auth_monitor/corporation.html:133
 #, python-format
 msgctxt "EVE jargon"
 msgid "Main in %(corporation)s"
 msgstr "Main in %(corporation)s"
 
-#: templates/eos_auth_monitor/corporation.html:136
+#: templates/eos_auth_monitor/corporation.html:137
 #: templates/eos_auth_monitor/dashboard.own.html:23
+#: templates/eos_auth_monitor/dashboard.own.html:31
 #, python-format
 msgctxt "EVE jargon"
 msgid "%(counter)s character"
@@ -743,19 +763,19 @@ msgid_plural "%(counter)s characters"
 msgstr[0] "%(counter)s Character"
 msgstr[1] "%(counter)s Characters"
 
-#: templates/eos_auth_monitor/corporation.html:156
+#: templates/eos_auth_monitor/corporation.html:160
 msgid "Without problems"
 msgstr "Ohne Probleme"
 
-#: templates/eos_auth_monitor/corporation.html:172
+#: templates/eos_auth_monitor/corporation.html:176
 msgid "No main of this Corporation is registered in Auth."
 msgstr "Kein Main dieser Corporation ist in Auth registriert."
 
-#: templates/eos_auth_monitor/corporation.html:176
+#: templates/eos_auth_monitor/corporation.html:180
 msgid "Members whose main is in another Corporation"
 msgstr "Mitglieder, deren Main in einer anderen Corporation ist"
 
-#: templates/eos_auth_monitor/corporation.html:200
+#: templates/eos_auth_monitor/corporation.html:204
 msgid ""
 "The member list of this Corporation could not be read: no member has a token"
 " with the membership scope."
@@ -784,7 +804,7 @@ msgid "Nothing to do."
 msgstr "Nichts zu tun."
 
 #: templates/eos_auth_monitor/dashboard.corporation.html:47
-#: templates/eos_auth_monitor/dashboard.own.html:37
+#: templates/eos_auth_monitor/dashboard.own.html:45
 msgid "View details"
 msgstr "Details anzeigen"
 
@@ -1003,6 +1023,10 @@ msgid_plural "+ %(counter)s Corporation problems"
 msgstr[0] "+ %(counter)s Corporation-Problem"
 msgstr[1] "+ %(counter)s Corporation-Probleme"
 
+#: templates/eos_auth_monitor/partials/problem-marker.html:3
+msgid "Warnings"
+msgstr "Warnungen"
+
 #: templates/eos_auth_monitor/partials/spy-tile.html:8
 msgid "Characters with markers"
 msgstr "Characters mit Markern"
@@ -1060,16 +1084,16 @@ msgstr "Fortschritt des Neuaufbaus"
 msgid "%(part)s of %(total)s mains linked"
 msgstr "%(part)s von %(total)s Mains verknüpft"
 
-#: templates/eos_auth_monitor/settings.html:52
+#: templates/eos_auth_monitor/settings.html:55
 msgctxt "eos-auth-monitor"
 msgid "Services"
 msgstr "Dienste"
 
-#: templates/eos_auth_monitor/settings.html:67
+#: templates/eos_auth_monitor/settings.html:70
 msgid "corptools: what the checks count"
 msgstr "corptools: was die Prüfungen zählen"
 
-#: templates/eos_auth_monitor/settings.html:71
+#: templates/eos_auth_monitor/settings.html:74
 msgid ""
 "Untick what the Alliance does not use, e.g. Moon Observations and the mining"
 " scope for an Alliance without moons. A section and its scope are separate "
@@ -1079,12 +1103,12 @@ msgstr ""
 "Mining-Scope für eine Alliance ohne Monde. Ein Abschnitt und sein Scope sind"
 " getrennte Einträge."
 
-#: templates/eos_auth_monitor/settings.html:89
+#: templates/eos_auth_monitor/settings.html:92
 msgid "None of the apps the checks and services read from is installed."
 msgstr ""
 "Keine der Apps, aus denen die Prüfungen und Dienste lesen, ist installiert."
 
-#: templates/eos_auth_monitor/settings.html:93
+#: templates/eos_auth_monitor/settings.html:96
 msgctxt "eos-auth-monitor"
 msgid "Save"
 msgstr "Speichern"

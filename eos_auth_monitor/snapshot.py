@@ -357,6 +357,7 @@ def build(config, on_step=_no_progress) -> dict | None:
         "checks": keys,
         "services": services,
         "stale_after_days": stale_days,
+        "critical_scope_count": config.critical_scope_count,
         "members_fetched": bool(config.fetch_members),
         "corporations": sorted(
             (

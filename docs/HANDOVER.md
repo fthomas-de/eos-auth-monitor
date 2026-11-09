@@ -477,6 +477,27 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   or Structures checks run (`director_lists`) - without them, or where no
   roles could be read, no crown and no hint. Display only, no problem.
 
+2026-11-09 (unreleased):
+
+- **Scope warnings** ("erlaube ein setting für eine kritische anzahl scope
+  fehler und weniger kritische ... in der corp details ansicht aber schon
+  gelistet mit entsprechend eingefärbten rand"): setting
+  `critical_scope_count` (migration 0009), copied into the snapshot;
+  `report._is_warning` puts a *Scopes missing* below it into
+  `Character.warnings` instead of `problems`, so every problem rule stays as
+  it was and the overview ignores warnings by itself. The user's answers:
+  **only Scopes missing** (`checks.WARNING_CHECK`; Director token missing
+  stays a problem); **default 5**; a warned character counts as **complete**
+  in the Character Audit percentages; the **dashboard widgets** turn yellow
+  (`border-warning`) and the **smart filter** passes. Colour: Bootstrap's
+  `warning`, the same as the spy markers (the user asked for "standard warn
+  farbe"). Corporation page: card `border-warning` for a main with warnings
+  and no problem, red as soon as it has one; to-do group
+  `char_scopes_missing_warning` ("Scopes missing (warning)", `Todo.warning`,
+  `Corporation.listed_todos`); the to-do card keeps its red border. A snapshot
+  without the key rates every missing scope a problem (threshold 1) until
+  rebuilt.
+
 ## Pitfalls found
 
 - `CharacterAudit.is_active()` **saves** the audit. "Audit inactive" is
@@ -594,6 +615,12 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   apostrophe as `'`, not `&#x27;` - assert on the plain text.
 
 ## Open points / next steps
+
+- **Scope warnings not seen in a browser**, nor the yellow in AA's dark
+  theme. In dev they show only after *Rebuild now* (the stored snapshot has no
+  threshold and rates every missing scope a problem). Two new messages for
+  the glossary at `/commit`: "%(check)s (warning)", "Warnings", plus the
+  setting's label and help text.
 
 - **Director crown not seen in a browser**: a long main name may run under
   the corner crown on a card (no padding reserved); `text-warning` in AA's

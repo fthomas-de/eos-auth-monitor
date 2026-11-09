@@ -1,5 +1,6 @@
 from solo.models import SingletonModel
 
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import pgettext_lazy
@@ -54,6 +55,15 @@ class MonitorConfiguration(SingletonModel):
     excluded_character_scopes = models.JSONField(default=list, blank=True)
     excluded_corporation_sections = models.JSONField(default=list, blank=True)
     excluded_corporation_scopes = models.JSONField(default=list, blank=True)
+    critical_scope_count = models.PositiveSmallIntegerField(
+        default=5,
+        validators=[MinValueValidator(1)],
+        verbose_name=_("Scopes missing: a problem from"),
+        help_text=_(
+            "A character lacking at least this many Character Audit scopes is a problem. "
+            "Fewer is only a warning: shown, but no problem on the overview. 1: every missing scope is a problem."
+        ),
+    )
     fetch_members = models.BooleanField(
         default=True,
         verbose_name=_("Fetch data from ESI"),

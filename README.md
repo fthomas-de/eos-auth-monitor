@@ -169,6 +169,17 @@ settings.
 | Audit inactive | a section corptools counts has not updated for longer than `CT_CHAR_MAX_INACTIVE_DAYS`, minus the sections left out in the settings; the detail names them |
 | Director token missing | the character is in the Alliance, corptools has read its roles and it is a Director, but none of its tokens carries all scopes of the Corporation audit (`CORP_REQUIRED_SCOPES` plus the roles scope), minus the Corporation scopes left out in the settings; the detail names what the most complete token lacks. The Directors come from the roles corptools read and, with *Fetch data from ESI* on, from ESI (see [ESI](#esi)), which also names Directors without any token |
 
+*Scopes missing* is a problem only from the number of missing scopes set as
+*Scopes missing: a problem from* (5 by default). Fewer is a **warning**: it
+shows in the warning colour on the Corporation page (a card with a yellow
+border and a to-do group of its own, *Scopes missing (warning)*, also in the
+CSV export), on the account page, on *My account* and in the dashboard
+widgets (a yellow border while there is nothing worse), but it is no problem
+anywhere: not on the overview, in the cockpit, the percentages, the problem
+counts, the sorting, the Character Audit list or the smart filter. A main with
+a warning and any problem keeps its red card. *Director token missing* stays
+a problem with any number of scopes.
+
 A Corporation where no Director's token could read the roles (the ESI call in
 [ESI](#esi) found no token, or none worked) carries a small info mark beside
 its name, *No Director token* as its tooltip, on the overview and its page:
@@ -368,6 +379,7 @@ put in `local.py`.
 |---|---|
 | Alliance | The Alliance whose accounts and Corporations are monitored; a searchable dropdown of the Alliances Auth knows |
 | Stale after (days) | When a section of the corptools Corporation audit counts as stale. Empty (the default): the same limit corptools uses for characters, `CT_CHAR_MAX_INACTIVE_DAYS` |
+| Scopes missing: a problem from | How many Character Audit scopes a character must lack for *Scopes missing* to be a problem; fewer is a warning (see [corptools - Character Audit](#corptools---character-audit)). 5 by default, 1 rates every missing scope a problem; only with corptools installed |
 | Fetch data from ESI | See [ESI](#esi); on by default |
 | Only characters in the Alliance | Leaves out every character of an account that is not in the Alliance - in the checks, the pages and the counts (see [How accounts are counted](#how-accounts-are-counted)); off by default |
 | Checks | One switch per check, grouped by app |

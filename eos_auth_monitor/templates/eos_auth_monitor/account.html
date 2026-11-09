@@ -84,6 +84,15 @@
                                                 {% include "eos_auth_monitor/partials/problem-hint.html" with charlink=charlink_url %}
                                             </div>
                                         {% endfor %}
+                                        {# below the setting's threshold: to be done, but no problem #}
+                                        {% for problem in character.warnings %}
+                                            <div class="mb-2 eos-auth-monitor-warning">
+                                                <span class="badge text-bg-warning text-wrap">{{ problem.check.label }}</span>
+                                                <span class="small text-body-secondary">{{ problem.check.description }}</span>
+                                                {% if problem.detail %}<div class="small text-break"{% if problem.full_detail %} title="{{ problem.full_detail }}"{% endif %}>{{ problem.detail }}</div>{% endif %}
+                                                {% include "eos_auth_monitor/partials/problem-hint.html" with charlink=charlink_url %}
+                                            </div>
+                                        {% endfor %}
                                         {# eos-spy-network's markers, for its viewers only; it ranks them by the main's Corporation #}
                                         {% for marker in character.spy %}
                                             <div class="mb-2 eos-auth-monitor-spy-marker">

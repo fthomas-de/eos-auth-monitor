@@ -758,7 +758,12 @@ class TestSettings(ViewTestCase):
 
     def test_should_store_the_switched_off_checks_and_rebuild(self):
         alliance = make_alliance(ALLIANCE_ID + 5)
-        data = {"alliance": alliance.pk, "stale_after_days": "7", "check_char_audit_missing": "on"}
+        data = {
+            "alliance": alliance.pk,
+            "stale_after_days": "7",
+            "critical_scope_count": "5",
+            "check_char_audit_missing": "on",
+        }
 
         response, task = self.post(data)
 
@@ -775,7 +780,7 @@ class TestSettings(ViewTestCase):
         self.assertContains(response, 'name="alliance_characters_only"')
         self.assertFalse(MonitorConfiguration.get_solo().alliance_characters_only)
 
-        self.post({"alliance": make_alliance().pk, "alliance_characters_only": "on"})
+        self.post({"alliance": make_alliance().pk, "critical_scope_count": "5", "alliance_characters_only": "on"})
 
         self.assertTrue(MonitorConfiguration.get_solo().alliance_characters_only)
 
@@ -795,6 +800,7 @@ class TestSettings(ViewTestCase):
         self.post(
             {
                 "alliance": make_alliance().pk,
+                "critical_scope_count": "5",
                 "corporation_sections": sections,
                 "corporation_scopes": scopes,
                 "character_sections": [key for key in corptools.character_sections()],
@@ -811,7 +817,10 @@ class TestSettings(ViewTestCase):
     def test_should_keep_the_state_of_checks_whose_app_is_missing(self):
         configure(disabled_checks=["structures_no_owner"])
 
-        self.post({"alliance": make_alliance().pk})
+        # a valid form, or nothing is stored and the state stays whatever the code does
+        response, _task = self.post({"alliance": make_alliance().pk, "critical_scope_count": "5"})
+
+        self.assertEqual(response.status_code, 302)
 
         self.assertIn("structures_no_owner", MonitorConfiguration.get_solo().disabled_checks)
 
@@ -834,6 +843,20 @@ class TestSettings(ViewTestCase):
         _response, task = self.post(self.unchanged(member_notice="Read the wiki.", alliance_characters_only=True))
 
         task.delay.assert_called_once_with()
+
+    def test_should_offer_and_store_the_scope_threshold(self):
+        self.assertContains(self.get(self.admin, "settings"), 'name="critical_scope_count" value="5"')
+
+        _response, task = self.post(self.unchanged(critical_scope_count=3))
+
+        self.assertEqual(MonitorConfiguration.get_solo().critical_scope_count, 3)
+        task.delay.assert_called_once_with()
+
+    def test_should_refuse_a_scope_threshold_below_one(self):
+        response, _task = self.post(self.unchanged(critical_scope_count=0))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(MonitorConfiguration.get_solo().critical_scope_count, 5)
 
     def test_should_store_a_notice_of_blanks_empty(self):
         configure(member_notice="Old")
@@ -899,6 +922,67 @@ class TestScopeDetail(ViewTestCase):
         self.assertContains(
             response, 'title="esi-a.v1, esi-b.v1, esi-c.v1, esi-d.v1">esi-a.v1, esi-b.v1 and 2 more</div>'
         )
+
+
+class TestScopeWarnings(ViewTestCase):
+    """Account 11 of 2001 lacks two scopes, below the threshold of 3: a warning, not a problem."""
+
+    WARNING_CARD = "border-warning eos-auth-monitor-warning-card"
+
+    def setUp(self):
+        super().setUp()
+        self.snapshot = Snapshot.objects.get()
+        self.snapshot.data["critical_scope_count"] = 3
+        self.snapshot.data["checks"] = ["char_audit_missing", "char_scopes_missing"]
+        self.snapshot.data["corporations"][0]["accounts"][0]["characters"] = [
+            character_row(1101, [{"check": "char_scopes_missing", "detail": ["esi-a.v1", "esi-b.v1"]}])
+        ]
+        self.snapshot.save()
+
+    def test_should_show_the_warned_main_as_a_warning_card_and_to_do(self):
+        response = self.get(self.leader, "corporation", 2001)
+        html = response.content.decode()
+
+        self.assertRegex(html, re.compile(self.WARNING_CARD + r'">(?:(?!class="col").)*Char 1101', re.DOTALL))
+        self.assertRegex(html, r'eos-auth-monitor-warning-todo">\s*<div[^>]*>\s*<span class="badge text-bg-warning')
+        self.assertContains(response, "Scopes missing (warning)")
+        self.assertContains(response, "group=char_scopes_missing_warning")
+        # its only main is warned: no *Without problems* list
+        self.assertNotIn("eos-auth-monitor-problem-free", html)
+
+    def test_should_keep_the_card_red_with_another_problem(self):
+        characters = self.snapshot.data["corporations"][0]["accounts"][0]["characters"]
+        characters.append(character_row(1102, [AUDIT_MISSING]))
+        self.snapshot.save()
+
+        response = self.get(self.leader, "corporation", 2001)
+
+        self.assertNotContains(response, self.WARNING_CARD)
+        self.assertRegex(
+            response.content.decode(), re.compile(r'border-danger">(?:(?!class="col").)*Char 1101', re.DOTALL)
+        )
+
+    def test_should_not_count_the_warning_on_the_overview(self):
+        response = self.get(self.leader, "index")
+
+        # 2002's tile and table line have a problem; 2001's warning makes neither
+        self.assertContains(response, 'data-eos-auth-monitor-problems="1"', count=2)
+        self.assertContains(response, 'data-eos-auth-monitor-problems="0"', count=2)
+
+    def test_should_show_the_warning_on_the_account_page(self):
+        response = self.get(self.leader, "account", 11)
+
+        self.assertContains(response, '<span class="badge text-bg-warning text-wrap">Scopes missing</span>')
+        self.assertContains(response, "eos-auth-monitor-warning-marker")
+        self.assertNotContains(response, '<span class="badge text-bg-danger text-wrap">Scopes missing</span>')
+
+    def test_should_export_the_warnings_as_a_group(self):
+        self.client.force_login(self.leader)
+        url = reverse("eos_auth_monitor:corporation_export", args=[2001])
+
+        response = self.client.get(url, {"group": "char_scopes_missing_warning"})
+
+        self.assertEqual(list(csv.reader(io.StringIO(response.content.decode("utf-8-sig")))), [["Name"], ["Char 1101"]])
 
 
 class TestOwnAccount(ViewTestCase):
@@ -1183,7 +1267,7 @@ class TestBrokerDown(ViewTestCase):
     def test_should_save_the_settings_and_say_the_rebuild_waits(self):
         alliance = make_alliance(ALLIANCE_ID + 7)
 
-        response = self.post(self.admin, "settings", {"alliance": alliance.pk})
+        response = self.post(self.admin, "settings", {"alliance": alliance.pk, "critical_scope_count": "5"})
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(MonitorConfiguration.get_solo().alliance, alliance)

@@ -189,6 +189,36 @@ class TestCorporationWidget(DashboardTestCase):
         self.assertEqual(render(dashboard_corporation, self.ceo), "")
 
 
+class TestScopeWarnings(DashboardTestCase):
+    """2002's member lacks one scope, below the threshold of 3: both widgets turn to the warning colour."""
+
+    def setUp(self):
+        super().setUp()
+        self.warned = make_user("warned", VIEW_OWN, corporation_id=2002)
+        main_id = self.warned.profile.main_character.character_id
+        self.snapshot.data["critical_scope_count"] = 3
+        self.snapshot.data["corporations"][1]["accounts"] = [
+            account_row(self.warned.pk, main_id, [character_row(main_id, [SCOPES_MISSING], 2002)], corporation_id=2002)
+        ]
+        self.snapshot.save()
+
+    def test_should_show_the_own_warning_in_the_warning_colour(self):
+        html = render(dashboard_own, self.warned)
+
+        self.assertIn('class="card h-100 border-warning"', html)
+        self.assertRegex(html, r'text-bg-warning text-wrap"[^>]*>Scopes missing</span>\s*<span[^>]*>\s*1 character\s*<')
+
+    def test_should_show_the_corporation_warning_in_the_warning_colour(self):
+        html = render(dashboard_corporation, make_user("ceo2", BASIC_ACCESS, corporation_id=2002))
+
+        self.assertIn('class="card h-100 border-warning"', html)
+        self.assertRegex(html, r'text-bg-warning text-wrap"[^>]*>Scopes missing \(warning\)</span>\s*<span[^>]*>Mains: 1<')
+
+    def test_should_keep_the_widgets_red_with_a_problem_beside_the_warning(self):
+        self.assertIn('class="card h-100 border-danger"', render(dashboard_own, self.member))
+        self.assertIn('class="card h-100 border-danger"', render(dashboard_corporation, self.ceo))
+
+
 class TestDashboardPage(DashboardTestCase):
     def test_should_show_both_widgets_on_alliance_auths_dashboard(self):
         # the member of the snapshot, as their Corporation's CEO as well

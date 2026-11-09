@@ -1,4 +1,4 @@
 """Problem accounts and Corporations of an Alliance, read from other Alliance Auth apps."""
 
-__version__ = "0.0.18"
+__version__ = "0.0.19"
 VERSION = __version__

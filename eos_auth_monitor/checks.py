@@ -13,6 +13,8 @@ CHARACTER = "character"
 CORPORATION = "corporation"
 
 SOVEREIGNTY_SCOPE = "esi-structures.read_corporation.v1"
+# the check whose problem is only a warning below the setting's number of missing scopes
+WARNING_CHECK = "char_scopes_missing"
 
 
 @dataclass(frozen=True)

@@ -645,3 +645,108 @@ class TestSpyMarkers(MonitorTestCase):
 
         # 1103 before 1102 for its second marker, though the name would put it after
         self.assertEqual([character.id for character in account.listed_characters], [1101, 1103, 1102])
+
+
+class TestScopeWarnings(MonitorTestCase):
+    """Scopes missing below the setting's threshold (3 here) is a warning: shown, counted nowhere."""
+
+    TWO = {"check": "char_scopes_missing", "detail": ["a", "b"]}
+    THREE = {"check": "char_scopes_missing", "detail": ["a", "b", "c"]}
+    CHECKS = ["char_audit_missing", "char_scopes_missing", "char_director_token_missing"]
+
+    def found(self, threshold=3, director=()):
+        data = snapshot_data(
+            [
+                corporation_row(
+                    2001,
+                    [
+                        account_row(11, 1101, [character_row(1101, [self.TWO]), character_row(1102)]),
+                        account_row(12, 1201, [character_row(1201, [self.THREE])]),
+                        account_row(13, 1301, [character_row(1301, [self.TWO]), character_row(1302, [AUDIT_MISSING])]),
+                        account_row(14, 1401, [character_row(1401, list(director))]),
+                    ],
+                ),
+                corporation_row(
+                    2002, [account_row(21, 2101, [character_row(2101, [self.TWO], 2002)], corporation_id=2002)]
+                ),
+            ],
+            checks=self.CHECKS,
+        )
+        if threshold is not None:
+            data["critical_scope_count"] = threshold
+        return Report(store_snapshot(data))
+
+    @staticmethod
+    def keys(problems):
+        return [problem.check.key for problem in problems]
+
+    def test_should_warn_below_the_threshold_and_fail_from_it(self):
+        found = self.found()
+        warned = found.account(11)[1].characters[0]
+        failed = found.account(12)[1].characters[0]
+
+        self.assertEqual((self.keys(warned.problems), self.keys(warned.warnings)), ([], ["char_scopes_missing"]))
+        self.assertEqual((self.keys(failed.problems), self.keys(failed.warnings)), (["char_scopes_missing"], []))
+
+    def test_should_fail_every_missing_scope_of_a_snapshot_without_the_threshold(self):
+        warned = self.found(threshold=None).account(11)[1].characters[0]
+
+        self.assertEqual((self.keys(warned.problems), warned.warnings), (["char_scopes_missing"], []))
+
+    def test_should_keep_a_director_token_missing_one_scope_a_problem(self):
+        found = self.found(director=[{"check": "char_director_token_missing", "detail": ["a"]}])
+        character = found.account(14)[1].characters[0]
+
+        self.assertEqual((self.keys(character.problems), character.warnings), (["char_director_token_missing"], []))
+
+    def test_should_count_a_warning_nowhere_on_the_overview(self):
+        found = self.found()
+        warned_only = found.corporation(2002)
+
+        self.assertFalse(warned_only.has_problems)
+        self.assertEqual(warned_only.problem_count, 0)
+        self.assertEqual(found.corporation(2001).problem_count, 2)
+        # the warned character counts as complete in the Character Audit share, on the tile and in the cockpit
+        self.assertEqual(warned_only.check_rows[0].percent, 100)
+        audit = next(row for row in found.cockpit() if row.url_name == "eos_auth_monitor:character_audit")
+        self.assertEqual((audit.part, audit.total), (5, 7))
+        # the smart filter and the Character Audit list read the keywords
+        account = found.account(11)[1]
+        self.assertEqual(account.keywords, [])
+        self.assertEqual([check.key for check in account.warning_keywords], ["char_scopes_missing"])
+
+    def test_should_list_a_warned_account_apart_on_the_corporation_page(self):
+        corporation = self.found().corporation(2001)
+
+        self.assertEqual([account.user_id for account in corporation.problem_accounts], [12, 13])
+        self.assertEqual([account.user_id for account in corporation.warning_accounts], [11])
+        self.assertEqual([account.user_id for account in corporation.problem_free_accounts], [14])
+        # problems first, then warnings: 13 before 12 for its warning, 11 before 14
+        self.assertEqual([account.user_id for account in corporation.accounts_by_problems], [13, 12, 11, 14])
+
+    def test_should_list_the_warnings_as_a_to_do_group_of_their_own(self):
+        corporation = self.found().corporation(2001)
+
+        self.assertEqual(
+            [(todo.group, todo.label, todo.names) for todo in corporation.listed_todos],
+            [
+                ("char_audit_missing", "Audit missing", "Char 1301"),
+                ("char_scopes_missing", "Scopes missing", "Char 1201"),
+                ("char_scopes_missing_warning", "Scopes missing (warning)", "Char 1101, Char 1301"),
+            ],
+        )
+        self.assertEqual(
+            [(row.group, row.name) for row in corporation.todo_rows if row.group.startswith("char_scopes")],
+            [
+                ("char_scopes_missing", "Char 1201"),
+                ("char_scopes_missing_warning", "Char 1101"),
+                ("char_scopes_missing_warning", "Char 1301"),
+            ],
+        )
+
+    def test_should_list_a_warned_character_on_the_account_page(self):
+        account = self.found().account(13)[1]
+
+        # the problem first, then the warning; nothing left without either
+        self.assertEqual([character.id for character in account.listed_characters], [1302, 1301])
+        self.assertEqual(account.problem_free_characters, [])

@@ -170,6 +170,10 @@ class TestChecksAndServices(MonitorTestCase):
 
         self.assertEqual(check.call_args.args[2], 9)
 
+    def test_should_record_the_scope_threshold(self):
+        self.assertEqual(build()["critical_scope_count"], 5)
+        self.assertEqual(build(critical_scope_count=2)["critical_scope_count"], 2)
+
     def test_should_mark_linked_services_per_account(self):
         other = make_user("other", corporation_id=2001)
         with (

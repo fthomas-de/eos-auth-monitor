@@ -2,7 +2,7 @@
 {% load evelinks %}
 {# The own main's Corporation in short on Alliance Auth's dashboard, for its CEO: the to-do groups of the Corporation page, counted. #}
 <div id="eos-auth-monitor-dashboard-corporation" class="col-12 col-xl-4 mb-3">
-    <div class="card h-100 {% if corporation.has_problems or corporation.unregistered %}border-danger{% else %}border-success{% endif %}">
+    <div class="card h-100 {% if corporation.has_problems or corporation.unregistered %}border-danger{% elif corporation.warning_todos %}border-warning{% else %}border-success{% endif %}">
         <div class="card-body d-flex flex-column">
             {# named after the tab it links to, so it tells itself apart from the account widget beside it #}
             {% translate "My Corporation" as widget_title %}
@@ -15,16 +15,16 @@
                 {% include "eos_auth_monitor/partials/no-director.html" %}
             </div>
 
-            {% if corporation.problems or corporation.todos or corporation.unregistered %}
+            {% if corporation.problems or corporation.listed_todos or corporation.unregistered %}
                 <ul class="list-group list-group-flush mb-2">
                     {% for problem in corporation.problems %}
                         <li class="list-group-item d-flex align-items-center gap-2 px-0">
                             <span class="badge text-bg-warning text-wrap" title="{{ problem.check.description }}">{{ problem.check.label }}</span>
                         </li>
                     {% endfor %}
-                    {% for todo in corporation.todos %}
+                    {% for todo in corporation.listed_todos %}
                         <li class="list-group-item d-flex align-items-center gap-2 px-0">
-                            <span class="badge text-bg-danger text-wrap" title="{{ todo.check.description }}">{{ todo.check.label }}</span>
+                            <span class="badge {% if todo.warning %}text-bg-warning{% else %}text-bg-danger{% endif %} text-wrap" title="{{ todo.check.description }}">{{ todo.label }}</span>
                             <span class="small text-body-secondary ms-auto text-nowrap">{% translate "Mains" context "EVE jargon" %}: {{ todo.accounts|length }}</span>
                         </li>
                     {% endfor %}
