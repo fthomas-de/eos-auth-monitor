@@ -527,8 +527,8 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   cyan spy markers, red problems. Cyan is also the *No Director token*
   icon's and the notice boxes' colour (accepted). Counting, sorting, borders
   and the dashboard are unchanged; the to-do card keeps its red border.
-  eos-spy-network was to turn purple in its own session; told of the switch
-  to cyan, whether it follows is open there.
+  eos-spy-network followed in 0.0.21: its markers are Bootstrap info too
+  (badges `text-bg-info`, tile borders `border-info`, no CSS of its own).
 - **Corporation problems red in the header** (`partials/corporation-header.
   html`, `text-bg-danger`, yellow before): they count as problems
   (`Corporation.has_problems`) and already turn the tile red.
@@ -677,9 +677,10 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   `snapshot.update()`), and only for a user holding both of its view
   permissions. Their colour (cyan, 0.0.20) is the user's choice of
   2026-11-10; check in a browser, light and dark theme, that the cyan badges
-  and the `text-info-emphasis` counts read well. eos-spy-network was to
-  colour its markers purple in its own session; whether it follows the
-  switch to cyan is open there.
+  and the `text-info-emphasis` counts read well. eos-spy-network 0.0.21 uses
+  the same colour; its "Mains with markers" count is to move from
+  `text-info` to `text-info-emphasis` as here - in an eos-spy-network
+  session.
 - The overview **tiles** have no spy number - the user asked for a column;
   ask if the tiles should get it too.
 - **eos-tax GM transactions not seen in a browser**, nor the pink in AA's
