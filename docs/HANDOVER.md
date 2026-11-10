@@ -4,16 +4,19 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-10 (0.0.20).
+Last updated 2026-11-10 (0.0.21).
 
 ## Release
 
-- Version **0.0.20** of 2026-11-10: **colours** (see `CHANGELOG.md` and the
-  decisions of 2026-11-10 below) - spy markers cyan (badges `text-bg-info`,
-  counts `text-info-emphasis`, 0 green), Corporation problems in the header
-  red (`text-bg-danger`). Templates only: no migration, no static file, no
-  new message. 412 tests green; the new colour assertions were seen red
-  against the old templates. Not seen in a browser.
+- Version **0.0.21** of 2026-11-10: **spy and GM tags on the main cards**
+  of the Corporation page (see `CHANGELOG.md` and the decisions of
+  2026-11-10 (0.0.21) below) - a cyan tag per spy marker kind, a pink *GM
+  transactions* tag, a red border for any such finding; a main with
+  findings alone gets a card. No migration, no static file, no new
+  message. 416 tests green. Not seen in a browser.
+- New in 0.0.20 (2026-11-10): **colours** - spy markers cyan (badges
+  `text-bg-info`, counts `text-info-emphasis`, 0 green), Corporation
+  problems in the header red (`text-bg-danger`). Templates only.
 - New in 0.0.19 (2026-11-09): **scope warnings** (see `CHANGELOG.md`
   and the decisions of 2026-11-09 below) - setting *Scopes missing: a problem
   from* (`critical_scope_count`, default 5, migration 0009); a *Scopes
@@ -95,7 +98,7 @@ Last updated 2026-11-10 (0.0.20).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 412 tests without the translation tests, 3 translation tests, all green;
+- 416 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -107,7 +110,7 @@ Last updated 2026-11-10 (0.0.20).
   13 for 13 after one fix: the status badges were counted, not tied to
   their rows; 0.0.12 20 for 20 after two fixes: the order by marker count
   and the to-do card opened by markers alone were untested; 0.0.15 6 for 6; 0.0.16 1 for 1;
-  0.0.18 5 for 5; 0.0.19 24 for 24; 0.0.20 8 for 8).
+  0.0.18 5 for 5; 0.0.19 24 for 24; 0.0.20 8 for 8; 0.0.21 6 for 6).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -117,11 +120,11 @@ Last updated 2026-11-10 (0.0.20).
 | Page | Permission | What |
 |---|---|---|
 | Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares; *Members registered* opens the unknown characters), then the Corporations, most problems first, as a table (the default since 0.0.11) or as tiles (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
-| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems as cards (a visiting main marked "Main in ...", linked only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
+| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`; a visiting main marked "Main in ...", linked only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
-| eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview cockpit tile (`partials/spy-tile.html`, `Report.spy_characters`: the column's sum, linked to `eos_spy_network:corporations`, since 0.0.16); overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link) and one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
-| eos-tax GM transactions (on Overview, Corporation, export, Account) | the page's own plus `eos_tax.admin_view` or `eos_tax.gm_bots_access` (`sources.gm_transactions.can_view`) | Cockpit tile (Alliance count) and Corporation tile (`partials/gm-tile.html`), both linked to `eos_tax:gm_transactions`; overview table column *GM* (count, no link); pink to-do with the mains (`Corporation.gm_accounts`, group `gm_transactions` in the CSV); pink marker per character with an eos-tax link on the account page (searched for the main's name, `?search="<main>"`). Read per page view by `views._report(user)` -> `Report.add_gm_transactions`; never on *My account*, the dashboard widgets or the smart filter |
+| eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview cockpit tile (`partials/spy-tile.html`, `Report.spy_characters`: the column's sum, linked to `eos_spy_network:corporations`, since 0.0.16); overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link), one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV) and a cyan tag per kind on the main cards (`Account.spy_markers`, red border); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
+| eos-tax GM transactions (on Overview, Corporation, export, Account) | the page's own plus `eos_tax.admin_view` or `eos_tax.gm_bots_access` (`sources.gm_transactions.can_view`) | Cockpit tile (Alliance count) and Corporation tile (`partials/gm-tile.html`), both linked to `eos_tax:gm_transactions`; overview table column *GM* (count, no link); pink to-do with the mains (`Corporation.gm_accounts`, group `gm_transactions` in the CSV); a pink tag on the main cards (`Account.has_gm`, red border); pink marker per character with an eos-tax link on the account page (searched for the main's name, `?search="<main>"`). Read per page view by `views._report(user)` -> `Report.add_gm_transactions`; never on *My account*, the dashboard widgets or the smart filter |
 | Corporation service | as Corporation | One row per main of the Corporation, linked yes/no, no problems |
 | Service | `view_all` | Every main of the Alliance, linked yes/no |
 | Character Audit list (`character_audit`) | `view_all` | Every main of the Alliance with a tag per failed character check (`Account.keyword_counts`, "×n" for n characters), most problems first; 404 without character checks |
@@ -533,7 +536,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   html`, `text-bg-danger`, yellow before): they count as problems
   (`Corporation.has_problems`) and already turn the tile red.
 
-2026-11-10 (after 0.0.20, not committed yet):
+2026-11-10 (0.0.21):
 
 - **Spy and GM tags on the main cards** ("zeige die eos spy und gm
   transactions tags auch auf den main kachel der corporation details
@@ -549,7 +552,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   "GM transactions", `fa-sack-dollar`). A visiting main whose alt here has a
   marker gets a card too, as in the to-dos. Order, counts, dashboard and
   smart filter unchanged; marker-only cards come last. Tests helper
-  `tests.test_views.main_cards`; 6 sabotages, 6 red. Not seen in a browser.
+  `tests.test_views.main_cards`; 6 sabotages, 6 red.
 
 ## Pitfalls found
 
@@ -672,6 +675,10 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   and the form invalid - it then "keeps" every state because nothing was
   saved, and stays green. Since 0.0.19 `critical_scope_count` is required:
   post it (or `TestSettings.unchanged`), and assert the redirect.
+- `tests.test_views.main_cards` cuts the Corporation page at each
+  `<div class="card h-100 `: the last card runs to the end of the page,
+  where the unregistered card is `border-danger` too - assert the border
+  with `startswith('border-danger"')`, not `assertIn`.
 - From PowerShell, `wsl.exe ... bash -lc '...'` loses the double quotes
   inside (a `grep -E "^(...)"` becomes a bash syntax error): put such
   commands into a script file in the scratchpad and run it by path.
@@ -699,6 +706,10 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   the same colour; its "Mains with markers" count is to move from
   `text-info` to `text-info-emphasis` as here - in an eos-spy-network
   session.
+- **Spy and GM tags on the main cards not seen in a browser** (0.0.21):
+  check that the red marker cards read well beside the problem cards; the
+  user may still want the marker-only cards set apart from real problems
+  (they share the red border, the problem count does not include them).
 - The overview **tiles** have no spy number - the user asked for a column;
   ask if the tiles should get it too.
 - **eos-tax GM transactions not seen in a browser**, nor the pink in AA's
@@ -719,7 +730,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   or *no main* for every one of Ether Element's 275, and the paging (275 rows:
   three pages of 100) and the table-first overview can be looked at.
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.20 are to be deployed, with
+- Production still runs 0.0.5: 0.0.6 to 0.0.21 are to be deployed, with
   migrations 0007 to 0009 and `collectstatic` (for the spy markers also
   eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
