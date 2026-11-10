@@ -488,12 +488,23 @@ class Corporation:
 
     @property
     def card_accounts(self) -> list[Account]:
-        """The Corporation page's cards: problems, warnings or markers, in `accounts_by_problems` order."""
-        return [
-            account
-            for account in self.accounts_by_problems
-            if account.has_problems or account.has_warnings or account.has_markers
-        ]
+        """The Corporation page's cards: problems, warnings or markers.
+
+        Red borders before yellow; within each, Directors first, then GM transactions, then the rest.
+        """
+        return sorted(
+            (
+                account
+                for account in self.accounts_by_problems
+                if account.has_problems or account.has_warnings or account.has_markers
+            ),
+            # stable sort: within each step the order of `accounts_by_problems` stays
+            key=lambda account: (
+                not (account.has_problems or account.has_markers),
+                not account.directors,
+                not account.has_gm,
+            ),
+        )
 
     @property
     def problem_free_accounts(self) -> list[Account]:

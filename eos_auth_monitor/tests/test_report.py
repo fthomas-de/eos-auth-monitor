@@ -724,6 +724,32 @@ class TestScopeWarnings(MonitorTestCase):
         # problems first, then warnings: 13 before 12 for its warning, 11 before 14
         self.assertEqual([account.user_id for account in corporation.accounts_by_problems], [13, 12, 11, 14])
 
+    def test_should_put_red_cards_before_yellow_ones(self):
+        found = self.found()
+        found.add_spy_markers({1401: [WALLET]}, SPY_KINDS)
+
+        # 14 has a spy marker alone: red, so before the warned 11
+        self.assertEqual([account.user_id for account in found.corporation(2001).card_accounts], [13, 12, 14, 11])
+
+    def test_should_put_directors_then_gm_transactions_first_within_each_colour(self):
+        two_problems = [AUDIT_MISSING, {"check": "char_director_token_missing", "detail": []}]
+        accounts = [
+            # red: 31 has the most problems, 32 a Director, 33 a GM transaction
+            account_row(31, 3101, [character_row(3101, two_problems)]),
+            account_row(32, 3201, [character_row(3201, [AUDIT_MISSING])]),
+            account_row(33, 3301, [character_row(3301, [AUDIT_MISSING])]),
+            # yellow (a GM transaction would make it red): 34 has the most warnings, 35 a Director
+            account_row(34, 3401, [character_row(3401, [self.TWO]), character_row(3402, [self.TWO])]),
+            account_row(35, 3501, [character_row(3501, [self.TWO])]),
+        ]
+        corporation = {**corporation_row(2001, accounts), "directors": [director_row(3201), director_row(3501)]}
+        data = snapshot_data([corporation], checks=self.CHECKS)
+        data["critical_scope_count"] = 3
+        found = Report(store_snapshot(data))
+        found.add_gm_transactions({3301})
+
+        self.assertEqual([account.user_id for account in found.corporation(2001).card_accounts], [32, 33, 31, 35, 34])
+
     def test_should_list_the_warnings_as_a_to_do_group_of_their_own(self):
         corporation = self.found().corporation(2001)
 

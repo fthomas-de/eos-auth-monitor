@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.22] - 2026-11-10
+
+### Changed
+
+- The main cards on the Corporation page are sorted by their border: red
+  first (problems, eos-spy-network markers or GM transactions), then yellow
+  (warnings alone). Within each colour the accounts with a Director of the
+  main's Corporation (the crown) come first, then those with GM transactions,
+  then the rest; within those most problems first, as before. A card with
+  markers alone came after the warning cards before.
+
 ## [0.0.21] - 2026-11-10
 
 ### Added
