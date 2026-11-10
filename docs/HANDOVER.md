@@ -4,11 +4,17 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-10 (0.0.21).
+Last updated 2026-11-10 (0.0.22).
 
 ## Release
 
-- Version **0.0.21** of 2026-11-10: **spy and GM tags on the main cards**
+- Version **0.0.22** of 2026-11-10: **order of the main cards** on the
+  Corporation page (see `CHANGELOG.md` and the decisions of 2026-11-10
+  (0.0.22) below) - red borders before yellow; within each colour Directors
+  (the crown) first, then GM transactions, then the rest by problems as
+  before. `Corporation.card_accounts` only; no migration, no template, no
+  message. 418 tests green. Not seen in a browser.
+- New in 0.0.21 (2026-11-10): **spy and GM tags on the main cards**
   of the Corporation page (see `CHANGELOG.md` and the decisions of
   2026-11-10 (0.0.21) below) - a cyan tag per spy marker kind, a pink *GM
   transactions* tag, a red border for any such finding; a main with
@@ -98,7 +104,7 @@ Last updated 2026-11-10 (0.0.21).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 416 tests without the translation tests, 3 translation tests, all green;
+- 418 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -110,7 +116,8 @@ Last updated 2026-11-10 (0.0.21).
   13 for 13 after one fix: the status badges were counted, not tied to
   their rows; 0.0.12 20 for 20 after two fixes: the order by marker count
   and the to-do card opened by markers alone were untested; 0.0.15 6 for 6; 0.0.16 1 for 1;
-  0.0.18 5 for 5; 0.0.19 24 for 24; 0.0.20 8 for 8; 0.0.21 6 for 6).
+  0.0.18 5 for 5; 0.0.19 24 for 24; 0.0.20 8 for 8; 0.0.21 6 for 6; 0.0.22's two order tests checked by
+  reasoning against the old sort, no sabotage run).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -551,8 +558,24 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   **per marker kind**, no count (cyan `text-bg-info`, `fa-user-secret`; pink
   "GM transactions", `fa-sack-dollar`). A visiting main whose alt here has a
   marker gets a card too, as in the to-dos. Order, counts, dashboard and
-  smart filter unchanged; marker-only cards come last. Tests helper
-  `tests.test_views.main_cards`; 6 sabotages, 6 red.
+  smart filter unchanged; marker-only cards came last (changed in 0.0.22).
+  Tests helper `tests.test_views.main_cards`; 6 sabotages, 6 red.
+
+2026-11-10 (0.0.22):
+
+- **Main cards by border colour** ("sortiere die corp details ansich nach
+  farbigem rahmen rot, dann gelb"): `Corporation.card_accounts` sorts red
+  (problems or markers) before yellow (warnings alone), so a marker-only card
+  no longer lands behind the warning cards.
+- **Directors, then GM transactions, first within each colour** ("je gelbem
+  oder rotem rahmen haben director char prio, dann mit gm transactions, dann
+  rest"): the user chose the **crown's rule** (`Account.directors`: any
+  character of the account a Director of the main's Corporation, alts
+  included), not the main alone; a Director with GM transactions counts as
+  Director. A GM transaction makes a card red, so the GM step only shows in
+  red; for a viewer without eos-tax's permission it falls into the rest. A
+  stable sort keeps `accounts_by_problems` order inside each step;
+  `accounts_by_problems` itself (service lists, exports) is unchanged.
 
 ## Pitfalls found
 
@@ -706,10 +729,12 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   the same colour; its "Mains with markers" count is to move from
   `text-info` to `text-info-emphasis` as here - in an eos-spy-network
   session.
-- **Spy and GM tags on the main cards not seen in a browser** (0.0.21):
-  check that the red marker cards read well beside the problem cards; the
-  user may still want the marker-only cards set apart from real problems
-  (they share the red border, the problem count does not include them).
+- **Spy and GM tags on the main cards and their order not seen in a
+  browser** (0.0.21, 0.0.22): check that the red marker cards read well
+  beside the problem cards and that the order (red, yellow; Directors, GM,
+  rest) reads as intended; the user may still want the marker-only cards set
+  apart from real problems (they share the red border, the problem count
+  does not include them).
 - The overview **tiles** have no spy number - the user asked for a column;
   ask if the tiles should get it too.
 - **eos-tax GM transactions not seen in a browser**, nor the pink in AA's
@@ -730,7 +755,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   or *no main* for every one of Ether Element's 275, and the paging (275 rows:
   three pages of 100) and the table-first overview can be looked at.
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.21 are to be deployed, with
+- Production still runs 0.0.5: 0.0.6 to 0.0.22 are to be deployed, with
   migrations 0007 to 0009 and `collectstatic` (for the spy markers also
   eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
