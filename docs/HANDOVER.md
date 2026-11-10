@@ -4,12 +4,17 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-10 (0.0.19 plus unreleased colour changes, see the
-decisions of 2026-11-10).
+Last updated 2026-11-10 (0.0.20).
 
 ## Release
 
-- Version **0.0.19** of 2026-11-09: **scope warnings** (see `CHANGELOG.md`
+- Version **0.0.20** of 2026-11-10: **colours** (see `CHANGELOG.md` and the
+  decisions of 2026-11-10 below) - spy markers cyan (badges `text-bg-info`,
+  counts `text-info-emphasis`, 0 green), Corporation problems in the header
+  red (`text-bg-danger`). Templates only: no migration, no static file, no
+  new message. 412 tests green; the new colour assertions were seen red
+  against the old templates. Not seen in a browser.
+- New in 0.0.19 (2026-11-09): **scope warnings** (see `CHANGELOG.md`
   and the decisions of 2026-11-09 below) - setting *Scopes missing: a problem
   from* (`critical_scope_count`, default 5, migration 0009); a *Scopes
   missing* with fewer missing scopes is a warning: yellow on the Corporation
@@ -102,7 +107,7 @@ decisions of 2026-11-10).
   13 for 13 after one fix: the status badges were counted, not tied to
   their rows; 0.0.12 20 for 20 after two fixes: the order by marker count
   and the to-do card opened by markers alone were untested; 0.0.15 6 for 6; 0.0.16 1 for 1;
-  0.0.18 5 for 5; 0.0.19 24 for 24).
+  0.0.18 5 for 5; 0.0.19 24 for 24; 0.0.20 8 for 8).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -508,7 +513,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   without the key rates every missing scope a problem (threshold 1) until
   rebuilt.
 
-2026-11-10 (unreleased):
+2026-11-10 (0.0.20):
 
 - **Spy markers get a colour of their own**: yellow (`text-bg-warning`, the
   scope warnings' colour) on the badges and red (`text-danger`, a problem's)
@@ -670,7 +675,11 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   rendered HTML only. In the dev instance they show only after
   eos-spy-network's own snapshot was rebuilt with 0.0.10 (its button or
   `snapshot.update()`), and only for a user holding both of its view
-  permissions. Their colour (cyan) is the user's choice of 2026-11-10.
+  permissions. Their colour (cyan, 0.0.20) is the user's choice of
+  2026-11-10; check in a browser, light and dark theme, that the cyan badges
+  and the `text-info-emphasis` counts read well. eos-spy-network was to
+  colour its markers purple in its own session; whether it follows the
+  switch to cyan is open there.
 - The overview **tiles** have no spy number - the user asked for a column;
   ask if the tiles should get it too.
 - **eos-tax GM transactions not seen in a browser**, nor the pink in AA's
@@ -691,7 +700,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   or *no main* for every one of Ether Element's 275, and the paging (275 rows:
   three pages of 100) and the table-first overview can be looked at.
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.19 are to be deployed, with
+- Production still runs 0.0.5: 0.0.6 to 0.0.20 are to be deployed, with
   migrations 0007 to 0009 and `collectstatic` (for the spy markers also
   eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
