@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.20] - 2026-11-10
+
+### Changed
+
+- eos-spy-network markers get a colour of their own, Bootstrap's *info*
+  (cyan): the marker badges on the account page and in the Corporation
+  page's to-do list (yellow before, like a warning) and the spy counts in
+  the overview's *Spies* column and on the spy tiles (red before, like a
+  problem; now *info-emphasis*, readable in the light and the dark theme). A
+  count of 0 stays green. Still display only.
+- The Corporation header shows the Corporation's problems in red instead of
+  yellow: they count as problems.
+
 ## [0.0.19] - 2026-11-09
 
 ### Added

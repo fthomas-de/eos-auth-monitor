@@ -78,7 +78,7 @@
                             {# eos-spy-network's markers, per character where it counts; only for its viewers #}
                             <li class="list-group-item eos-auth-monitor-spy-todo">
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                    <span class="badge text-bg-warning text-wrap"><i class="fas fa-user-secret"></i> {{ todo.marker.label }}</span>
+                                    <span class="badge text-bg-info text-wrap"><i class="fas fa-user-secret"></i> {{ todo.marker.label }}</span>
                                     <span class="badge text-bg-secondary">{{ todo.characters|length }}</span>
                                     <span class="small text-body-secondary me-auto">{{ todo.marker.description }}</span>
                                     {% include "eos_auth_monitor/partials/copy-button.html" with names=todo.names %}

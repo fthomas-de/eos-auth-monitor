@@ -4,7 +4,8 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-09 (0.0.19).
+Last updated 2026-11-10 (0.0.19 plus unreleased colour changes, see the
+decisions of 2026-11-10).
 
 ## Release
 
@@ -451,7 +452,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   linked to its account page; a pink marker with an eos-tax link on the
   account page. **Pink** (`var(--bs-pink)`, inline): first orange, then the
   user asked for a warning colour "nicht gelb oder orange", so it differs
-  from the yellow spy markers. A spy count in the cockpit was left for a
+  from the spy markers (yellow then, cyan since 2026-11-10). A spy count in the cockpit was left for a
   separate session (the user's choice). Display only, like the spy markers.
 - **GM link searched for the main** (0.0.17): the account page's GM
   link carries `?search="<main name>"`, which eos-tax takes as the initial
@@ -499,13 +500,33 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   stays a problem); **default 5**; a warned character counts as **complete**
   in the Character Audit percentages; the **dashboard widgets** turn yellow
   (`border-warning`) and the **smart filter** passes. Colour: Bootstrap's
-  `warning`, the same as the spy markers (the user asked for "standard warn
-  farbe"). Corporation page: card `border-warning` for a main with warnings
+  `warning`, the same as the spy markers then (the user asked for "standard
+  warn farbe"; the spy markers turned cyan on 2026-11-10). Corporation page: card `border-warning` for a main with warnings
   and no problem, red as soon as it has one; to-do group
   `char_scopes_missing_warning` ("Scopes missing (warning)", `Todo.warning`,
   `Corporation.listed_todos`); the to-do card keeps its red border. A snapshot
   without the key rates every missing scope a problem (threshold 1) until
   rebuilt.
+
+2026-11-10 (unreleased):
+
+- **Spy markers get a colour of their own**: yellow (`text-bg-warning`, the
+  scope warnings' colour) on the badges and red (`text-danger`, a problem's)
+  on the counts mixed them up with things they are not. Planned was
+  `var(--bs-purple)`; as text it reads badly in AA's dark theme (about
+  2.6:1), so the user asked for a Bootstrap standard colour and chose **info
+  (cyan)**: badges `text-bg-info` (account page, Corporation to-do), counts
+  `text-info-emphasis` (*Spies* column, both spy tiles - one partial; the
+  user's choice: plain `text-info` on white is about 2:1, the emphasis dark
+  teal in the light theme, light cyan in the dark one); a 0 stays green. No CSS file. Colours now: yellow warnings, pink GM transactions,
+  cyan spy markers, red problems. Cyan is also the *No Director token*
+  icon's and the notice boxes' colour (accepted). Counting, sorting, borders
+  and the dashboard are unchanged; the to-do card keeps its red border.
+  eos-spy-network was to turn purple in its own session; told of the switch
+  to cyan, whether it follows is open there.
+- **Corporation problems red in the header** (`partials/corporation-header.
+  html`, `text-bg-danger`, yellow before): they count as problems
+  (`Corporation.has_problems`) and already turn the tile red.
 
 ## Pitfalls found
 
@@ -649,8 +670,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   rendered HTML only. In the dev instance they show only after
   eos-spy-network's own snapshot was rebuilt with 0.0.10 (its button or
   `snapshot.update()`), and only for a user holding both of its view
-  permissions. The colour of the marker badges (`text-bg-warning` with
-  `fa-user-secret`) was Claude's choice, not asked.
+  permissions. Their colour (cyan) is the user's choice of 2026-11-10.
 - The overview **tiles** have no spy number - the user asked for a column;
   ask if the tiles should get it too.
 - **eos-tax GM transactions not seen in a browser**, nor the pink in AA's

@@ -168,7 +168,7 @@
                                         {% if report.spy_shown %}
                                             {# shown only: the markers rank no Corporation and colour no problem count #}
                                             {% with spy_count=corporation.spy_characters|length %}
-                                                <td data-order="{{ spy_count }}" class="fw-semibold eos-auth-monitor-spy-count {% if spy_count %}text-danger{% else %}text-success{% endif %}">
+                                                <td data-order="{{ spy_count }}" class="fw-semibold eos-auth-monitor-spy-count {% if spy_count %}text-info-emphasis{% else %}text-success{% endif %}">
                                                     {% url 'eos_spy_network:corporation' corporation.id as spy_link %}
                                                     {% if spy_link %}<a href="{{ spy_link }}" class="text-reset">{{ spy_count }}</a>{% else %}{{ spy_count }}{% endif %}
                                                 </td>

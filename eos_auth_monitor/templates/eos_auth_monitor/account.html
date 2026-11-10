@@ -96,7 +96,7 @@
                                         {# eos-spy-network's markers, for its viewers only; it ranks them by the main's Corporation #}
                                         {% for marker in character.spy %}
                                             <div class="mb-2 eos-auth-monitor-spy-marker">
-                                                <span class="badge text-bg-warning text-wrap"><i class="fas fa-user-secret"></i> {{ marker.label }}</span>
+                                                <span class="badge text-bg-info text-wrap"><i class="fas fa-user-secret"></i> {{ marker.label }}</span>
                                                 <span class="small text-body-secondary">{{ marker.description }}</span>
                                                 {% if forloop.last %}
                                                     {% url 'eos_spy_network:corporation' account.corporation_id as spy_link %}

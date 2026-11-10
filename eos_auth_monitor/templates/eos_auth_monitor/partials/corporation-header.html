@@ -21,7 +21,7 @@
                 </div>
                 {% for problem in corporation.problems %}
                     <div class="small mb-2">
-                        <span class="badge text-bg-warning text-wrap">{{ problem.check.label }}</span>
+                        <span class="badge text-bg-danger text-wrap">{{ problem.check.label }}</span>
                         <span class="text-body-secondary">{{ problem.check.description }}</span>
                         {% if problem.detail %}<span class="text-break">({{ problem.detail }})</span>{% endif %}
                         {% include "eos_auth_monitor/partials/problem-hint.html" with charlink=charlink_url %}

@@ -556,6 +556,8 @@ class TestPages(ViewTestCase):
 
                 # the owner an admin switched off is nothing CharLink can do: its hint stays, without a link
                 self.assertEqual(links, [("/charlink/", "CharLink"), ("/charlink/", "CharLink")])
+                # Corporation problems count as problems: red like the character problems
+                self.assertEqual(re.findall(r'<span class="badge (text-bg-\w+) text-wrap">', header), ["text-bg-danger"] * 3)
                 self.assertIn(
                     "A Director ticks Corporation Audit in CharLink and logs in with the Director character.", header
                 )
@@ -1891,16 +1893,16 @@ class TestSpyNetwork(ViewTestCase):
 
         self.assertIn("</i> Spies</th>", table)
         counts = re.findall(
-            r'<td data-order="(\d+)" class="[^"]*eos-auth-monitor-spy-count[^"]*">\s*<a href="([^"]+)" class="text-reset">(\d+)</a>',
+            r'<td data-order="(\d+)" class="[^"]*eos-auth-monitor-spy-count (text-[\w-]+)">\s*<a href="([^"]+)" class="text-reset">(\d+)</a>',
             table,
         )
-        # the sort key is the count itself
+        # the sort key is the count itself; markers in cyan, a clean Corporation green
         self.assertEqual(
             sorted(counts),
             sorted(
                 [
-                    ("0", reverse("eos_spy_network:corporation", args=[2001]), "0"),
-                    ("2", reverse("eos_spy_network:corporation", args=[2002]), "2"),
+                    ("0", "text-success", reverse("eos_spy_network:corporation", args=[2001]), "0"),
+                    ("2", "text-info-emphasis", reverse("eos_spy_network:corporation", args=[2002]), "2"),
                 ]
             ),
         )
@@ -1918,14 +1920,14 @@ class TestSpyNetwork(ViewTestCase):
         tile = content[content.index("eos-auth-monitor-spy-tile"):content.index("eos-auth-monitor-view-pane")]
 
         # the column's sum: 2002's two, 2001's none
-        self.assertRegex(tile, r'<div class="fs-3 fw-bold text-danger">2</div>')
+        self.assertRegex(tile, r'<div class="fs-3 fw-bold text-info-emphasis">2</div>')
         self.assertIn(f'href="{reverse("eos_spy_network:corporations")}"', tile)
 
     def test_should_show_the_tile_linking_to_the_spy_corporation(self):
         content = self.get(self.spy_leader, "corporation", 2002).content.decode()
         tile = content[content.index("eos-auth-monitor-spy-tile"):content.index("eos-auth-monitor-todos")]
 
-        self.assertRegex(tile, r'<div class="fs-3 fw-bold text-danger">2</div>')
+        self.assertRegex(tile, r'<div class="fs-3 fw-bold text-info-emphasis">2</div>')
         self.assertIn(f'href="{reverse("eos_spy_network:corporation", args=[2002])}"', tile)
 
     def test_should_show_a_clean_corporation_with_a_green_zero(self):
@@ -1939,6 +1941,7 @@ class TestSpyNetwork(ViewTestCase):
         todos = content[content.index("eos-auth-monitor-todos"):content.index("Mains of this Corporation")]
 
         self.assertEqual(todos.count("eos-auth-monitor-spy-todo"), 2)
+        self.assertEqual(todos.count('<span class="badge text-bg-info text-wrap"><i class="fas fa-user-secret"></i>'), 2)
         self.assertLess(todos.index("Hostile membership"), todos.index("ISK with hostiles"))
         self.assertIn('data-eos-auth-monitor-copy="Char 2201"', todos)
         self.assertIn('data-eos-auth-monitor-copy="Char 1102, Char 2201"', todos)
@@ -1971,7 +1974,7 @@ class TestSpyNetwork(ViewTestCase):
 
         # 1102 has no problem of its own: the markers bring it into the table
         self.assertIn("Char 1102", table)
-        self.assertIn("ISK with hostiles", table)
+        self.assertIn('<span class="badge text-bg-info text-wrap"><i class="fas fa-user-secret"></i> ISK with hostiles', table)
         self.assertIn(f'href="{reverse("eos_spy_network:corporation", args=[2001])}"', table)
 
     def test_should_never_show_the_markers_on_my_account(self):
