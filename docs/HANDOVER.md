@@ -533,6 +533,24 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   html`, `text-bg-danger`, yellow before): they count as problems
   (`Corporation.has_problems`) and already turn the tile red.
 
+2026-11-10 (after 0.0.20, not committed yet):
+
+- **Spy and GM tags on the main cards** ("zeige die eos spy und gm
+  transactions tags auch auf den main kachel der corporation details
+  ansicht"): `Account.spy_markers` (each kind once, in the order first met -
+  not necessarily eos-spy-network's), `Account.has_gm`, `has_markers`;
+  `Corporation.card_accounts` feeds the cards. The user's answers: a main
+  with markers alone **gets a card** and leaves *Without problems*; a card
+  with markers has a **red border** ("bei gm transactions oder spy findings
+  roter rand, wenn diese keine warnungen sind") - neither app gives a
+  severity (eos-spy-network's API drops cleared findings itself), so every
+  marker is red, also over a warning; one tag
+  **per marker kind**, no count (cyan `text-bg-info`, `fa-user-secret`; pink
+  "GM transactions", `fa-sack-dollar`). A visiting main whose alt here has a
+  marker gets a card too, as in the to-dos. Order, counts, dashboard and
+  smart filter unchanged; marker-only cards come last. Tests helper
+  `tests.test_views.main_cards`; 6 sabotages, 6 red. Not seen in a browser.
+
 ## Pitfalls found
 
 - `CharacterAudit.is_active()` **saves** the audit. "Audit inactive" is

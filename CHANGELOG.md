@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.21] - 2026-11-10
+
+### Added
+
+- The main cards on the Corporation page show the account's eos-spy-network
+  markers (a cyan tag per marker kind) and eos-tax GM transactions (a pink
+  tag), for the viewers of those apps. Such a card has a red border, as for a
+  problem, also for a main with markers or GM transactions alone, who leaves
+  the *Without problems* list for it. Otherwise still display only: no
+  problem count, order or dashboard changes.
+
 ## [0.0.20] - 2026-11-10
 
 ### Changed

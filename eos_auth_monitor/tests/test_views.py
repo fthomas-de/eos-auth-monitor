@@ -1857,6 +1857,13 @@ class TestVoluntaryServices(ViewTestCase):
         self.assertEqual(match.group(1), "text-danger")
 
 
+def main_cards(content: str) -> dict[str, str]:
+    """The Corporation page's main cards by main name, each card's HTML up to the next (the last to the end)."""
+    # the other mains' cards read `card h-100">`, without a class after it
+    parts = content[content.index("Mains of this Corporation"):].split('<div class="card h-100 ')[1:]
+    return {re.search(r"Char \d+", part).group(): part for part in parts}
+
+
 SPY_MARKERS = {
     # the alt of 2001's account is in 2002: it counts there
     1102: [spy_network.SpyMarker("wallet", "ISK with hostiles", "Wallet entries with hostiles.")],
@@ -1957,6 +1964,46 @@ class TestSpyNetwork(ViewTestCase):
 
         self.assertIn("eos-auth-monitor-todos", content)
         self.assertIn('data-eos-auth-monitor-copy="Char 1101"', content)
+
+    def test_should_tag_the_main_cards_with_each_marker_once(self):
+        # a second alt of 2001's account in 2002 with the same marker as 1102
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["accounts"][0]["characters"].append(character_row(1103, corporation_id=2002))
+        snapshot.save()
+        SPY_MARKERS[1103] = SPY_MARKERS[1102]
+        self.addCleanup(SPY_MARKERS.pop, 1103)
+
+        content = self.get(self.spy_leader, "corporation", 2002).content.decode()
+        cards = main_cards(content)
+
+        # 2201 carries both markers, in eos-spy-network's order; 1102 brings its visiting main a card of its own
+        self.assertEqual(
+            re.findall(r'eos-auth-monitor-spy-tag"><i class="fas fa-user-secret"></i> ([^<]+)<', cards["Char 2201"]),
+            ["Hostile membership", "ISK with hostiles"],
+        )
+        self.assertTrue(cards["Char 2201"].startswith('border-danger"'))
+        self.assertEqual(cards["Char 1101"].count("eos-auth-monitor-spy-tag"), 1)
+        self.assertIn("ISK with hostiles", cards["Char 1101"])
+        # the marker alone makes the card red
+        self.assertTrue(cards["Char 1101"].startswith('border-danger"'))
+
+    def test_should_give_a_main_with_markers_alone_a_card(self):
+        SPY_MARKERS[1101] = SPY_MARKERS[1102]
+        self.addCleanup(SPY_MARKERS.pop, 1101)
+
+        content = self.get(self.spy_leader, "corporation", 2001).content.decode()
+
+        self.assertTrue(main_cards(content)["Char 1101"].startswith('border-danger"'))
+        self.assertNotIn("eos-auth-monitor-problem-free", content)
+
+    def test_should_keep_a_marked_main_in_the_list_for_other_viewers(self):
+        SPY_MARKERS[1101] = SPY_MARKERS[1102]
+        self.addCleanup(SPY_MARKERS.pop, 1101)
+
+        content = self.get(self.leader, "corporation", 2001).content.decode()
+
+        self.assertEqual(main_cards(content), {})
+        self.assertIn("eos-auth-monitor-problem-free", content)
 
     def test_should_export_a_marker_group_only_for_spy_viewers(self):
         self.client.force_login(self.spy_leader)

@@ -12,7 +12,7 @@ from eos_auth_monitor.report import Report
 from eos_auth_monitor.sources import gm_transactions
 
 from .base import MonitorTestCase, account_row, character_row, corporation_row, make_user, snapshot_data, store_snapshot
-from .test_views import ViewTestCase
+from .test_views import ViewTestCase, main_cards
 
 AUDIT_MISSING = {"check": "char_audit_missing", "detail": []}
 TAX_INSTALLED = apps.is_installed("eos_tax")
@@ -193,6 +193,14 @@ class TestViews(ViewTestCase):
         self.assertIn('data-eos-auth-monitor-copy="Char 1101, Char 2201"', todo)
         self.assertIn(f'href="{reverse("eos_auth_monitor:account", args=[11])}">Char 1101</a>', todo)
         self.assertIn(f'href="{reverse("eos_auth_monitor:account", args=[22])}">Char 2201</a>', todo)
+
+    def test_should_tag_the_main_cards(self):
+        cards = main_cards(self.get(self.gm_leader, "corporation", 2002).content.decode())
+
+        # 2201's card is red by its problem; 1102 brings its visiting main a red card of its own
+        for name in ("Char 2201", "Char 1101"):
+            self.assertIn("eos-auth-monitor-gm-tag", cards[name])
+            self.assertTrue(cards[name].startswith('border-danger"'))
 
     def test_should_export_the_group_only_for_its_viewers(self):
         url = reverse("eos_auth_monitor:corporation_export", args=[2002])

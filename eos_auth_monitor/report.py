@@ -162,6 +162,20 @@ class Account:
         return any(character.warnings for character in self.characters)
 
     @property
+    def spy_markers(self) -> list:
+        """The eos-spy-network markers of the characters counted here, each kind once, as first met."""
+        return list({marker.kind: marker for character in self.characters for marker in character.spy}.values())
+
+    @property
+    def has_gm(self) -> bool:
+        return any(character.gm for character in self.characters)
+
+    @property
+    def has_markers(self) -> bool:
+        """Spy markers or GM transactions: shown on a card, never a problem."""
+        return bool(self.spy_markers) or self.has_gm
+
+    @property
     def listed_characters(self) -> list[Character]:
         """The account page's table: the characters with problems, warnings, eos-spy-network markers or GM
         transactions.
@@ -473,9 +487,22 @@ class Corporation:
         )
 
     @property
+    def card_accounts(self) -> list[Account]:
+        """The Corporation page's cards: problems, warnings or markers, in `accounts_by_problems` order."""
+        return [
+            account
+            for account in self.accounts_by_problems
+            if account.has_problems or account.has_warnings or account.has_markers
+        ]
+
+    @property
     def problem_free_accounts(self) -> list[Account]:
         return sorted(
-            (account for account in self.accounts if not account.has_problems and not account.has_warnings),
+            (
+                account
+                for account in self.accounts
+                if not (account.has_problems or account.has_warnings or account.has_markers)
+            ),
             key=lambda account: account.main_name.lower(),
         )
 

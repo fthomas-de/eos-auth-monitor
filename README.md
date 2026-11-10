@@ -51,7 +51,8 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   each group with a button that copies the names for an EVE mail and one that
   downloads them as a CSV file; a further button downloads the whole list, a
   line per name with its problem. Then every
-  member of the Corporation, reduced to mains: the mains with problems as
+  member of the Corporation, reduced to mains: the mains with problems (or
+  with spy markers or GM transactions, see below) as
   cards with keywords naming their problems (a main elsewhere whose alts
   here have problems too, marked "Main in ..."), the others as a compact list,
   members whose main is in another Corporation under that main, and members
@@ -109,7 +110,9 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   `view_evidence`: a *Spy network* column in the overview table (characters
   with markers per Corporation), a tile with that number on the Corporation
   page opening the Corporation in eos-spy-network, a to-do entry per marker
-  with the characters, and each character's markers on the account page.
+  with the characters, a tag per marker on the main's card on the
+  Corporation page (the card's border turns red, a main with markers alone
+  gets one), and each character's markers on the account page.
   Each character counts in the Corporation it is in. Only shown: the markers
   are no problems here and change no count, order, colour, dashboard widget
   or smart filter; *My account* never shows them
@@ -120,7 +123,8 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   page lists against "GM X" and that are still in a Corporation of the
   Alliance - a cockpit tile with their number, a column in the overview
   table, a tile on the Corporation page (both open eos-tax's page), an
-  pink to-do entry with the mains concerned and a pink marker beside
+  pink to-do entry with the mains concerned, a pink tag on their cards on the
+  Corporation page (like the spy tags) and a pink marker beside
   each such character on the account page. Only shown, like the spy markers
 - **Smart filter** for
   [allianceauth-securegroups](https://github.com/Solar-Helix-Independent-Transport/allianceauth-secure-groups),
