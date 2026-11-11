@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.23] - 2026-11-11
+
+### Fixed
+
+- The Alliance overview ranks Corporations by the number it shows: accounts
+  with problems first, then the Corporation's own problems, then the name.
+  The Problems column, the tiles and the table's first order counted every
+  single problem before, so a Corporation showing 1 could rank above one
+  showing 3.
+
 ## [0.0.22] - 2026-11-10
 
 ### Changed

@@ -567,7 +567,7 @@ class Corporation:
 
     @property
     def problem_count(self) -> int:
-        """Problems of the Corporation itself plus those of every character counted here, to rank the tiles."""
+        """Problems of the Corporation itself plus those of every character counted here."""
         return len(self.problems) + sum(account.problem_count for account in self.evaluated_accounts)
 
     @property
@@ -762,8 +762,15 @@ class Report:
 
     @property
     def corporations_by_problems(self) -> list[Corporation]:
-        """Most problems first; by name where they are equal."""
-        return sorted(self.corporations, key=lambda corporation: (-corporation.problem_count, corporation.name.lower()))
+        """Most accounts with problems first - the number shown - then most Corporation problems, then by name."""
+        return sorted(
+            self.corporations,
+            key=lambda corporation: (
+                -len(corporation.problem_accounts),
+                -len(corporation.problems),
+                corporation.name.lower(),
+            ),
+        )
 
     def corporation(self, corporation_id: int) -> Corporation | None:
         return self._corporations_by_id.get(corporation_id)

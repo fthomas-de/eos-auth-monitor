@@ -148,7 +148,8 @@
                                                 </span>
                                             </div>
                                         </td>
-                                        <td data-order="{{ corporation.problem_count }}"
+                                        {# by the number shown; DataTables keeps the server's order among equals #}
+                                        <td data-order="{{ corporation.problem_accounts|length }}"
                                             class="fw-bold {% if corporation.has_problems %}text-danger{% else %}text-success{% endif %}">
                                             {{ corporation.problem_accounts|length }}{% if corporation.problems %} <span class="small fw-normal">+{{ corporation.problems|length }}</span>{% endif %}
                                         </td>

@@ -376,6 +376,20 @@ class TestAccounts(MonitorTestCase):
 
         self.assertEqual([corporation.id for corporation in ranked], [2002, 2003, 2001, 2004])
 
+    def test_should_rank_corporations_by_accounts_with_problems_not_by_problems(self):
+        many_problems = account_row(
+            1, 101, characters=[character_row(101, [AUDIT_MISSING, SCOPES_MISSING]), character_row(102, [AUDIT_MISSING])]
+        )
+        two_accounts = [
+            account_row(2, 201, characters=[character_row(201, [AUDIT_MISSING], corporation_id=2002)]),
+            account_row(3, 301, characters=[character_row(301, [AUDIT_MISSING], corporation_id=2002)]),
+        ]
+        corporations = [corporation_row(2001, [many_problems]), corporation_row(2002, two_accounts)]
+
+        ranked = report(corporations).corporations_by_problems
+
+        self.assertEqual([corporation.id for corporation in ranked], [2002, 2001])
+
     def test_should_ignore_checks_an_old_snapshot_knows_but_this_release_not(self):
         account = account_row(1, 101, characters=[character_row(101, [{"check": "gone", "detail": []}])])
         _, found = report([corporation_row(2001, [account])]).account(1)
