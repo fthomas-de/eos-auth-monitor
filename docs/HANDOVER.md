@@ -4,11 +4,18 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-10 (0.0.22).
+Last updated 2026-11-11 (0.0.23).
 
 ## Release
 
-- Version **0.0.22** of 2026-11-10: **order of the main cards** on the
+- Version **0.0.23** of 2026-11-11: **overview order fixed** (see
+  `CHANGELOG.md` and the decisions of 2026-11-11 below) - the Problems
+  column, the tiles and the table's first order rank Corporations by
+  accounts with problems (the number shown), then Corporation problems, then
+  name; before they ranked by the sum of single problems. `report.py` and
+  `index.html` only; no migration, no message. 419 tests green. Not seen in
+  a browser.
+- New in 0.0.22 (2026-11-10): **order of the main cards** on the
   Corporation page (see `CHANGELOG.md` and the decisions of 2026-11-10
   (0.0.22) below) - red borders before yellow; within each colour Directors
   (the crown) first, then GM transactions, then the rest by problems as
@@ -104,7 +111,7 @@ Last updated 2026-11-10 (0.0.22).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 418 tests without the translation tests, 3 translation tests, all green;
+- 419 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -117,7 +124,8 @@ Last updated 2026-11-10 (0.0.22).
   their rows; 0.0.12 20 for 20 after two fixes: the order by marker count
   and the to-do card opened by markers alone were untested; 0.0.15 6 for 6; 0.0.16 1 for 1;
   0.0.18 5 for 5; 0.0.19 24 for 24; 0.0.20 8 for 8; 0.0.21 6 for 6; 0.0.22's two order tests checked by
-  reasoning against the old sort, no sabotage run).
+  reasoning against the old sort, no sabotage run; 0.0.23 1 for 1, run
+  against the old `report.py`).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -126,7 +134,7 @@ Last updated 2026-11-10 (0.0.22).
 
 | Page | Permission | What |
 |---|---|---|
-| Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares; *Members registered* opens the unknown characters), then the Corporations, most problems first, as a table (the default since 0.0.11) or as tiles (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
+| Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares; *Members registered* opens the unknown characters), then the Corporations, most accounts with problems first, as a table (the default since 0.0.11) or as tiles (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
 | Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`; a visiting main marked "Main in ...", linked only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
@@ -577,8 +585,24 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   stable sort keeps `accounts_by_problems` order inside each step;
   `accounts_by_problems` itself (service lists, exports) is unchanged.
 
+2026-11-11 (0.0.23):
+
+- **Overview ranks Corporations by accounts with problems** ("in alliance
+  overview wird die spalte problems nicht richtig sortiert, eine corp wird
+  mit 1 angezeigt aber ist recht weit oben"): the user chose to sort by the
+  number shown (option A, not to show the problem sum instead), and for
+  **everything** - the Problems column's `data-order`, the tiles and the
+  table's first order (`Report.corporations_by_problems`): accounts with
+  problems, then the Corporation's own problems, then the name. Narrows the
+  2026-09-29 rule "everything is sorted by number of problems" for the
+  Corporations; accounts, characters and service lists still sort by
+  problems. `Corporation.problem_count` is no longer used by app code, only
+  by tests as the total; it could go.
+
 ## Pitfalls found
 
+- `eos-test` takes one test label only; a second one fails with
+  "unrecognized arguments". Run several modules one after another.
 - `CharacterAudit.is_active()` **saves** the audit. "Audit inactive" is
   computed by `sources.corptools.character_sections()`, which repeats its
   conditions - compare after every corptools upgrade.
