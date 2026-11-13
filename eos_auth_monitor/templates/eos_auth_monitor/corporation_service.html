@@ -21,7 +21,8 @@
                     </thead>
                     <tbody>
                         {# one row per account: a service links one account, not each of its characters #}
-                        {% for account in corporation.accounts_by_problems %}
+                        {# a main elsewhere with an alt here links its services in its own Corporation's list #}
+                        {% for account in corporation.accounts_by_problems %}{% if not account.visiting %}
                             <tr>
                                 <td>
                                     <div class="d-flex flex-wrap align-items-center gap-2">
@@ -31,7 +32,7 @@
                                 </td>
                                 <td data-order="{% if account|is_linked:service.key %}1{% else %}0{% endif %}">{% include "eos_auth_monitor/partials/link-badge.html" %}</td>
                             </tr>
-                        {% endfor %}
+                        {% endif %}{% endfor %}
                     </tbody>
                 </table>
             </div>

@@ -1577,6 +1577,10 @@ class TestAltsInAnotherCorporation(ViewTestCase):
         snapshot.data["corporations"][0]["accounts"][0]["characters"].append(
             character_row(1102, [AUDIT_MISSING], corporation_id=2002)
         )
+        # and its main is a Director of 2001
+        snapshot.data["corporations"][0]["directors"] = [
+            {"id": 1101, "name": "Char 1101", "in_auth": True, "user_id": None, "main_name": None, "tokens": {}}
+        ]
         snapshot.save()
 
     def test_should_show_the_alt_on_the_page_of_its_corporation(self):
@@ -1601,6 +1605,24 @@ class TestAltsInAnotherCorporation(ViewTestCase):
         self.assertContains(response, "Main in Corp 2001")
         self.assertNotContains(response, reverse("eos_auth_monitor:account", args=[11]))
         self.assertContains(response, reverse("eos_auth_monitor:account", args=[22]))
+
+    def test_should_list_only_the_own_mains_in_the_service_list(self):
+        response = self.get(self.leader, "corporation_service", 2002, "discord")
+
+        self.assertNotContains(response, reverse("eos_auth_monitor:account", args=[11]))
+        self.assertContains(response, reverse("eos_auth_monitor:account", args=[22]))
+
+    def test_should_hide_the_services_and_the_crown_of_a_visiting_main_from_a_ceo(self):
+        card = main_cards(self.get(self.ceo_2002, "corporation", 2002).content.decode())["Char 1101"]
+
+        self.assertNotIn("fa-discord", card)
+        self.assertNotIn("eos-auth-monitor-director", card)
+
+    def test_should_show_them_to_leadership(self):
+        card = main_cards(self.get(self.leader, "corporation", 2002).content.decode())["Char 1101"]
+
+        self.assertIn("fa-discord", card)
+        self.assertIn("eos-auth-monitor-director", card)
 
 
 class TestDirectorIcon(ViewTestCase):

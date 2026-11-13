@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.24] - 2026-11-13
+
+### Changed
+
+- A rebuild fails when ESI does not answer (a server error, the error limit,
+  no network) and keeps the last good overview. Before, the outage was stored
+  as "no token could read it": the member lists, the unregistered members and
+  the Directors only ESI names disappeared until the next run, and with them
+  their *Director token missing* problems - also for the smart filter. A
+  token that cannot read a Corporation (revoked, or a 4xx from ESI) is still
+  skipped for the next one.
+- On the Corporation page, the card of a main from another Corporation shows
+  neither that account's service icons nor its Director crown to a viewer
+  without `view_all`, who may not open the account either.
+
+### Fixed
+
+- The service list of a Corporation lists its own mains only. A main from
+  another Corporation with an alt here had a row too, which the count above
+  the list never included.
+- Settings saved while a rebuild is running are built: the run starts over
+  once with what was saved. Before, the second task was dropped and the page
+  still said the overview was being rebuilt.
+- With every required scope unticked in the settings, a character without a
+  token no longer gets *Scopes missing* or *Director token missing* with an
+  empty list.
+
 ## [0.0.23] - 2026-11-11
 
 ### Fixed

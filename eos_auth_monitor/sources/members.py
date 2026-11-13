@@ -49,6 +49,19 @@ def _client():
     return _provider.client
 
 
+def _is_token_failure(error: Exception) -> bool:
+    """Whether this token cannot read the Corporation: revoked, or its character left or lost the role.
+
+    Anything else - ESI down, the error limit, no network - says nothing
+    about the token: the build has to fail and keep the last snapshot rather
+    than store "no token could read it".
+    """
+    from esi.errors import TokenError
+    from esi.exceptions import HTTPClientError
+
+    return isinstance(error, (TokenError, HTTPClientError))
+
+
 def corporation_members(corporation_id: int) -> list[int] | None:
     """EVE character IDs of all members, or None when no token could read them."""
     from esi.models import Token
@@ -62,6 +75,8 @@ def corporation_members(corporation_id: int) -> list[int] | None:
                 .result(use_etag=False)
             )
         except Exception as error:  # noqa: BLE001 - a broken token must not stop the other Corporations
+            if not _is_token_failure(error):
+                raise
             # a character who left keeps its token; try the next one
             logger.warning("Member list of %s not readable with a token: %s", corporation_id, type(error).__name__)
             continue
@@ -88,6 +103,8 @@ def corporation_directors(corporation_id: int) -> set[int] | None:
                 .result(use_etag=False)
             )
         except Exception as error:  # noqa: BLE001 - a broken token must not stop the other Corporations
+            if not _is_token_failure(error):
+                raise
             logger.warning("Roles of %s not readable with a token: %s", corporation_id, type(error).__name__)
             continue
         return {

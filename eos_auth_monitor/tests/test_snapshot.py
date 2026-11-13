@@ -251,6 +251,34 @@ class TestUpdate(MonitorTestCase):
 
         self.assertEqual(metrics["member_lists"], 1)
 
+    def builds_while_saving(self, **saved):
+        """The scope threshold each build ran with, when the settings page saves ``saved`` during the first."""
+        make_corporation(2001)
+        configure()
+        real_build = snapshot.build
+        seen = []
+
+        def build_and_save(config, on_step):
+            seen.append(config.critical_scope_count)
+            if len(seen) == 1:
+                configure(**saved)
+            return real_build(config, on_step)
+
+        with patch("eos_auth_monitor.snapshot.build", side_effect=build_and_save):
+            stored = snapshot.update()
+        return seen, stored
+
+    def test_should_build_again_when_the_settings_changed_during_the_run(self):
+        seen, stored = self.builds_while_saving(critical_scope_count=2)
+
+        self.assertEqual(seen, [5, 2])
+        self.assertEqual(stored.data["critical_scope_count"], 2)
+
+    def test_should_not_build_again_for_a_changed_notice(self):
+        seen, _ = self.builds_while_saving(member_notice="Hello")
+
+        self.assertEqual(seen, [5])
+
 
 class TestExclusions(MonitorTestCase):
     def setUp(self):

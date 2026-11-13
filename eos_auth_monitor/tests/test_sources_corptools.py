@@ -98,6 +98,12 @@ class TestCharacterProblems(MonitorTestCase):
 
         self.assertEqual(self.problems(excluded_scopes=self.scopes[-1:]), [])
 
+    def test_should_report_no_missing_scopes_when_none_is_required(self, _):
+        # no token at all: nothing to carry the scopes, but none is asked for
+        CharacterAudit.objects.create(character=self.main, update_timestamps=fresh())
+
+        self.assertEqual(self.problems(excluded_scopes=self.scopes), [])
+
     def director(self, director=True):
         audit = CharacterAudit.objects.create(character=self.main, update_timestamps=fresh())
         CharacterRoles.objects.create(character=audit, director=director)

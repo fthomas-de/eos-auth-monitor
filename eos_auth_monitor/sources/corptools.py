@@ -144,7 +144,8 @@ def _is_fresh(value, time_ref) -> bool:
 
 def _missing_scopes(tokens, required: set) -> list[str] | None:
     """None where one token carries every scope; else what the token closest to complete lacks."""
-    if any(required <= scopes for scopes in tokens):
+    # nothing required (every scope unticked in the settings): a character without a token lacks nothing
+    if not required or any(required <= scopes for scopes in tokens):
         return None
     # the token closest to complete says what re-adding one would fix
     best = max(tokens, key=lambda scopes: len(scopes & required), default=set())

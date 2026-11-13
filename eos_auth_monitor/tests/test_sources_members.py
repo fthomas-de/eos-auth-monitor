@@ -2,12 +2,16 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from corptools.models import CharacterAudit, CharacterRoles
+from esi.exceptions import HTTPClientError, HTTPServerError
 
 from eos_auth_monitor.sources import members
 
 from .base import MonitorTestCase, make_token, make_user
 
 SCOPE = members.MEMBERSHIP_SCOPE
+# the token's character left the Corporation or lost the role
+FORBIDDEN = HTTPClientError(status_code=403, headers={}, data=None)
+ESI_DOWN = HTTPServerError(status_code=503, headers={}, data=None)
 
 
 class TestCorporationMembers(MonitorTestCase):
@@ -32,9 +36,17 @@ class TestCorporationMembers(MonitorTestCase):
         second = make_user("second", corporation_id=2001).profile.main_character
         make_token(first, [SCOPE])
         make_token(second, [SCOPE])
-        self.operation.return_value.result.side_effect = [RuntimeError("403"), [7]]
+        self.operation.return_value.result.side_effect = [FORBIDDEN, [7]]
 
         self.assertEqual(members.corporation_members(2001), [7])
+
+    def test_should_fail_when_esi_does_not_answer(self):
+        member = make_user("member", corporation_id=2001).profile.main_character
+        make_token(member, [SCOPE])
+        self.operation.return_value.result.side_effect = ESI_DOWN
+
+        with self.assertRaises(HTTPServerError):
+            members.corporation_members(2001)
 
     def test_should_give_none_without_a_usable_token(self):
         member = make_user("member", corporation_id=2001).profile.main_character
@@ -99,9 +111,16 @@ class TestCorporationDirectors(MonitorTestCase):
         CharacterRoles.objects.create(character=audit, director=True)
         make_token(self.director, [SCOPE])
         make_token(second, [SCOPE])
-        self.operation.return_value.result.side_effect = [RuntimeError("403"), [SimpleNamespace(character_id=5, roles=["Director"])]]
+        self.operation.return_value.result.side_effect = [FORBIDDEN, [SimpleNamespace(character_id=5, roles=["Director"])]]
 
         self.assertEqual(members.corporation_directors(2001), {5})
+
+    def test_should_fail_when_esi_does_not_answer(self):
+        make_token(self.director, [SCOPE])
+        self.operation.return_value.result.side_effect = ESI_DOWN
+
+        with self.assertRaises(HTTPServerError):
+            members.corporation_directors(2001)
 
 
 class TestNames(MonitorTestCase):

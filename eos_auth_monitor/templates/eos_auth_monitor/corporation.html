@@ -116,7 +116,8 @@
                             {# warnings alone are open but no problem; a problem, spy marker or GM transaction makes the card red #}
                             <div class="card h-100 {% if account.has_problems or account.has_markers %}border-danger{% else %}border-warning eos-auth-monitor-warning-card{% endif %}">
                                 <div class="card-body position-relative d-flex align-items-start gap-3">
-                                    {% include "eos_auth_monitor/partials/director-icon.html" with corner=True %}
+                                    {# a main elsewhere: its Director role and its services are its own Corporation's to see #}
+                                    {% if not account.visiting or can_view_all %}{% include "eos_auth_monitor/partials/director-icon.html" with corner=True %}{% endif %}
                                     <img src="{{ account.main_id|character_portrait_url:64 }}" width="48" height="48" class="rounded flex-shrink-0" alt="">
                                     <div class="flex-grow-1 overflow-hidden">
                                         <h6 class="mb-1 text-truncate">
@@ -150,7 +151,7 @@
                                                 <span class="badge text-wrap text-white eos-auth-monitor-gm-tag" style="background-color: var(--bs-pink)"><i class="fas fa-sack-dollar"></i> {% translate "GM transactions" %}</span>
                                             {% endif %}
                                         </div>
-                                        {% include "eos_auth_monitor/partials/service-icons.html" %}
+                                        {% if not account.visiting or can_view_all %}{% include "eos_auth_monitor/partials/service-icons.html" %}{% endif %}
                                     </div>
                                 </div>
                             </div>

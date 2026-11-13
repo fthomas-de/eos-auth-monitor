@@ -9,6 +9,7 @@ labels are looked up when a page is rendered, in the viewer's language.
 from collections import Counter, defaultdict
 
 from django.contrib.auth.models import User
+from django.forms.models import model_to_dict
 from django.utils import timezone
 
 from allianceauth.authentication.models import CharacterOwnership, UserProfile
@@ -382,10 +383,21 @@ def build(config, on_step=_no_progress) -> dict | None:
     }
 
 
+def _build_settings(config) -> dict:
+    # the notice is read by the pages, never by the build
+    return model_to_dict(config, exclude=["member_notice"])
+
+
 def update(on_step=_no_progress) -> Snapshot | None:
     """Rebuild and store the snapshot; without an Alliance the old one goes."""
-    with Measurement(on_step) as measurement:
-        data = build(MonitorConfiguration.get_solo(), measurement.on_step)
+    # a save during the run queues nothing (QueueOnce drops the second task): build once more with what was saved
+    for _attempt in range(2):
+        config = MonitorConfiguration.get_solo()
+        used = _build_settings(config)
+        with Measurement(on_step) as measurement:
+            data = build(config, measurement.on_step)
+        if _build_settings(MonitorConfiguration.get_solo()) == used:
+            break
     if data is None:
         Snapshot.objects.all().delete()
         return None

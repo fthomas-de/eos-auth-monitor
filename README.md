@@ -54,7 +54,9 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   member of the Corporation, reduced to mains: the mains with problems (or
   with spy markers or GM transactions, see below) as
   cards with keywords naming their problems (a main elsewhere whose alts
-  here have problems too, marked "Main in ..."), the others as a compact list,
+  here have problems too, marked "Main in ...", without that account's
+  service icons and Director crown for a viewer without `view_all`), the
+  others as a compact list,
   members whose main is in another Corporation under that main, and members
   unknown to Auth as a compact list
 - **Account detail**: the characters with problems, with the details of
@@ -253,7 +255,8 @@ no scopes of its own and adds no login step. When it uses a token, django-esi
 refreshes it and saves the new access token, as for any app. A token that
 fails (a character who left the Corporation keeps its token) is skipped and the
 next one tried, on every run; failed calls are not cached and count towards
-ESI's error limit. *Fetch data from ESI*
+ESI's error limit. When ESI itself does not answer (a server error, the error
+limit, no network), the run fails and the last result stays. *Fetch data from ESI*
 in the settings switches all of these calls off; the Corporation page then
 shows the registered accounts only, and the check *Director token missing*
 and the Director lists know only the Directors corptools read.
@@ -272,8 +275,8 @@ replaces it on every run.
 
 The task also runs after the settings are saved, and on *Rebuild now*, which
 holders of `view_all` or `manage_settings` find above every page once an
-Alliance is chosen. Settings saved while a run is under way apply from the
-next run. While it is
+Alliance is chosen. Settings saved while a run is under way make that run
+start over once with what was saved. While it is
 queued or running, a progress bar shows its step; the page reloads itself
 once the task is done. The progress lives in the default cache for up to an
 hour.
