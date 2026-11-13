@@ -4,11 +4,23 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-11 (0.0.23).
+Last updated 2026-11-13 (0.0.24).
 
 ## Release
 
-- Version **0.0.23** of 2026-11-11: **overview order fixed** (see
+- Version **0.0.24** of 2026-11-13: **fixes from a code audit** for bugs and
+  security (`docs/AUDIT.md`: what was found, why, and the fix with its test;
+  `CHANGELOG.md`; the decisions of 2026-11-12 below). Five findings, no
+  Critical or High: a rebuild fails when ESI does not answer instead of
+  storing the outage as "no token" (AM-01, `sources/members.py`
+  `_is_token_failure`); a Corporation's service list shows its own mains
+  only (AM-02); settings saved during a running rebuild make it start over
+  once (AM-03, `snapshot.update`); nothing missing when every scope is
+  unticked (AM-04); a visiting main's card hides its service icons and crown
+  from viewers without `view_all` (AM-05). No migration, no static file, no
+  message. 427 tests green, 8 new, each seen red against the old code or
+  without its guard. Not seen in a browser.
+- New in 0.0.23 (2026-11-11): **overview order fixed** (see
   `CHANGELOG.md` and the decisions of 2026-11-11 below) - the Problems
   column, the tiles and the table's first order rank Corporations by
   accounts with problems (the number shown), then Corporation problems, then
@@ -111,7 +123,7 @@ Last updated 2026-11-11 (0.0.23).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 419 tests without the translation tests, 3 translation tests, all green;
+- 427 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -125,7 +137,7 @@ Last updated 2026-11-11 (0.0.23).
   and the to-do card opened by markers alone were untested; 0.0.15 6 for 6; 0.0.16 1 for 1;
   0.0.18 5 for 5; 0.0.19 24 for 24; 0.0.20 8 for 8; 0.0.21 6 for 6; 0.0.22's two order tests checked by
   reasoning against the old sort, no sabotage run; 0.0.23 1 for 1, run
-  against the old `report.py`).
+  against the old `report.py`; 0.0.24 8 for 8).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -135,7 +147,7 @@ Last updated 2026-11-11 (0.0.23).
 | Page | Permission | What |
 |---|---|---|
 | Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares; *Members registered* opens the unknown characters), then the Corporations, most accounts with problems first, as a table (the default since 0.0.11) or as tiles (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
-| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`; a visiting main marked "Main in ...", linked only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
+| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`; a visiting main marked "Main in ...", linked and with its service icons and crown only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
 | eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview cockpit tile (`partials/spy-tile.html`, `Report.spy_characters`: the column's sum, linked to `eos_spy_network:corporations`, since 0.0.16); overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link), one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV) and a cyan tag per kind on the main cards (`Account.spy_markers`, red border); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
@@ -599,6 +611,25 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   problems. `Corporation.problem_count` is no longer used by app code, only
   by tests as the total; it could go.
 
+2026-11-12 (0.0.24, from the audit in `docs/AUDIT.md`):
+
+- **ESI down fails the run** ("ok wie empfohlen"): a server error, the
+  error limit or no network leaves `sources.members` instead of moving on to
+  the next token; the task fails and the last good snapshot stays. Only a
+  token failure (`esi.errors.TokenError`, a 4xx `HTTPClientError`) moves on.
+  Not chosen: carrying the member lists and Directors over from the previous
+  snapshot, or leaving it.
+- **A visiting main's card hides its services and crown** ("hide under that
+  circumstance"): for a viewer without `view_all` - who may not open that
+  account - the card of a main from another Corporation shows neither its
+  service icons nor its Director crown. Read as both, since the question
+  named both; if only the icons were meant, drop the condition around
+  `director-icon.html` in `corporation.html` and the crown assertions in
+  `TestAltsInAnotherCorporation`.
+- The audit report stays in the repo as `docs/AUDIT.md` (the user's choice at
+  the 0.0.24 commit); its *Checked and fine* list says what needs no second
+  look.
+
 ## Pitfalls found
 
 - `eos-test` takes one test label only; a second one fails with
@@ -726,6 +757,16 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   `<div class="card h-100 `: the last card runs to the end of the page,
   where the unregistered card is `border-danger` too - assert the border
   with `startswith('border-danger"')`, not `assertIn`.
+- django-esi's exceptions need their fields to be built in a test:
+  `HTTPClientError(status_code=403, headers={}, data=None)`, the same for
+  `HTTPServerError`; a `RuntimeError("403")` stands for neither since
+  0.0.24 and would now end the run.
+- A test that patches `snapshot.build` must call the real one through a
+  reference taken before the patch (`real_build = snapshot.build`), or it
+  recurses into the mock.
+- `/commit` and `/push` cannot be started by Claude (`disable-model-
+  invocation`): the user types them. A full-width `／commit` arrives as text,
+  not as the command.
 - From PowerShell, `wsl.exe ... bash -lc '...'` loses the double quotes
   inside (a `grep -E "^(...)"` becomes a bash syntax error): put such
   commands into a script file in the scratchpad and run it by path.
@@ -774,12 +815,18 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   *Flags* column, Mains and Chars as "12 / 40", icon-only heads, rare columns
   hidden on narrow screens.
 
-- **Rebuild the dev snapshot** (*Rebuild now*; the worker already runs the
-  0.0.11 build): then the unknown characters list should show *not in Auth*
+- **Rebuild the dev snapshot** (*Rebuild now*, after starting a worker, see
+  *Dev instance*): then the unknown characters list should show *not in Auth*
   or *no main* for every one of Ether Element's 275, and the paging (275 rows:
   three pages of 100) and the table-first overview can be looked at.
 
-- Production still runs 0.0.5: 0.0.6 to 0.0.22 are to be deployed, with
+- **Calls into eos-tax and eos-spy-network are unguarded**: the audit could
+  not read those repositories (one per session). `sources.gm_transactions`
+  and `sources.spy_network` call their APIs on every page view of a viewer
+  with their permissions, without a try/except - an exception there fails
+  that page. The contracts are listed at the end of *Checked and fine* in
+  `docs/AUDIT.md`; the sibling audit sessions got the same list.
+- Production still runs 0.0.5: 0.0.6 to 0.0.24 are to be deployed, with
   migrations 0007 to 0009 and `collectstatic` (for the spy markers also
   eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
@@ -846,7 +893,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
   Comes), nothing switched off, ESI on, *Only characters in the Alliance*
   off, the notice empty, `critical_scope_count` 5 (the migration's
-  default). **No Celery worker was running** on 2026-11-09 (`ps` found none):
+  default). **No Celery worker was running** on 2026-11-09 nor on 2026-11-13 (`ps` found none; a worker started now runs the 0.0.24 code):
   *Rebuild now* queues for nobody until one is started detached by a script
   (`setsid nohup ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo`
   in `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`); one worker,
