@@ -4,24 +4,23 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-16 (0.0.25 plus Active in Mumble, uncommitted).
+Last updated 2026-11-16 (0.0.26).
 
 ## Release
 
-- **Unreleased, working tree** (2026-11-16): **Active in Mumble** (see
-  `CHANGELOG.md` and the decisions of 2026-11-16 (Active in Mumble) below).
-  New: `activity.py` (`record()` for the task, `rates()` for the pages),
-  model `ActivityDay` and setting `activity_days` (migration 0010, applied
-  in `aa_dev`), task `tasks.record_activity`, `sources.services.
-  mumble_connections`, `sources.corptools.logins`, `Report.add_activity`
-  (called for every page in `views._report`), `Row.average` and
-  `Row.activity`, `partials/activity-cell.html`, `tests/test_activity.py`
-  (20 tests; 19 sabotages, 19 red after one fix: the rates test did not tell
-  Mumble days from days without). Targeted runs green: test_activity,
-  test_views (187), test_report, test_dashboard, test_snapshot; the full
-  suite and the translations are due at `/commit` (new messages: "Active in
-  Mumble", "Mumble activity: days" and its help text). Not seen in a
-  browser, and never run on real data: `aa_dev` has no Mumble account.
+- Version **0.0.26** of 2026-11-16: **Active in Mumble** (see
+  `CHANGELOG.md` and the decisions of 2026-11-16 (Active in Mumble) below) -
+  of the days a main played EVE, the share it was in Mumble too.
+  `activity.py` (`record()` for the task, `rates()` for the pages), model
+  `ActivityDay` and setting `activity_days` (migration 0010), task
+  `tasks.record_activity` (beat entry every 15 minutes, README),
+  `sources.services.mumble_connections`, `sources.corptools.logins`,
+  `Report.add_activity` (called for every page in `views._report`, not
+  stored in the snapshot), `Row.average` and `Row.activity`,
+  `partials/activity-cell.html`, `tests/test_activity.py` (20 tests; 19
+  sabotages, 18 red, the green one fixed and not re-run). Three new
+  messages, translated. Not seen in a browser, and never run on real data:
+  `aa_dev` has no Mumble account.
 
 - Version **0.0.25** of 2026-11-16: **Alliance join date in the
   Corporation header** (see `CHANGELOG.md` and the decisions of 2026-11-16
@@ -150,7 +149,7 @@ Last updated 2026-11-16 (0.0.25 plus Active in Mumble, uncommitted).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 427 tests without the translation tests, 3 translation tests, all green;
+- 453 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -164,7 +163,8 @@ Last updated 2026-11-16 (0.0.25 plus Active in Mumble, uncommitted).
   and the to-do card opened by markers alone were untested; 0.0.15 6 for 6; 0.0.16 1 for 1;
   0.0.18 5 for 5; 0.0.19 24 for 24; 0.0.20 8 for 8; 0.0.21 6 for 6; 0.0.22's two order tests checked by
   reasoning against the old sort, no sabotage run; 0.0.23 1 for 1, run
-  against the old `report.py`; 0.0.24 8 for 8; 0.0.25 not sabotaged).
+  against the old `report.py`; 0.0.24 8 for 8; 0.0.25 not sabotaged; 0.0.26
+  18 of 19, the green one strengthened).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -179,8 +179,9 @@ Last updated 2026-11-16 (0.0.25 plus Active in Mumble, uncommitted).
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
 | eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview cockpit tile (`partials/spy-tile.html`, `Report.spy_characters`: the column's sum, linked to `eos_spy_network:corporations`, since 0.0.16); overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link), one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV) and a cyan tag per kind on the main cards (`Account.spy_markers`, red border); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
 | eos-tax GM transactions (on Overview, Corporation, export, Account) | the page's own plus `eos_tax.admin_view` or `eos_tax.gm_bots_access` (`sources.gm_transactions.can_view`) | Cockpit tile (Alliance count) and Corporation tile (`partials/gm-tile.html`), both linked to `eos_tax:gm_transactions`; overview table column *GM* (count, no link); pink to-do with the mains (`Corporation.gm_accounts`, group `gm_transactions` in the CSV); a pink tag on the main cards (`Account.has_gm`, red border); pink marker per character with an eos-tax link on the account page (searched for the main's name, `?search="<main>"`). Read per page view by `views._report(user)` -> `Report.add_gm_transactions`; never on *My account*, the dashboard widgets or the smart filter |
-| Corporation service | as Corporation | One row per main of the Corporation, linked yes/no, no problems |
-| Service | `view_all` | Every main of the Alliance, linked yes/no |
+| Corporation service | as Corporation | One row per main of the Corporation, linked yes/no, no problems; for Mumble a column *Active in Mumble* |
+| Service | `view_all` | Every main of the Alliance, linked yes/no; for Mumble a column *Active in Mumble* |
+| Active in Mumble (on Overview, Corporation, the Mumble lists) | the page's own | Per main with Mumble linked: days in EVE and in Mumble out of days in EVE over `activity_days` whole days (`activity.rates`, read per page view by `views._report` -> `Report.add_activity`). Below the linked share on the Mumble tile of cockpit and Corporation page (`Row.activity`), a row of each overview tile and a column of the overview table (`Corporation.rows`), a column per main in the Mumble lists (`partials/activity-cell.html`, days as tooltip). A tile is the mean of its mains (`report._mean_activity`); "-" without a share. Never a problem; not on My account or the dashboard. Nothing at all without the Mumble service |
 | Character Audit list (`character_audit`) | `view_all` | Every main of the Alliance with a tag per failed character check (`Account.keyword_counts`, "×n" for n characters), most problems first; 404 without character checks |
 | Director list (`directors/<group>`) | `view_all` | For `corptools_corporations` and `structures`: every Director of the Alliance's Corporations with Corporation, main (linked where the account is in the overview, *not in Auth* tag otherwise) and token yes/no, those without first; a notice without ESI (corptools' Directors only) or where roles were unreadable; 404 when no check of the group ran |
 | Unknown characters (`unknown_characters`) | `view_all` | Behind *Members registered*: every `unregistered` member of the Alliance (`Report.unknown_characters`) with Corporation and status - *not in Auth*, *no main* (account without a main), "-" for a snapshot from before 0.0.11 -, by Corporation and name; a notice naming how many Corporations' member lists were unread; 404 without any member list |
@@ -846,6 +847,14 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   commands into a script file in the scratchpad and run it by path.
 - `eos-test` takes one test label only: a second module name ends in
   "unrecognized arguments". Run the modules one by one or the whole app.
+- A fixture with fixed user IDs in a snapshot (`account_row(33, ...)`) can
+  collide with a user a test creates: MySQL does not reset the
+  auto-increment on rollback, so pks depend on which modules ran first. It
+  broke `test_dashboard` only in the full suite once `test_activity` came
+  before it (0.0.26); a single-module run stayed green. Use `make_user(...).pk`.
+- `MumbleUser.objects.create()` is Auth's own manager: it takes a user and
+  sets a password, not model fields. A test row goes in with
+  `MumbleUser(...).save()`.
 
 ## Open points / next steps
 
@@ -916,9 +925,11 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   with their permissions, without a try/except - an exception there fails
   that page. The contracts are listed at the end of *Checked and fine* in
   `docs/AUDIT.md`; the sibling audit sessions got the same list.
-- Production still runs 0.0.5: 0.0.6 to 0.0.25 are to be deployed, with
-  migrations 0007 to 0009 and `collectstatic` (for the spy markers also
-  eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
+- Production still runs 0.0.5: 0.0.6 to 0.0.26 are to be deployed, with
+  migrations 0007 to 0010, `collectstatic` (for the spy markers also
+  eos-spy-network 0.0.10) and the new beat entry
+  `eos_auth_monitor_record_activity` in `local.py` (README, *Installation*;
+  without it Active in Mumble stays empty). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
   without a snapshot it fails everyone.
 - **A CEO does not see the *My Corporation* widget** (reported for
