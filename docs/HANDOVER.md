@@ -4,18 +4,26 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-16 (0.0.26 plus Unreleased).
+Last updated 2026-11-16 (0.0.27).
 
 ## Release
 
-- **Unreleased** (2026-11-16): **Active in Mumble day by day** (see
-  `CHANGELOG.md` and the decisions of 2026-11-16 (day by day) below). Page
-  `account_activity` (`account/<id>/activity/`, `account_activity.html`),
-  `activity.breakdown()`, `views._visible_account` (shared with `account`),
-  `partials/activity-share.html`; the account page's Mumble tile shows the
-  share and links there. 9 new tests in `tests/test_activity.py` (29 in the
-  module; 13 sabotages, 13 red; `test_views` 187 green). Six new messages, English until `/commit`. No migration, no
-  static file. Not seen in a browser.
+- Version **0.0.27** of 2026-11-16: **Active in Mumble day by day** (see
+  `CHANGELOG.md` and the decisions of 2026-11-16 (day by day) below) - the
+  account page's Mumble tile shows the main's share with its days ("Active
+  in Mumble: 50 % (1 of 2)") and opens the new page `account_activity`
+  (`account/<id>/activity/`, `account_activity.html`): every day of the
+  window, today first. `activity.breakdown()`, `views._visible_account`
+  (shared with `account`), `partials/activity-share.html`. 9 new tests in
+  `tests/test_activity.py` (29 in the module; 13 sabotages, 13 red). Six
+  new messages, translated; "Day" needs the `eos-auth-monitor` context (it
+  clashed in ru and zh_Hans). No migration, no static file. Not seen in a
+  browser: `aa_dev` has no Mumble account, so it would show only the
+  "not linked" notice.
+- **Next steps**: look at the account page and the new page in a browser
+  on an instance with Mumble accounts; whether production writes
+  `MumbleUser.last_disconnect` is still unchecked (see the decisions of
+  2026-11-16 (Active in Mumble)).
 - Version **0.0.26** of 2026-11-16: **Active in Mumble** (see
   `CHANGELOG.md` and the decisions of 2026-11-16 (Active in Mumble) below) -
   of the days a main played EVE, the share it was in Mumble too.
@@ -157,7 +165,7 @@ Last updated 2026-11-16 (0.0.26 plus Unreleased).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 453 tests without the translation tests, 3 translation tests, all green;
+- 462 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -172,7 +180,7 @@ Last updated 2026-11-16 (0.0.26 plus Unreleased).
   0.0.18 5 for 5; 0.0.19 24 for 24; 0.0.20 8 for 8; 0.0.21 6 for 6; 0.0.22's two order tests checked by
   reasoning against the old sort, no sabotage run; 0.0.23 1 for 1, run
   against the old `report.py`; 0.0.24 8 for 8; 0.0.25 not sabotaged; 0.0.26
-  18 of 19, the green one strengthened).
+  18 of 19, the green one strengthened; 0.0.27 13 for 13).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -782,7 +790,8 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   `tables.js` sets `dt-left` on all columns. It also measures widths of a
   hidden table as zero, hence `autoWidth: false` (the overview table starts
   hidden).
-- Short words may clash with Alliance Auth's catalogue ("View" did): the
+- Short words may clash with Alliance Auth's catalogue ("View" did, "Day"
+  in ru and zh_Hans too): the
   translation test names them; give them `context "eos-auth-monitor"`.
 - `pkill -f "celery ..."` inside `wsl.exe -e bash -lc '...'` matches its own
   shell's command line and kills it (exit 15) - the worker dies, the restart
