@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 from esi.models import Scope, Token
 
 from django.core.cache import cache
@@ -27,6 +29,10 @@ class MonitorTestCase(TestCase):
     def setUp(self):
         super().setUp()
         cache.clear()
+        # no test reaches ESI: a rebuild reads every Corporation's public alliance history
+        patcher = patch("eos_auth_monitor.sources.members._client", return_value=MagicMock())
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
 
 def make_alliance(alliance_id=ALLIANCE_ID):

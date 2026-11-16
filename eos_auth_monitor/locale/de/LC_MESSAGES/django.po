@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-09 15:06+0000\n"
-"PO-Revision-Date: 2026-11-09 15:06+0000\n"
+"POT-Creation-Date: 2026-11-16 09:43+0000\n"
+"PO-Revision-Date: 2026-11-16 09:43+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: de\n"
 "Language: de\n"
@@ -482,87 +482,88 @@ msgstr ""
 msgid "Smart Filter: Auth Monitor character problems"
 msgstr "Smart Filter: Auth-Monitor-Character-Probleme"
 
-#: report.py:17
+#: report.py:18
 msgid "Corporation Audit"
 msgstr "Corporation-Audit"
 
-#: report.py:18
+#: report.py:19
 msgctxt "eos-auth-monitor"
 msgid "Structures"
 msgstr "Structures"
 
-#: report.py:24
+#: report.py:25
 msgid "Reading accounts"
 msgstr "Accounts werden gelesen"
 
-#: report.py:25
+#: report.py:26
 msgid "Checking characters"
 msgstr "Characters werden geprüft"
 
-#: report.py:26
+#: report.py:27
 msgid "Checking Corporations"
 msgstr "Corporations werden geprüft"
 
-#: report.py:27
+#: report.py:28
 msgid "Reading member lists"
 msgstr "Mitgliederlisten werden gelesen"
 
-#: report.py:28
+#: report.py:29
 msgid "Reading services"
 msgstr "Dienste werden gelesen"
 
-#: report.py:29
+#: report.py:30
 msgid "Saving"
 msgstr "Speichern"
 
-#: report.py:36
+#: report.py:37
 msgid "never updated"
 msgstr "nie aktualisiert"
 
-#: report.py:50
+#: report.py:51
 #, python-format
 msgid "and %(count)d more"
 msgid_plural "and %(count)d more"
 msgstr[0] "und %(count)d weiterer"
 msgstr[1] "und %(count)d weitere"
 
-#: report.py:292
+#: report.py:307
 #, python-format
 msgid "%(check)s (warning)"
 msgstr "%(check)s (Warnung)"
 
-#: report.py:520 templates/eos_auth_monitor/corporation.html:66
-#: templates/eos_auth_monitor/corporation.html:209
+#: report.py:561 templates/eos_auth_monitor/corporation.html:66
+#: templates/eos_auth_monitor/corporation.html:215
 #: templates/eos_auth_monitor/dashboard.corporation.html:33
 msgid "Not registered in Auth"
 msgstr "Nicht in Auth registriert"
 
-#: report.py:527 templates/eos_auth_monitor/account.html:112
+#: report.py:568 templates/eos_auth_monitor/account.html:112
 #: templates/eos_auth_monitor/account.html:114
 #: templates/eos_auth_monitor/corporation.html:96
+#: templates/eos_auth_monitor/corporation.html:151
 #: templates/eos_auth_monitor/partials/gm-tile.html:7
 #: templates/eos_auth_monitor/partials/gm-tile.html:9
 msgid "GM transactions"
 msgstr "GM-Transaktionen"
 
-#: report.py:569
+#: report.py:610
 msgid "Registered in Auth"
 msgstr "In Auth registriert"
 
-#: report.py:574 templates/eos_auth_monitor/character_audit.html:8
+#: report.py:615 templates/eos_auth_monitor/character_audit.html:8
 #: templates/eos_auth_monitor/character_audit.html:20 views.py:293
 msgid "Character Audit"
 msgstr "Character-Audit"
 
-#: report.py:860
+#: report.py:909
 msgid "Members registered"
 msgstr "Mitglieder registriert"
 
-#: report.py:873
+#: report.py:922
 msgid "Character Audit complete"
 msgstr "Character-Audit vollständig"
 
-#: report.py:885
+#: report.py:934
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s funktioniert"
@@ -763,19 +764,19 @@ msgid_plural "%(counter)s characters"
 msgstr[0] "%(counter)s Character"
 msgstr[1] "%(counter)s Characters"
 
-#: templates/eos_auth_monitor/corporation.html:160
+#: templates/eos_auth_monitor/corporation.html:166
 msgid "Without problems"
 msgstr "Ohne Probleme"
 
-#: templates/eos_auth_monitor/corporation.html:176
+#: templates/eos_auth_monitor/corporation.html:182
 msgid "No main of this Corporation is registered in Auth."
 msgstr "Kein Main dieser Corporation ist in Auth registriert."
 
-#: templates/eos_auth_monitor/corporation.html:180
+#: templates/eos_auth_monitor/corporation.html:186
 msgid "Members whose main is in another Corporation"
 msgstr "Mitglieder, deren Main in einer anderen Corporation ist"
 
-#: templates/eos_auth_monitor/corporation.html:204
+#: templates/eos_auth_monitor/corporation.html:210
 msgid ""
 "The member list of this Corporation could not be read: no member has a token"
 " with the membership scope."
@@ -926,7 +927,7 @@ msgstr "Spione"
 msgid "Characters with GM transactions in eos-tax"
 msgstr "Characters mit GM-Transaktionen in eos-tax"
 
-#: templates/eos_auth_monitor/index.html:190
+#: templates/eos_auth_monitor/index.html:191
 msgid "No Corporation matches the filter."
 msgstr "Keine Corporation passt zum Filter."
 
@@ -941,6 +942,10 @@ msgstr "Namen für eine EVE-Mail kopieren"
 #: templates/eos_auth_monitor/partials/copy-button.html:6
 msgid "Copy names"
 msgstr "Namen kopieren"
+
+#: templates/eos_auth_monitor/partials/corporation-header.html:22
+msgid "In the Alliance since"
+msgstr "In der Alliance seit"
 
 #: templates/eos_auth_monitor/partials/csv-button.html:5
 msgid "Download the names as a CSV file"

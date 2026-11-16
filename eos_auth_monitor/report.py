@@ -5,6 +5,7 @@ page costs one read however big the Alliance is.
 """
 
 from dataclasses import dataclass, field, replace
+from datetime import datetime
 
 from django.urls import NoReverseMatch, reverse
 from django.utils.translation import gettext_lazy as _
@@ -397,6 +398,8 @@ class Corporation:
     directors: list[Director] = field(default_factory=list)
     # accounts whose main is in another Corporation, each with only its characters in this one
     visiting: list[Account] = field(default_factory=list)
+    # when it last joined the Alliance; None when ESI did not say or the snapshot predates it
+    alliance_joined: datetime | None = None
     # eos-spy-network's marker kinds in its order once its markers were added for the viewer; None: not shown
     spy_kinds: tuple | None = None
     # set by Report.add_gm_transactions: the viewer may see eos-tax's GM transactions
@@ -753,6 +756,7 @@ class Report:
             # a snapshot from before the Director lists has none
             [Director(**director) for director in row.get("directors", [])],
             visiting=visiting,
+            alliance_joined=datetime.fromisoformat(row["alliance_joined"]) if row.get("alliance_joined") else None,
         )
 
     @property

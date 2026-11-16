@@ -217,6 +217,7 @@ TRANSLATIONS = {
         "Только Character в Alliance",
         "仅限 Alliance 中的 Character",
     ),
+    "In the Alliance since": ("In der Alliance seit", "В Alliance с", "加入 Alliance 时间"),
     "Checks, shows and counts only the characters of an account that are in the Alliance; alts elsewhere are left out.": (
         "Prüft, zeigt und zählt nur die Characters eines Accounts, die in der Alliance sind; Alts anderswo werden weggelassen.",
         "Проверяет, показывает и считает только тех Character аккаунта, которые состоят в Alliance; альты в других местах не учитываются.",

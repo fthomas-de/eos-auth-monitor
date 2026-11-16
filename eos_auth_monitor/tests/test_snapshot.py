@@ -112,6 +112,15 @@ class TestAccounts(MonitorTestCase):
         self.assertEqual(corporation(data, 2001)["member_total"], 290)
         self.assertIsNone(corporation(data, 2555)["member_total"])
 
+    def test_should_store_when_each_corporation_joined_the_alliance(self):
+        with patch(
+            "eos_auth_monitor.snapshot.members_source.alliance_joined", return_value="2025-03-14T11:00:00+00:00"
+        ) as joined:
+            data = build()
+
+        self.assertEqual(corporation(data, 2001)["alliance_joined"], "2025-03-14T11:00:00+00:00")
+        joined.assert_called_with(2001, ALLIANCE_ID)
+
     def test_should_leave_out_accounts_with_their_main_elsewhere(self):
         spy = make_user("spy", corporation_id=2001, alliance_id=OTHER_ALLIANCE_ID)
         add_alt(spy, 9100, "Spy alt", corporation_id=2001)

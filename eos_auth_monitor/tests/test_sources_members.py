@@ -1,3 +1,4 @@
+from datetime import datetime
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -139,3 +140,35 @@ class TestNames(MonitorTestCase):
         client.Universe.PostUniverseNames.return_value.result.side_effect = RuntimeError("down")
         with patch("eos_auth_monitor.sources.members._client", return_value=client):
             self.assertEqual(members.names([5]), {})
+
+
+class TestAllianceJoined(MonitorTestCase):
+    def joined(self, history):
+        client = MagicMock()
+        result = client.Corporation.GetCorporationsCorporationIdAlliancehistory.return_value.result
+        if isinstance(history, Exception):
+            result.side_effect = history
+        else:
+            result.return_value = [
+                SimpleNamespace(alliance_id=alliance_id, start_date=datetime.fromisoformat(start))
+                for alliance_id, start in history
+            ]
+        with patch("eos_auth_monitor.sources.members._client", return_value=client):
+            return members.alliance_joined(2001, 3001)
+
+    def test_should_give_the_last_time_the_corporation_joined_the_alliance(self):
+        # joined, left for another Alliance and for none, came back
+        history = [
+            (3001, "2020-01-01T00:00:00+00:00"),
+            (3999, "2022-05-01T00:00:00+00:00"),
+            (None, "2023-01-01T00:00:00+00:00"),
+            (3001, "2025-03-14T11:00:00+00:00"),
+        ]
+
+        self.assertEqual(self.joined(history), "2025-03-14T11:00:00+00:00")
+
+    def test_should_give_none_when_the_alliance_is_not_in_the_history(self):
+        self.assertIsNone(self.joined([(3999, "2022-05-01T00:00:00+00:00")]))
+
+    def test_should_keep_going_when_esi_fails(self):
+        self.assertIsNone(self.joined(ESI_DOWN))

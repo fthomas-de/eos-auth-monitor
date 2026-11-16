@@ -273,6 +273,10 @@ def build(config, on_step=_no_progress) -> dict | None:
             {"name": main.corporation_name, "ticker": main.corporation_ticker, "member_total": None},
         )
     corporation_ids = sorted(corporations)
+    alliance_joined = {
+        corporation_id: members_source.alliance_joined(corporation_id, alliance_id)
+        for corporation_id in corporation_ids
+    }
     if asked_roles:
         # a Corporation of the Alliance where nobody has a character yet still deserves its marker
         for corporation_id in corporation_ids:
@@ -367,6 +371,7 @@ def build(config, on_step=_no_progress) -> dict | None:
                     "name": corporations[corporation_id]["name"],
                     "ticker": corporations[corporation_id]["ticker"],
                     "member_total": corporations[corporation_id]["member_total"],
+                    "alliance_joined": alliance_joined[corporation_id],
                     "problems": corporation_problems.get(corporation_id, []),
                     "no_director_token": corporation_id in roles_unreadable,
                     "directors": directors.get(corporation_id, []),

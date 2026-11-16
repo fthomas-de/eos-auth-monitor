@@ -18,6 +18,9 @@
                     {% if corporation.characters is not None %}
                         · {% translate "Characters" context "EVE jargon" %}: {{ corporation.characters }}
                     {% endif %}
+                    {% if corporation.alliance_joined %}
+                        · {% translate "In the Alliance since" %}: {{ corporation.alliance_joined|date:"Y-m-d" }} ({{ corporation.alliance_joined|timesince }})
+                    {% endif %}
                 </div>
                 {% for problem in corporation.problems %}
                     <div class="small mb-2">

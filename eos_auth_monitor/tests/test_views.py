@@ -309,6 +309,18 @@ class TestPages(ViewTestCase):
         self.assertContains(response, "Characters")
         self.assertContains(response, "<span>290</span>", html=True)
 
+    def test_should_show_when_the_corporation_joined_the_alliance(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["alliance_joined"] = "2025-03-14T11:00:00+00:00"
+        snapshot.save()
+
+        response = self.get(self.leader, "corporation", 2001)
+
+        self.assertContains(response, "In the Alliance since: 2025-03-14 (")
+
+    def test_should_not_show_the_alliance_join_where_it_is_not_known(self):
+        self.assertNotContains(self.get(self.leader, "corporation", 2001), "In the Alliance since")
+
     def test_should_not_show_a_character_count_where_it_is_not_known(self):
         # the tile's row; the table has the column in any case, with "-" where the count is missing
         tile_row = '<span><i class="fas fa-users fa-fw"></i> Characters</span>'

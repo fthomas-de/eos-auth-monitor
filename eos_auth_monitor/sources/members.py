@@ -11,6 +11,9 @@ corptools knows as a Director: corptools only reads the roles of characters
 that have a token, so a Director without one is invisible to it, but the
 Director who has a token can see everybody's roles.
 
+When a Corporation joined the Alliance comes from its public alliance
+history, without a token; nothing installed stores it either.
+
 django-esi caches the responses and honours their expiry, so the half-hourly
 task does not ask ESI more often than the data changes.
 """
@@ -41,6 +44,7 @@ def _client():
             ua_version=__version__,
             ua_url="https://github.com/fthomas-de/eos-auth-monitor",
             operations=[
+                "GetCorporationsCorporationIdAlliancehistory",
                 "GetCorporationsCorporationIdMembers",
                 "GetCorporationsCorporationIdRoles",
                 "PostUniverseNames",
@@ -113,6 +117,19 @@ def corporation_directors(corporation_id: int) -> set[int] | None:
             if DIRECTOR in [getattr(role, "value", role) for role in item.roles]
         }
     return None
+
+
+def alliance_joined(corporation_id: int, alliance_id: int) -> str | None:
+    """When the Corporation last joined the Alliance, as an ISO timestamp, or None when ESI does not say."""
+    try:
+        history = (
+            _client().Corporation.GetCorporationsCorporationIdAlliancehistory(corporation_id=corporation_id).result()
+        )
+    except Exception as error:  # noqa: BLE001 - the date is a nicety, the overview stands without it
+        logger.warning("Alliance history of %s not readable: %s", corporation_id, type(error).__name__)
+        return None
+    joined = max((item.start_date for item in history if item.alliance_id == alliance_id), default=None)
+    return joined.isoformat() if joined else None
 
 
 def names(character_ids) -> dict[int, str]:

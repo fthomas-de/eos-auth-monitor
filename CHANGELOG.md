@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.25] - 2026-11-16
+
+### Added
+
+- The Corporation header says when the Corporation joined the configured
+  Alliance, with the date and how long ago, after the number of characters.
+  The rebuild reads it from the Corporation's public alliance history on ESI,
+  without a token; when ESI does not answer, the header leaves it out and the
+  rebuild goes on. Shown after the next rebuild.
+
 ## [0.0.24] - 2026-11-13
 
 ### Changed
