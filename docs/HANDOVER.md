@@ -4,11 +4,23 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-13 (0.0.24).
+Last updated 2026-11-16 (0.0.25).
 
 ## Release
 
-- Version **0.0.24** of 2026-11-13: **fixes from a code audit** for bugs and
+- Version **0.0.25** of 2026-11-16: **Alliance join date in the
+  Corporation header** (see `CHANGELOG.md` and the decisions of 2026-11-16
+  below) - after *Characters*, "In the Alliance since: <Y-m-d> (<timesince>)"
+  on every page with the header. The rebuild reads each Corporation's public
+  alliance history from ESI without a token (`sources.members.alliance_joined`,
+  the latest entry of the configured Alliance) into the snapshot row
+  `alliance_joined` (ISO string; `Corporation.alliance_joined` a datetime).
+  An ESI failure only logs and leaves the date out. `tests/base.py` now mocks
+  `sources.members._client` in every test. No migration, one new message
+  (de, ru, zh_Hans). 433 tests green, 6 new; no sabotage run. Not seen in a
+  browser; the real ESI call was tried in the dev shell (Invidia
+  Administrative: 2015-05-30).
+- New in 0.0.24 (2026-11-13): **fixes from a code audit** for bugs and
   security (`docs/AUDIT.md`: what was found, why, and the fix with its test;
   `CHANGELOG.md`; the decisions of 2026-11-12 below). Five findings, no
   Critical or High: a rebuild fails when ESI does not answer instead of
@@ -137,7 +149,7 @@ Last updated 2026-11-13 (0.0.24).
   and the to-do card opened by markers alone were untested; 0.0.15 6 for 6; 0.0.16 1 for 1;
   0.0.18 5 for 5; 0.0.19 24 for 24; 0.0.20 8 for 8; 0.0.21 6 for 6; 0.0.22's two order tests checked by
   reasoning against the old sort, no sabotage run; 0.0.23 1 for 1, run
-  against the old `report.py`; 0.0.24 8 for 8).
+  against the old `report.py`; 0.0.24 8 for 8; 0.0.25 not sabotaged).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -630,6 +642,17 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   the 0.0.24 commit); its *Checked and fine* list says what needs no second
   look.
 
+2026-11-16 (0.0.25):
+
+- **Alliance join date in the Corporation header** ("füge der corporation
+  detail ansicht eine info zum allianz beitritt zur aktuellen allianz hinzu
+  ... nach characters"): the user chose date plus duration and **every page
+  with the header**, not only the Corporation page. They expected corptools
+  to have it; it does not (only characters' Corporation history), so ESI's
+  public alliance history it is, read at every rebuild, independent of the
+  *ESI member lists* switch. Unlike the member lists (AM-01), an ESI failure
+  here does not fail the run: the date is a nicety.
+
 ## Pitfalls found
 
 - `eos-test` takes one test label only; a second one fails with
@@ -770,8 +793,15 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - From PowerShell, `wsl.exe ... bash -lc '...'` loses the double quotes
   inside (a `grep -E "^(...)"` becomes a bash syntax error): put such
   commands into a script file in the scratchpad and run it by path.
+- `eos-test` takes one test label only: a second module name ends in
+  "unrecognized arguments". Run the modules one by one or the whole app.
 
 ## Open points / next steps
+
+- **Alliance join date not seen in a browser** (0.0.25): it shows only after
+  a rebuild run by a worker with the 0.0.25 code. Check that the header line
+  does not wrap badly on narrow screens; a Corporation whose history ESI does
+  not return (or a snapshot from before 0.0.25) shows no date.
 
 - **Scope warnings not seen in a browser**, nor the yellow in AA's dark
   theme. In dev they show only after *Rebuild now* (the stored snapshot has no
@@ -826,7 +856,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   with their permissions, without a try/except - an exception there fails
   that page. The contracts are listed at the end of *Checked and fine* in
   `docs/AUDIT.md`; the sibling audit sessions got the same list.
-- Production still runs 0.0.5: 0.0.6 to 0.0.24 are to be deployed, with
+- Production still runs 0.0.5: 0.0.6 to 0.0.25 are to be deployed, with
   migrations 0007 to 0009 and `collectstatic` (for the spy markers also
   eos-spy-network 0.0.10). After deploying, *Rebuild now* (or the beat run) fills the
   Director lists, and only then should the smart filter be bound to a group:
@@ -893,7 +923,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - `MonitorConfiguration` in `aa_dev`: Alliance 99003995 (Invidia Gloriae
   Comes), nothing switched off, ESI on, *Only characters in the Alliance*
   off, the notice empty, `critical_scope_count` 5 (the migration's
-  default). **No Celery worker was running** on 2026-11-09 nor on 2026-11-13 (`ps` found none; a worker started now runs the 0.0.24 code):
+  default). **No Celery worker was running** on 2026-11-09 nor on 2026-11-13 (`ps` found none; not checked on 2026-11-16; a worker started now runs the 0.0.25 code):
   *Rebuild now* queues for nobody until one is started detached by a script
   (`setsid nohup ~/aa-dev/venv/bin/celery -A myauth worker -l info -P solo`
   in `~/aa-dev/working/myauth`, log in `/tmp/celery-eos.log`); one worker,
