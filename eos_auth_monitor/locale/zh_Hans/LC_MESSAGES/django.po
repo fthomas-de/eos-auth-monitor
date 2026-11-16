@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 13:39+0000\n"
-"PO-Revision-Date: 2026-11-16 13:39+0000\n"
+"POT-Creation-Date: 2026-11-16 14:11+0000\n"
+"PO-Revision-Date: 2026-11-16 14:11+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: zh_Hans\n"
 "Language: zh_Hans\n"
@@ -342,7 +342,7 @@ msgstr "Corporation 审计：所需 Scope"
 msgid "One token of a Corporation member must carry all of these."
 msgstr "Corporation 成员的某一个令牌必须包含以下全部内容。"
 
-#: forms.py:57 models.py:34 templates/eos_auth_monitor/account.html:65
+#: forms.py:57 models.py:34 templates/eos_auth_monitor/account.html:70
 #: templates/eos_auth_monitor/settings.html:11
 msgctxt "EVE jargon"
 msgid "Alliance"
@@ -490,8 +490,8 @@ msgstr "%(check)s（警告）"
 msgid "Not registered in Auth"
 msgstr "未在 Auth 注册"
 
-#: report.py:598 templates/eos_auth_monitor/account.html:112
-#: templates/eos_auth_monitor/account.html:114
+#: report.py:598 templates/eos_auth_monitor/account.html:117
+#: templates/eos_auth_monitor/account.html:119
 #: templates/eos_auth_monitor/corporation.html:96
 #: templates/eos_auth_monitor/corporation.html:151
 #: templates/eos_auth_monitor/partials/gm-tile.html:7
@@ -504,7 +504,7 @@ msgid "Registered in Auth"
 msgstr "已在 Auth 注册"
 
 #: report.py:646 templates/eos_auth_monitor/character_audit.html:8
-#: templates/eos_auth_monitor/character_audit.html:20 views.py:295
+#: templates/eos_auth_monitor/character_audit.html:20 views.py:324
 msgid "Character Audit"
 msgstr "Character 审计"
 
@@ -552,13 +552,13 @@ msgstr "已关联"
 msgid "not linked"
 msgstr "未关联"
 
-#: templates/eos_auth_monitor/account.html:63
+#: templates/eos_auth_monitor/account.html:68
 #: templates/eos_auth_monitor/unknown_characters.html:25
 msgctxt "EVE jargon"
 msgid "Character"
 msgstr "Character"
 
-#: templates/eos_auth_monitor/account.html:64
+#: templates/eos_auth_monitor/account.html:69
 #: templates/eos_auth_monitor/character_audit.html:19
 #: templates/eos_auth_monitor/directors.html:29
 #: templates/eos_auth_monitor/index.html:120
@@ -568,39 +568,39 @@ msgctxt "EVE jargon"
 msgid "Corporation"
 msgstr "Corporation"
 
-#: templates/eos_auth_monitor/account.html:66
+#: templates/eos_auth_monitor/account.html:71
 #: templates/eos_auth_monitor/index.html:123
 #: templates/eos_auth_monitor/partials/problem-marker.html:3
 msgid "Problems"
 msgstr "问题"
 
-#: templates/eos_auth_monitor/account.html:104
+#: templates/eos_auth_monitor/account.html:109
 #: templates/eos_auth_monitor/partials/spy-tile.html:7
 #: templates/eos_auth_monitor/partials/spy-tile.html:10
 msgid "Spy network"
 msgstr "Spy Network"
 
-#: templates/eos_auth_monitor/account.html:113
+#: templates/eos_auth_monitor/account.html:118
 msgid "A GM moved ISK for this character."
 msgstr "GM 为这个 Character 转移了 ISK。"
 
-#: templates/eos_auth_monitor/account.html:124
+#: templates/eos_auth_monitor/account.html:129
 msgid "None of your characters has a problem."
 msgstr "你的 Character 都没有问题。"
 
-#: templates/eos_auth_monitor/account.html:124
+#: templates/eos_auth_monitor/account.html:129
 #: templates/eos_auth_monitor/dashboard.own.html:39
 msgid "No character of this account has a problem."
 msgstr "此账号的所有 Character 都没有问题。"
 
-#: templates/eos_auth_monitor/account.html:132
+#: templates/eos_auth_monitor/account.html:137
 #, python-format
 msgctxt "EVE jargon"
 msgid "%(counter)s character without problems"
 msgid_plural "%(counter)s characters without problems"
 msgstr[0] "%(counter)s 个没有问题的 Character"
 
-#: templates/eos_auth_monitor/account.html:139
+#: templates/eos_auth_monitor/account.html:144
 #: templates/eos_auth_monitor/character_audit.html:18
 #: templates/eos_auth_monitor/corporation_service.html:18
 #: templates/eos_auth_monitor/directors.html:30
@@ -610,7 +610,7 @@ msgctxt "EVE jargon"
 msgid "Main"
 msgstr "Main"
 
-#: templates/eos_auth_monitor/account.html:153
+#: templates/eos_auth_monitor/account.html:158
 #, python-format
 msgctxt "EVE jargon"
 msgid ""
@@ -621,7 +621,7 @@ msgid_plural ""
 "nor checked here."
 msgstr[0] "你有 %(counter)s 个 Character 在 Alliance 之外，在此既不显示也不检查。"
 
-#: templates/eos_auth_monitor/account.html:155
+#: templates/eos_auth_monitor/account.html:160
 #, python-format
 msgctxt "EVE jargon"
 msgid ""
@@ -632,8 +632,36 @@ msgid_plural ""
 "here."
 msgstr[0] "%(counter)s 个 Alliance 之外的 Character 在此既不显示也不检查。"
 
+#: templates/eos_auth_monitor/account_activity.html:23
+msgctxt "eos-auth-monitor"
+msgid "Day"
+msgstr "日期"
+
+#: templates/eos_auth_monitor/account_activity.html:34
+msgid "Today is not over yet and does not count in the share."
+msgstr "今天尚未结束，暂不计入比例。"
+
+#: templates/eos_auth_monitor/account_activity.html:34
+msgid "today"
+msgstr "今天"
+
+#: templates/eos_auth_monitor/account_activity.html:37
+#: templates/eos_auth_monitor/account_activity.html:40
+msgctxt "eos-auth-monitor"
+msgid "yes"
+msgstr "是"
+
+#: templates/eos_auth_monitor/account_activity.html:43
+msgctxt "eos-auth-monitor"
+msgid "no"
+msgstr "否"
+
+#: templates/eos_auth_monitor/account_activity.html:54
+msgid "Mumble is not linked: without it, no day is noted."
+msgstr "未关联 Mumble：不关联就不会记录任何一天。"
+
 #: templates/eos_auth_monitor/base.html:12
-#: templates/eos_auth_monitor/dashboard.own.html:8 views.py:237
+#: templates/eos_auth_monitor/dashboard.own.html:8 views.py:266
 msgid "My account"
 msgstr "我的账号"
 
@@ -646,7 +674,7 @@ msgstr "我的 Corporation"
 msgid "Alliance overview"
 msgstr "Alliance 概览"
 
-#: templates/eos_auth_monitor/base.html:30 views.py:42
+#: templates/eos_auth_monitor/base.html:30 views.py:43
 msgid "Settings"
 msgstr "设置"
 
@@ -1041,7 +1069,7 @@ msgid_plural ""
 "unknown characters are missing here."
 msgstr[0] "无法读取 %(counter)s 个 Corporation 的成员列表，因此这里缺少其中的未知 Character。"
 
-#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:336
+#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:365
 msgid "Unknown characters"
 msgstr "未知 Character"
 
@@ -1076,33 +1104,33 @@ msgstr "Corporation 详情"
 msgid "Main details"
 msgstr "Main 详情"
 
-#: views.py:178
+#: views.py:179
 msgctxt "eos-auth-monitor"
 msgid "Name"
 msgstr "名称"
 
-#: views.py:183
+#: views.py:184
 msgid "Problem"
 msgstr "问题"
 
-#: views.py:352
+#: views.py:381
 msgid "Settings saved."
 msgstr "设置已保存。"
 
-#: views.py:354
+#: views.py:383
 msgid "Settings saved. The overview is being rebuilt."
 msgstr "设置已保存。概览正在重建。"
 
-#: views.py:358
+#: views.py:387
 msgid ""
 "Settings saved, but the task queue is not reachable: the overview is rebuilt"
 " once it is back."
 msgstr "设置已保存，但任务队列无法访问：待其恢复后将重建概览。"
 
-#: views.py:382
+#: views.py:411
 msgid "The overview is being rebuilt."
 msgstr "概览正在重建。"
 
-#: views.py:384
+#: views.py:413
 msgid "The rebuild could not be started: the task queue is not reachable."
 msgstr "无法启动重建：任务队列无法访问。"

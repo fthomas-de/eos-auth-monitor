@@ -95,3 +95,14 @@ def rates(days: int) -> dict[int, tuple[int, int]]:
         .values("user_id")
         .annotate(logins=Count("pk"), both=Count("pk", filter=Q(mumble=True)))
     }
+
+
+def breakdown(user_id: int, days: int) -> list[ActivityDay]:
+    """The days behind one main's share: today first, then the ``days`` whole days ``rates()`` counts.
+
+    A day nothing was noted on comes as an unsaved ActivityDay with both flags off.
+    """
+    today = timezone.now().date()
+    noted = {row.day: row for row in ActivityDay.objects.filter(user_id=user_id, day__gte=today - timedelta(days=days))}
+    dates = [today - timedelta(days=back) for back in range(days + 1)]
+    return [noted.get(date) or ActivityDay(user_id=user_id, day=date) for date in dates]

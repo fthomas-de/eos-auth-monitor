@@ -28,7 +28,7 @@ from .permissions import (
     can_view_corporation,
     own_corporation_id,
 )
-from .report import CORPORATION_GROUP_LABELS, PHASE_LABELS, Report
+from .report import ACTIVITY_LABEL, CORPORATION_GROUP_LABELS, MUMBLE, PHASE_LABELS, Report
 from .sources import gm_transactions, spy_network
 from .tasks import update_snapshot
 
@@ -39,6 +39,7 @@ LOCATIONS = {
     "eos_auth_monitor/index.html": _("Corporation overview"),
     "eos_auth_monitor/corporation.html": _("Corporation details"),
     "eos_auth_monitor/account.html": _("Main details"),
+    "eos_auth_monitor/account_activity.html": ACTIVITY_LABEL,
     "eos_auth_monitor/settings.html": _("Settings"),
 }
 
@@ -190,16 +191,20 @@ def _csv_cell(value: str) -> str:
     return f"'{value}" if value[:1] in ("=", "+", "-", "@", "\t", "\r") else value
 
 
-@any_permission_required(BASIC_ACCESS, VIEW_ALL)
-def account(request, user_id):
+def _visible_account(request, user_id):
+    """The report, the account's Corporation and the account; 404 or 403 where the viewer may not see it."""
     report = _report(request.user)
-    if report is None:
-        raise Http404
-    corporation, account = report.account(user_id)
+    corporation, account = report.account(user_id) if report else (None, None)
     if account is None:
         raise Http404
     if not can_view_corporation(request.user, corporation.id):
         raise PermissionDenied
+    return report, corporation, account
+
+
+@any_permission_required(BASIC_ACCESS, VIEW_ALL)
+def account(request, user_id):
+    report, corporation, account = _visible_account(request, user_id)
     return _render(
         request,
         "eos_auth_monitor/account.html",
@@ -208,6 +213,30 @@ def account(request, user_id):
             "corporation": corporation,
             "account": account,
             "own": False,
+        },
+        _corporation_nav(request.user, corporation.id),
+    )
+
+
+@any_permission_required(BASIC_ACCESS, VIEW_ALL)
+def account_activity(request, user_id):
+    """Active in Mumble of one main, day by day."""
+    report, corporation, account = _visible_account(request, user_id)
+    service = report.service(MUMBLE)
+    if service is None:
+        raise Http404
+    return _render(
+        request,
+        "eos_auth_monitor/account_activity.html",
+        {
+            **_state(report),
+            "corporation": corporation,
+            "account": account,
+            "service": service,
+            # without Mumble linked nothing is noted (account.activity is None)
+            "days": (
+                activity.breakdown(user_id, MonitorConfiguration.get_solo().activity_days) if account.activity else []
+            ),
         },
         _corporation_nav(request.user, corporation.id),
     )

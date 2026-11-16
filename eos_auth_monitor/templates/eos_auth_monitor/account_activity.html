@@ -1,0 +1,58 @@
+{% extends "eos_auth_monitor/base.html" %}
+{% load i18n %}
+{% load evelinks %}
+
+{% block details %}
+    {% include "eos_auth_monitor/partials/corporation-header.html" with hide_services=True %}
+
+    <div class="card">
+        <div class="card-header d-flex flex-wrap align-items-center gap-2">
+            <img src="{{ account.main_id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+            <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="card-title mb-0 me-auto text-break">{{ account.main_name }}</a>
+            {% if account.activity %}
+                <div class="small eos-auth-monitor-activity">{% include "eos_auth_monitor/partials/activity-share.html" with row=account.activity %}</div>
+            {% endif %}
+        </div>
+
+        <div class="card-body">
+            {% if days %}
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0 eos-auth-monitor-activity-days">
+                        <thead>
+                            <tr>
+                                <th>{% translate "Day" context "eos-auth-monitor" %}</th>
+                                <th>EVE</th>
+                                <th><i class="{{ service.icon }}"></i> {{ service.label }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for day in days %}
+                                <tr>
+                                    <td class="text-nowrap">
+                                        {{ day.day|date:"Y-m-d" }}
+                                        {% if forloop.first %}
+                                            <span class="badge text-bg-secondary" title="{% translate "Today is not over yet and does not count in the share." %}">{% translate "today" %}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{% if day.eve_login %}<span class="badge text-bg-success">{% translate "yes" context "eos-auth-monitor" %}</span>{% else %}-{% endif %}</td>
+                                    <td>
+                                        {% if day.mumble %}
+                                            <span class="badge text-bg-success">{% translate "yes" context "eos-auth-monitor" %}</span>
+                                        {% elif day.eve_login and not forloop.first %}
+                                            {# a day in EVE without Mumble: what lowers the share #}
+                                            <span class="badge text-bg-danger">{% translate "no" context "eos-auth-monitor" %}</span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info mb-0">{% translate "Mumble is not linked: without it, no day is noted." %}</div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

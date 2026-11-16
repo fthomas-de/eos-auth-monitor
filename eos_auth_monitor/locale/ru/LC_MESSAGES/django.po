@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 13:39+0000\n"
-"PO-Revision-Date: 2026-11-16 13:39+0000\n"
+"POT-Creation-Date: 2026-11-16 14:11+0000\n"
+"PO-Revision-Date: 2026-11-16 14:11+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: ru\n"
 "Language: ru\n"
@@ -383,7 +383,7 @@ msgstr "Аудит Corporation: необходимые скоупы"
 msgid "One token of a Corporation member must carry all of these."
 msgstr "Один токен участника Corporation должен содержать все из них."
 
-#: forms.py:57 models.py:34 templates/eos_auth_monitor/account.html:65
+#: forms.py:57 models.py:34 templates/eos_auth_monitor/account.html:70
 #: templates/eos_auth_monitor/settings.html:11
 msgctxt "EVE jargon"
 msgid "Alliance"
@@ -545,8 +545,8 @@ msgstr "%(check)s (предупреждение)"
 msgid "Not registered in Auth"
 msgstr "Не зарегистрированы в Auth"
 
-#: report.py:598 templates/eos_auth_monitor/account.html:112
-#: templates/eos_auth_monitor/account.html:114
+#: report.py:598 templates/eos_auth_monitor/account.html:117
+#: templates/eos_auth_monitor/account.html:119
 #: templates/eos_auth_monitor/corporation.html:96
 #: templates/eos_auth_monitor/corporation.html:151
 #: templates/eos_auth_monitor/partials/gm-tile.html:7
@@ -559,7 +559,7 @@ msgid "Registered in Auth"
 msgstr "Зарегистрированы в Auth"
 
 #: report.py:646 templates/eos_auth_monitor/character_audit.html:8
-#: templates/eos_auth_monitor/character_audit.html:20 views.py:295
+#: templates/eos_auth_monitor/character_audit.html:20 views.py:324
 msgid "Character Audit"
 msgstr "Аудит Character"
 
@@ -609,13 +609,13 @@ msgstr "привязано"
 msgid "not linked"
 msgstr "не привязано"
 
-#: templates/eos_auth_monitor/account.html:63
+#: templates/eos_auth_monitor/account.html:68
 #: templates/eos_auth_monitor/unknown_characters.html:25
 msgctxt "EVE jargon"
 msgid "Character"
 msgstr "Character"
 
-#: templates/eos_auth_monitor/account.html:64
+#: templates/eos_auth_monitor/account.html:69
 #: templates/eos_auth_monitor/character_audit.html:19
 #: templates/eos_auth_monitor/directors.html:29
 #: templates/eos_auth_monitor/index.html:120
@@ -625,32 +625,32 @@ msgctxt "EVE jargon"
 msgid "Corporation"
 msgstr "Corporation"
 
-#: templates/eos_auth_monitor/account.html:66
+#: templates/eos_auth_monitor/account.html:71
 #: templates/eos_auth_monitor/index.html:123
 #: templates/eos_auth_monitor/partials/problem-marker.html:3
 msgid "Problems"
 msgstr "Проблемы"
 
-#: templates/eos_auth_monitor/account.html:104
+#: templates/eos_auth_monitor/account.html:109
 #: templates/eos_auth_monitor/partials/spy-tile.html:7
 #: templates/eos_auth_monitor/partials/spy-tile.html:10
 msgid "Spy network"
 msgstr "Spy Network"
 
-#: templates/eos_auth_monitor/account.html:113
+#: templates/eos_auth_monitor/account.html:118
 msgid "A GM moved ISK for this character."
 msgstr "GM перевёл ISK для этого Character."
 
-#: templates/eos_auth_monitor/account.html:124
+#: templates/eos_auth_monitor/account.html:129
 msgid "None of your characters has a problem."
 msgstr "Ни у одного из твоих Character нет проблем."
 
-#: templates/eos_auth_monitor/account.html:124
+#: templates/eos_auth_monitor/account.html:129
 #: templates/eos_auth_monitor/dashboard.own.html:39
 msgid "No character of this account has a problem."
 msgstr "Ни у одного Character этого аккаунта нет проблем."
 
-#: templates/eos_auth_monitor/account.html:132
+#: templates/eos_auth_monitor/account.html:137
 #, python-format
 msgctxt "EVE jargon"
 msgid "%(counter)s character without problems"
@@ -659,7 +659,7 @@ msgstr[0] "%(counter)s Character без проблем"
 msgstr[1] "%(counter)s Character без проблем"
 msgstr[2] "%(counter)s Character без проблем"
 
-#: templates/eos_auth_monitor/account.html:139
+#: templates/eos_auth_monitor/account.html:144
 #: templates/eos_auth_monitor/character_audit.html:18
 #: templates/eos_auth_monitor/corporation_service.html:18
 #: templates/eos_auth_monitor/directors.html:30
@@ -669,7 +669,7 @@ msgctxt "EVE jargon"
 msgid "Main"
 msgstr "Main"
 
-#: templates/eos_auth_monitor/account.html:153
+#: templates/eos_auth_monitor/account.html:158
 #, python-format
 msgctxt "EVE jargon"
 msgid ""
@@ -688,7 +688,7 @@ msgstr[2] ""
 "%(counter)s из твоих Character вне Alliance и здесь не показываются и не "
 "проверяются."
 
-#: templates/eos_auth_monitor/account.html:155
+#: templates/eos_auth_monitor/account.html:160
 #, python-format
 msgctxt "EVE jargon"
 msgid ""
@@ -704,8 +704,36 @@ msgstr[1] ""
 msgstr[2] ""
 "%(counter)s Character вне Alliance здесь не показываются и не проверяются."
 
+#: templates/eos_auth_monitor/account_activity.html:23
+msgctxt "eos-auth-monitor"
+msgid "Day"
+msgstr "День"
+
+#: templates/eos_auth_monitor/account_activity.html:34
+msgid "Today is not over yet and does not count in the share."
+msgstr "Сегодняшний день ещё не закончился и пока не учитывается в доле."
+
+#: templates/eos_auth_monitor/account_activity.html:34
+msgid "today"
+msgstr "сегодня"
+
+#: templates/eos_auth_monitor/account_activity.html:37
+#: templates/eos_auth_monitor/account_activity.html:40
+msgctxt "eos-auth-monitor"
+msgid "yes"
+msgstr "да"
+
+#: templates/eos_auth_monitor/account_activity.html:43
+msgctxt "eos-auth-monitor"
+msgid "no"
+msgstr "нет"
+
+#: templates/eos_auth_monitor/account_activity.html:54
+msgid "Mumble is not linked: without it, no day is noted."
+msgstr "Mumble не привязан: без привязки дни не записываются."
+
 #: templates/eos_auth_monitor/base.html:12
-#: templates/eos_auth_monitor/dashboard.own.html:8 views.py:237
+#: templates/eos_auth_monitor/dashboard.own.html:8 views.py:266
 msgid "My account"
 msgstr "Мой аккаунт"
 
@@ -718,7 +746,7 @@ msgstr "Моя Corporation"
 msgid "Alliance overview"
 msgstr "Обзор Alliance"
 
-#: templates/eos_auth_monitor/base.html:30 views.py:42
+#: templates/eos_auth_monitor/base.html:30 views.py:43
 msgid "Settings"
 msgstr "Настройки"
 
@@ -1152,7 +1180,7 @@ msgstr[2] ""
 "Не удалось прочитать списки участников %(counter)s Corporation, поэтому их "
 "неизвестные Character здесь отсутствуют."
 
-#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:336
+#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:365
 msgid "Unknown characters"
 msgstr "Неизвестные Character"
 
@@ -1189,24 +1217,24 @@ msgstr "Сведения о Corporation"
 msgid "Main details"
 msgstr "Сведения о Main"
 
-#: views.py:178
+#: views.py:179
 msgctxt "eos-auth-monitor"
 msgid "Name"
 msgstr "Имя"
 
-#: views.py:183
+#: views.py:184
 msgid "Problem"
 msgstr "Проблема"
 
-#: views.py:352
+#: views.py:381
 msgid "Settings saved."
 msgstr "Настройки сохранены."
 
-#: views.py:354
+#: views.py:383
 msgid "Settings saved. The overview is being rebuilt."
 msgstr "Настройки сохранены. Обзор пересобирается."
 
-#: views.py:358
+#: views.py:387
 msgid ""
 "Settings saved, but the task queue is not reachable: the overview is rebuilt"
 " once it is back."
@@ -1214,10 +1242,10 @@ msgstr ""
 "Настройки сохранены, но очередь задач недоступна: обзор будет пересобран, "
 "когда она снова заработает."
 
-#: views.py:382
+#: views.py:411
 msgid "The overview is being rebuilt."
 msgstr "Обзор пересобирается."
 
-#: views.py:384
+#: views.py:413
 msgid "The rebuild could not be started: the task queue is not reachable."
 msgstr "Не удалось запустить пересборку: очередь задач недоступна."

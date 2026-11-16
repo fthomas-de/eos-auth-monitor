@@ -4,6 +4,7 @@ from unittest import skipUnless
 from unittest.mock import patch
 
 from django.apps import apps
+from django.contrib.auth.models import Permission
 from django.urls import reverse
 from django.utils import timezone
 
@@ -154,6 +155,23 @@ class TestRates(MonitorTestCase):
         self.assertEqual(activity.rates(4), {user.pk: (2, 3)})
 
 
+class TestBreakdown(MonitorTestCase):
+    def test_should_give_every_day_of_the_window_today_first(self):
+        user = make_user("pilot")
+        today = timezone.now().date()
+
+        def ago(days):
+            return today - datetime.timedelta(days=days)
+
+        ActivityDay.objects.create(user=user, day=ago(1), eve_login=True)
+        ActivityDay.objects.create(user=user, day=ago(3), eve_login=True, mumble=True)  # before the window
+        ActivityDay.objects.create(user=make_user("other"), day=today, mumble=True)
+
+        found = [(row.day, row.eve_login, row.mumble) for row in activity.breakdown(user.pk, 2)]
+
+        self.assertEqual(found, [(today, False, False), (ago(1), True, False), (ago(2), False, False)])
+
+
 class TestSources(MonitorTestCase):
     @skipUnless(is_app_installed("mumble"), "the Mumble service is not installed")
     def test_should_read_the_mumble_connection_times(self):
@@ -276,3 +294,82 @@ class TestPages(MonitorTestCase):
             # the pilot with 1 of 2 days, the leader without Mumble
             self.assertCountEqual(self.cells(page), ["50", "-1"])
             self.assertIn('title="1 of 2"', page)
+
+    def test_should_lead_the_mumble_tile_of_the_main_details_to_its_days(self):
+        content = self.content("account", self.pilot.pk)
+
+        days = reverse("eos_auth_monitor:account_activity", args=[self.pilot.pk])
+        self.assertIn(f'<a href="{days}" class="stretched-link" aria-label="Mumble">', content)
+        mumble_list = reverse("eos_auth_monitor:corporation_service", args=[2001, "mumble"])
+        self.assertNotIn(f'<a href="{mumble_list}" class="stretched-link"', content)
+        share = re.compile(
+            r'eos-auth-monitor-activity">\s*Active in Mumble:\s*<span class="fw-semibold text-danger">50&nbsp;%</span>'
+            r'\s*<span class="text-body-secondary">\(1 of 2\)</span>'
+        )
+        self.assertEqual(len(share.findall(content)), 1)
+
+    def test_should_lead_an_unlinked_mumble_tile_to_its_days_too(self):
+        content = self.content("account", self.leader.pk)
+
+        days = reverse("eos_auth_monitor:account_activity", args=[self.leader.pk])
+        self.assertIn(f'<a href="{days}" class="stretched-link"', content)
+        self.assertNotIn("Active in Mumble:", content)
+
+    def test_should_list_every_day_of_the_window_today_first(self):
+        content = self.content("account_activity", self.pilot.pk)
+
+        rows = content[content.index("<tbody>"):content.index("</tbody>")].split("<tr>")[1:]
+        # today and the 30 whole days of the default setting
+        self.assertEqual(len(rows), 31)
+        today = timezone.now().date()
+        self.assertIn(today.isoformat(), rows[0])
+        self.assertIn(">today</span>", rows[0])
+        self.assertNotIn(">today</span>", rows[1])
+        self.assertIn((today - datetime.timedelta(days=1)).isoformat(), rows[1])
+        self.assertEqual(rows[1].count('text-bg-success">yes</span>'), 2)
+        # in EVE without Mumble: the day that lowers the share
+        self.assertIn('text-bg-success">yes</span>', rows[2])
+        self.assertIn('text-bg-danger">no</span>', rows[2])
+        self.assertNotIn("text-bg-", rows[3])
+        self.assertIn("50&nbsp;%", content[:content.index("<tbody>")])
+
+    def test_should_not_mark_today_red_before_it_is_over(self):
+        ActivityDay.objects.create(user=self.pilot, day=timezone.now().date(), eve_login=True)
+
+        content = self.content("account_activity", self.pilot.pk)
+
+        today = content[content.index("<tbody>"):].split("<tr>")[1]
+        self.assertIn('text-bg-success">yes</span>', today)
+        self.assertNotIn("text-bg-danger", today)
+
+    def test_should_say_so_without_mumble_linked(self):
+        content = self.content("account_activity", self.leader.pk)
+
+        self.assertIn("Mumble is not linked: without it, no day is noted.", content)
+        self.assertNotIn("<tbody>", content)
+
+    def test_should_show_the_days_only_to_whom_may_see_the_corporation(self):
+        self.client.force_login(make_user("ceo", "eos_auth_monitor.basic_access", corporation_id=2002))
+
+        response = self.client.get(reverse("eos_auth_monitor:account_activity", args=[self.pilot.pk]))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_should_have_no_days_without_the_mumble_service(self):
+        accounts = [account_row(self.pilot.pk, 1101, services={"discord": True})]
+        store_snapshot(snapshot_data([corporation_row(2001, accounts)], services=["discord"]))
+
+        response = self.client.get(reverse("eos_auth_monitor:account_activity", args=[self.pilot.pk]))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_should_leave_my_account_as_it_was(self):
+        self.pilot.user_permissions.add(
+            Permission.objects.get(codename="view_own", content_type__app_label="eos_auth_monitor")
+        )
+        self.client.force_login(self.pilot)
+
+        content = self.content("own_account")
+
+        self.assertNotIn(reverse("eos_auth_monitor:account_activity", args=[self.pilot.pk]), content)
+        self.assertNotIn("Active in Mumble:", content)

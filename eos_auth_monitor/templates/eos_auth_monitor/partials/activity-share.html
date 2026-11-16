@@ -1,0 +1,5 @@
+{% load eos_auth_monitor %}
+{# Active in Mumble of one main (`row`): the share and the days behind it #}
+{{ row.label }}:
+<span class="fw-semibold {{ row.percent|percent_class }}">{% if row.percent is None %}-{% else %}{{ row.percent }}&nbsp;%{% endif %}</span>
+{% if row.percent is not None %}<span class="text-body-secondary">({% include "eos_auth_monitor/partials/row-title.html" %})</span>{% endif %}

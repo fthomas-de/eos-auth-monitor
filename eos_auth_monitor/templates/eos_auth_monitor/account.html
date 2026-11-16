@@ -34,9 +34,14 @@
                             <div class="fw-bold text-{{ colour }}">
                                 {% if link.linked %}{% translate "linked" %}{% else %}{% translate "not linked" %}{% endif %}
                             </div>
-                            {# a member goes to Alliance Auth's services page to link it; everyone else to this Corporation's list of it #}
+                            {% if link.service.key == "mumble" and account.activity and not own %}
+                                <div class="small eos-auth-monitor-activity">{% include "eos_auth_monitor/partials/activity-share.html" with row=account.activity %}</div>
+                            {% endif %}
+                            {# a member goes to Alliance Auth's services page to link it; everyone else to this Corporation's list of it, Mumble to the main's days #}
                             {% if own %}
                                 <a href="{% url 'services:services' %}" class="stretched-link" aria-label="{{ link.service.label }}"></a>
+                            {% elif link.service.key == "mumble" %}
+                                <a href="{% url 'eos_auth_monitor:account_activity' account.user_id %}" class="stretched-link" aria-label="{{ link.service.label }}"></a>
                             {% else %}
                                 <a href="{% url 'eos_auth_monitor:corporation_service' corporation.id link.service.key %}" class="stretched-link" aria-label="{{ link.service.label }}"></a>
                             {% endif %}

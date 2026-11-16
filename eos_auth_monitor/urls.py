@@ -14,6 +14,7 @@ urlpatterns = [
         name="corporation_service",
     ),
     path("account/<int:user_id>/", views.account, name="account"),
+    path("account/<int:user_id>/activity/", views.account_activity, name="account_activity"),
     path("account/own/", views.own_account, name="own_account"),
     path("service/<str:service_key>/", views.service, name="service"),
     path("character-audit/", views.character_audit, name="character_audit"),

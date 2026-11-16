@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.27] - 2026-11-16
+
+### Added
+
+- **Active in Mumble day by day**: the Mumble tile of the account page
+  (*Main details*) shows the main's share with its days and opens a new page
+  with every day of the window - today first, marked as not counted yet -
+  and whether the main was in EVE and in Mumble; a day in EVE without Mumble
+  is red. Without Mumble linked the page says so. Same access as the account
+  page; *My account* is unchanged.
+
+### Changed
+
+- The Mumble tile of the account page leads to the main's days instead of the
+  Corporation's Mumble list.
+
 ## [0.0.26] - 2026-11-16
 
 ### Added

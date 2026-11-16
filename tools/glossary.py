@@ -225,6 +225,20 @@ TRANSLATIONS = {
         "Активен в Mumble сравнивает за указанное число прошедших дней дни, когда Main играл в EVE, с днями, когда он при этом был подключён к Mumble. Более старые дни удаляются.",
         "Mumble 活跃度在过去这些天内，比较 Main 玩 EVE 的天数与同时连接 Mumble 的天数。更早的天数会被删除。",
     ),
+    "Day": ("Tag", "День", "日期"),
+    "today": ("heute", "сегодня", "今天"),
+    "Today is not over yet and does not count in the share.": (
+        "Der heutige Tag ist noch nicht vorbei und zählt noch nicht zum Anteil.",
+        "Сегодняшний день ещё не закончился и пока не учитывается в доле.",
+        "今天尚未结束，暂不计入比例。",
+    ),
+    "yes": ("ja", "да", "是"),
+    "no": ("nein", "нет", "否"),
+    "Mumble is not linked: without it, no day is noted.": (
+        "Mumble ist nicht verknüpft: ohne Verknüpfung wird kein Tag erfasst.",
+        "Mumble не привязан: без привязки дни не записываются.",
+        "未关联 Mumble：不关联就不会记录任何一天。",
+    ),
     "Checks, shows and counts only the characters of an account that are in the Alliance; alts elsewhere are left out.": (
         "Prüft, zeigt und zählt nur die Characters eines Accounts, die in der Alliance sind; Alts anderswo werden weggelassen.",
         "Проверяет, показывает и считает только тех Character аккаунта, которые состоят в Alliance; альты в других местах не учитываются.",

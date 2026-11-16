@@ -4,10 +4,18 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-16 (0.0.26).
+Last updated 2026-11-16 (0.0.26 plus Unreleased).
 
 ## Release
 
+- **Unreleased** (2026-11-16): **Active in Mumble day by day** (see
+  `CHANGELOG.md` and the decisions of 2026-11-16 (day by day) below). Page
+  `account_activity` (`account/<id>/activity/`, `account_activity.html`),
+  `activity.breakdown()`, `views._visible_account` (shared with `account`),
+  `partials/activity-share.html`; the account page's Mumble tile shows the
+  share and links there. 9 new tests in `tests/test_activity.py` (29 in the
+  module; 13 sabotages, 13 red; `test_views` 187 green). Six new messages, English until `/commit`. No migration, no
+  static file. Not seen in a browser.
 - Version **0.0.26** of 2026-11-16: **Active in Mumble** (see
   `CHANGELOG.md` and the decisions of 2026-11-16 (Active in Mumble) below) -
   of the days a main played EVE, the share it was in Mumble too.
@@ -176,9 +184,10 @@ Last updated 2026-11-16 (0.0.26).
 | Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares; *Members registered* opens the unknown characters), then the Corporations, most accounts with problems first, as a table (the default since 0.0.11) or as tiles (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
 | Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`; a visiting main marked "Main in ...", linked and with its service icons and crown only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
-| Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
+| Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it; Mumble to `account_activity`, with the main's Active in Mumble below *linked*), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
 | eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview cockpit tile (`partials/spy-tile.html`, `Report.spy_characters`: the column's sum, linked to `eos_spy_network:corporations`, since 0.0.16); overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link), one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV) and a cyan tag per kind on the main cards (`Account.spy_markers`, red border); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
 | eos-tax GM transactions (on Overview, Corporation, export, Account) | the page's own plus `eos_tax.admin_view` or `eos_tax.gm_bots_access` (`sources.gm_transactions.can_view`) | Cockpit tile (Alliance count) and Corporation tile (`partials/gm-tile.html`), both linked to `eos_tax:gm_transactions`; overview table column *GM* (count, no link); pink to-do with the mains (`Corporation.gm_accounts`, group `gm_transactions` in the CSV); a pink tag on the main cards (`Account.has_gm`, red border); pink marker per character with an eos-tax link on the account page (searched for the main's name, `?search="<main>"`). Read per page view by `views._report(user)` -> `Report.add_gm_transactions`; never on *My account*, the dashboard widgets or the smart filter |
+| Active in Mumble of a main (`account_activity`) | as Account | Behind the account page's Mumble tile: the main's share in the card header, then every day of `activity_days` plus today, today first with a grey *today* badge (`activity.breakdown`, unnoted days as unsaved `ActivityDay`); *yes* green for EVE and Mumble, a red *no* for a whole day in EVE without Mumble, "-" otherwise. A notice without Mumble linked; 404 without the Mumble service |
 | Corporation service | as Corporation | One row per main of the Corporation, linked yes/no, no problems; for Mumble a column *Active in Mumble* |
 | Service | `view_all` | Every main of the Alliance, linked yes/no; for Mumble a column *Active in Mumble* |
 | Active in Mumble (on Overview, Corporation, the Mumble lists) | the page's own | Per main with Mumble linked: days in EVE and in Mumble out of days in EVE over `activity_days` whole days (`activity.rates`, read per page view by `views._report` -> `Report.add_activity`). Below the linked share on the Mumble tile of cockpit and Corporation page (`Row.activity`), a row of each overview tile and a column of the overview table (`Corporation.rows`), a column per main in the Mumble lists (`partials/activity-cell.html`, days as tooltip). A tile is the mean of its mains (`report._mean_activity`); "-" without a share. Never a problem; not on My account or the dashboard. Nothing at all without the Mumble service |
@@ -704,6 +713,19 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   `last_disconnect` is written as well was not checked.
 - Shown, never rated - like the spy markers; it keeps `percent_class`'
   colours though (below 60 % red), as Mumble does.
+
+2026-11-16 (day by day):
+
+- **The Mumble tile of Main details opens the main's days** ("ein klick auf
+  die mumble kachel des nutzers (main details) führt zur tageweisen
+  aufschlüsselung der aktivität"). The user's answers: a **page of its own**,
+  not a fold-out; **every day of the window**, days without anything as "-";
+  **today shown, marked** as running and not counted; the tile shows the
+  **share below *linked*** too; an unlinked Mumble tile **also leads there**
+  (the page says Mumble is not linked); **not on *My account*** - its tile
+  keeps leading to Auth's services page and shows no share.
+- Today is never red: a missing Mumble day only lowers the share once the
+  day is over.
 
 ## Pitfalls found
 

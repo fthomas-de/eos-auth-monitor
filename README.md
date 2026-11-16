@@ -85,7 +85,8 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   those without first. A Director unknown to Auth is tagged *not in Auth*;
   see [Directors](#directors)
 - **Page header**: the app's name and version, below it the page - Corporation
-  overview, Corporation details, Main details, the service's name
+  overview, Corporation details, Main details, Active in Mumble, the service's
+  name
 - **Rebuild now** with a progress bar while the task runs
 - **Build figures** in the footer for holders of `view_all` or `manage_settings`:
   duration, time per step, database queries, sizes of the Alliance and of the
@@ -255,6 +256,8 @@ without a day in EVE has no share ("-").
 |---|---|
 | The mean of the mains' shares, each main counting once | below the linked share on the Mumble tile of the cockpit and of the Corporation page; per Corporation as a row of its overview tile and a column of the overview table |
 | A main's share, its days as tooltip | a column of the Mumble lists (Alliance and Corporation) |
+| A main's share with its days | below *linked* on the Mumble tile of the account page (not *My account*) |
+| A main's days one by one | behind the Mumble tile of the account page: every day of the window, today first and marked as not counted yet, with *yes* for EVE and Mumble and a red *no* for a day in EVE without Mumble |
 
 It is shown, never rated: no problem, border or sorting follows from it.
 
