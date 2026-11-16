@@ -36,6 +36,10 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   mains that linked Discord, Mumble, QQ or Telegram, each opening its list;
   on the Corporation page preceded by a tile per checked app (registered
   members, Character Audit, Corporation Audit, Structures)
+- **Active in Mumble**: of the days a main played EVE, the share on which it
+  was connected to Mumble too - on the Mumble tiles, per Corporation on the
+  overview and per main in the Mumble lists, see
+  [Active in Mumble](#active-in-mumble)
 - **One tile per Corporation**: its name as the title, the number of
   accounts with problems, below it each app with its share of complete
   entries (registered members, Character Audit, Corporation Audit,
@@ -238,6 +242,35 @@ Corporation.
 | QQ | [aa-qqbot](https://github.com/yilifaer/aa-qqbot-plugin) | the account has a `Binding` (verified or trusted) |
 | Telegram | [aa-discord-telegram-bridge](https://github.com/radioactive68/AUTH-Discord-Telegram-Bridge) | the account has a `TelegramUser` with a Telegram user ID |
 
+### Active in Mumble
+
+With the Mumble service and corptools installed, the app notes per main with
+Mumble linked and per day (EVE time) whether it played EVE and whether it was
+connected to Mumble. A main's share is its days with both out of its days in
+EVE, over the last *Mumble activity: days* whole days - today is left out. A
+day in Mumble without EVE changes nothing; a main without Mumble linked or
+without a day in EVE has no share ("-").
+
+| Shown | Where |
+|---|---|
+| The mean of the mains' shares, each main counting once | below the linked share on the Mumble tile of the cockpit and of the Corporation page; per Corporation as a row of its overview tile and a column of the overview table |
+| A main's share, its days as tooltip | a column of the Mumble lists (Alliance and Corporation) |
+
+It is shown, never rated: no problem, border or sorting follows from it.
+
+Where the days come from - the app asks neither ESI nor the Mumble server:
+
+| Day | Source | Counts |
+|---|---|---|
+| Mumble | `MumbleUser.last_connect` and `last_disconnect`, written by Alliance Auth's Mumble authenticator | the day of the connect, the day of the disconnect, and today while connected - for at most 24 hours after the connect, which assumes a Mumble server restarted daily; without that a lost disconnect would count for ever |
+| EVE | `CharacterAudit.last_known_login` and `last_known_logoff` of every character of the account the overview counts, read by corptools with `esi-location.read_online.v1` | the day of the login, the day of the logoff, and the day corptools read it while the character was online |
+
+ESI only knows a character's last session and corptools reads it about once
+a day per character: a day in EVE shows up to a day late, and of two sessions
+on different days between two reads the earlier day is lost. A lost day drops
+out of both sides of the share. A character without a corptools token
+contributes no days.
+
 ## ESI
 
 No installed app stores who is in a Corporation - corptools' member tracking
@@ -289,6 +322,12 @@ line at the foot of the pages to holders of `view_all` or `manage_settings`
 lists* step. A page view only reads the settings and the stored result and
 is not part of the figures.
 
+A second periodic task, `eos_auth_monitor.tasks.record_activity`, notes the
+days for [Active in Mumble](#active-in-mumble) for the mains of the last
+result and deletes the days older than the setting keeps. It reads two tables
+and writes its own; without a stored result, the Mumble service or corptools
+it does nothing. The pages read the days when they are shown.
+
 ## Requirements
 
 | | |
@@ -311,12 +350,17 @@ not pull them in, nor upgrade the ones you have.
    Use the latest tag from the repository in place of `v0.0.1`.
 
 2. Add `"eos_auth_monitor",` to `INSTALLED_APPS` in `local.py`, and the
-   periodic task below it:
+   periodic tasks below it (the second only for
+   [Active in Mumble](#active-in-mumble)):
 
    ```python
    CELERYBEAT_SCHEDULE["eos_auth_monitor_update_snapshot"] = {
        "task": "eos_auth_monitor.tasks.update_snapshot",
        "schedule": crontab(minute="*/30"),
+   }
+   CELERYBEAT_SCHEDULE["eos_auth_monitor_record_activity"] = {
+       "task": "eos_auth_monitor.tasks.record_activity",
+       "schedule": crontab(minute="*/15"),
    }
    ```
 
@@ -389,6 +433,7 @@ put in `local.py`.
 | Scopes missing: a problem from | How many Character Audit scopes a character must lack for *Scopes missing* to be a problem; fewer is a warning (see [corptools - Character Audit](#corptools---character-audit)). 5 by default, 1 rates every missing scope a problem; only with corptools installed |
 | Fetch data from ESI | See [ESI](#esi); on by default |
 | Only characters in the Alliance | Leaves out every character of an account that is not in the Alliance - in the checks, the pages and the counts (see [How accounts are counted](#how-accounts-are-counted)); off by default |
+| Mumble activity: days | Over how many past days [Active in Mumble](#active-in-mumble) is worked out, and how long its days are kept; 30 by default |
 | Checks | One switch per check, grouped by app |
 | Services | One switch per service, to hide a service the Alliance does not use |
 | corptools: what the checks count | Four lists - Character Audit sections and scopes, Corporation Audit sections and scopes. Untick what the Alliance does not use, e.g. *Moon Observations* and `esi-industry.read_corporation_mining.v1` for an Alliance without moons; a section and its scope are separate entries |
@@ -404,7 +449,8 @@ only. Tables use the DataTables bundle Alliance Auth ships.
 
 ## Data protection
 
-The app stores its settings and the last result of the task, nothing else.
+The app stores its settings, the last result of the task and the days of
+[Active in Mumble](#active-in-mumble).
 The result holds what other apps already hold - character and Corporation
 names, whether an account has linked Discord, Mumble, QQ or Telegram, which
 checks a character fails, which alts belong to which main - plus the IDs
@@ -414,6 +460,15 @@ permissions above, alts and cross-Corporation mains included (see
 [Permissions](#permissions)). It stores whether a service is linked, not the
 Discord, QQ or Telegram account itself. Every run replaces the result, so a
 member who left is gone from it after the next run; nothing is kept longer.
+
+Active in Mumble is the one thing kept over time, and a record of activity:
+per main with Mumble linked and per day, whether it played EVE and whether it
+was connected to Mumble - two yes/no values, no times, characters or
+channels. The days are kept as long as *Mumble activity: days* says (30 by
+default) and deleted after that, and with the Auth account. Leadership sees
+each main's share in the Mumble lists (`view_all`; `basic_access` for the own
+Corporation); members do not see it. Without the periodic task
+`record_activity` nothing is noted.
 
 eos-spy-network's markers are not stored here: each page reads them from
 eos-spy-network's own stored result while it is shown, and only for viewers

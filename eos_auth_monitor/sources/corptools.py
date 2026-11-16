@@ -136,6 +136,21 @@ def _parse(value):
     return parsed
 
 
+def logins(character_ids) -> list[tuple]:
+    """Per audited character: (EVE ID, last login, last logoff, when corptools read them).
+
+    ESI only knows the last session, and corptools reads it about once a day.
+    """
+    from corptools.models import CharacterAudit
+
+    return [
+        (character_id, login, logoff, _parse(timestamps.get("login")))
+        for character_id, login, logoff, timestamps in CharacterAudit.objects.filter(
+            character__character_id__in=character_ids
+        ).values_list("character__character_id", "last_known_login", "last_known_logoff", "update_timestamps")
+    ]
+
+
 def _is_fresh(value, time_ref) -> bool:
     # corptools' check_date(): a section never updated counts as old
     updated = _parse(value)

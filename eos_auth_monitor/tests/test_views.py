@@ -775,7 +775,7 @@ class TestSettings(ViewTestCase):
         data = {
             "alliance": alliance.pk,
             "stale_after_days": "7",
-            "critical_scope_count": "5",
+            "critical_scope_count": "5", "activity_days": "30",
             "check_char_audit_missing": "on",
         }
 
@@ -794,7 +794,14 @@ class TestSettings(ViewTestCase):
         self.assertContains(response, 'name="alliance_characters_only"')
         self.assertFalse(MonitorConfiguration.get_solo().alliance_characters_only)
 
-        self.post({"alliance": make_alliance().pk, "critical_scope_count": "5", "alliance_characters_only": "on"})
+        self.post(
+            {
+                "alliance": make_alliance().pk,
+                "critical_scope_count": "5",
+                "activity_days": "30",
+                "alliance_characters_only": "on",
+            }
+        )
 
         self.assertTrue(MonitorConfiguration.get_solo().alliance_characters_only)
 
@@ -815,6 +822,7 @@ class TestSettings(ViewTestCase):
             {
                 "alliance": make_alliance().pk,
                 "critical_scope_count": "5",
+                "activity_days": "30",
                 "corporation_sections": sections,
                 "corporation_scopes": scopes,
                 "character_sections": [key for key in corptools.character_sections()],
@@ -832,7 +840,9 @@ class TestSettings(ViewTestCase):
         configure(disabled_checks=["structures_no_owner"])
 
         # a valid form, or nothing is stored and the state stays whatever the code does
-        response, _task = self.post({"alliance": make_alliance().pk, "critical_scope_count": "5"})
+        response, _task = self.post(
+            {"alliance": make_alliance().pk, "critical_scope_count": "5", "activity_days": "30"}
+        )
 
         self.assertEqual(response.status_code, 302)
 
@@ -1281,7 +1291,8 @@ class TestBrokerDown(ViewTestCase):
     def test_should_save_the_settings_and_say_the_rebuild_waits(self):
         alliance = make_alliance(ALLIANCE_ID + 7)
 
-        response = self.post(self.admin, "settings", {"alliance": alliance.pk, "critical_scope_count": "5"})
+        data = {"alliance": alliance.pk, "critical_scope_count": "5", "activity_days": "30"}
+        response = self.post(self.admin, "settings", data)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(MonitorConfiguration.get_solo().alliance, alliance)
@@ -1879,9 +1890,10 @@ class TestVoluntaryServices(ViewTestCase):
 
         table = content[content.index("eos-auth-monitor-overview-table"):]
         table = table[:table.index("</table>")]
-        # the columns in service order: Discord, then Mumble
+        # the columns in service order: Discord, then Mumble; then Active in Mumble, which nobody has a share of here
         self.assertEqual(
-            re.findall(r'class="fw-semibold text-nowrap ([^"]+)"', table), ["text-body-secondary", "text-danger"]
+            re.findall(r'class="fw-semibold text-nowrap ([^"]+)"', table),
+            ["text-body-secondary", "text-danger", "text-body-secondary"],
         )
 
     def test_should_keep_the_cockpit_coloured(self):

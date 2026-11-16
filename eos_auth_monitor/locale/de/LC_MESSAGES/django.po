@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 09:43+0000\n"
-"PO-Revision-Date: 2026-11-16 09:43+0000\n"
+"POT-Creation-Date: 2026-11-16 13:39+0000\n"
+"PO-Revision-Date: 2026-11-16 13:39+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: de\n"
 "Language: de\n"
@@ -457,7 +457,7 @@ msgstr ""
 "Prüft, zeigt und zählt nur die Characters eines Accounts, die in der "
 "Alliance sind; Alts anderswo werden weggelassen."
 
-#: models.py:85 templates/eos_auth_monitor/settings.html:28
+#: models.py:85 templates/eos_auth_monitor/settings.html:29
 msgid "Notice to members"
 msgstr "Hinweis an die Mitglieder"
 
@@ -469,75 +469,93 @@ msgstr ""
 "Wird als Infobox auf Mein Account und Meine Corporation angezeigt. Leer "
 "lassen, um keine anzuzeigen."
 
-#: models.py:91 models.py:94
+#: models.py:91
+msgid "Mumble activity: days"
+msgstr "Mumble-Aktivität: Tage"
+
+#: models.py:93
+msgid ""
+"Active in Mumble compares, over this many past days, the days a main played "
+"EVE with the days it was also connected to Mumble. Older days are deleted."
+msgstr ""
+"Aktiv im Mumble vergleicht über so viele vergangene Tage die Tage, an denen "
+"ein Main EVE gespielt hat, mit den Tagen, an denen er zusätzlich im Mumble "
+"verbunden war. Ältere Tage werden gelöscht."
+
+#: models.py:100 models.py:103
 msgid "Configuration"
 msgstr "Konfiguration"
 
-#: models.py:128
+#: models.py:156
 msgid "Pass accounts whose characters HAVE problems instead of those without."
 msgstr ""
 "Accounts durchlassen, deren Characters Probleme HABEN, statt solcher ohne."
 
-#: models.py:132
+#: models.py:160
 msgid "Smart Filter: Auth Monitor character problems"
 msgstr "Smart Filter: Auth-Monitor-Character-Probleme"
 
-#: report.py:18
+#: report.py:19
 msgid "Corporation Audit"
 msgstr "Corporation-Audit"
 
-#: report.py:19
+#: report.py:20
 msgctxt "eos-auth-monitor"
 msgid "Structures"
 msgstr "Structures"
 
-#: report.py:25
+#: report.py:26
 msgid "Reading accounts"
 msgstr "Accounts werden gelesen"
 
-#: report.py:26
+#: report.py:27
 msgid "Checking characters"
 msgstr "Characters werden geprüft"
 
-#: report.py:27
+#: report.py:28
 msgid "Checking Corporations"
 msgstr "Corporations werden geprüft"
 
-#: report.py:28
+#: report.py:29
 msgid "Reading member lists"
 msgstr "Mitgliederlisten werden gelesen"
 
-#: report.py:29
+#: report.py:30
 msgid "Reading services"
 msgstr "Dienste werden gelesen"
 
-#: report.py:30
+#: report.py:31
 msgid "Saving"
 msgstr "Speichern"
 
-#: report.py:37
+#: report.py:38
 msgid "never updated"
 msgstr "nie aktualisiert"
 
-#: report.py:51
+#: report.py:52
 #, python-format
 msgid "and %(count)d more"
 msgid_plural "and %(count)d more"
 msgstr[0] "und %(count)d weiterer"
 msgstr[1] "und %(count)d weitere"
 
-#: report.py:307
+#: report.py:297 templates/eos_auth_monitor/corporation_service.html:20
+#: templates/eos_auth_monitor/service.html:22
+msgid "Active in Mumble"
+msgstr "Aktiv im Mumble"
+
+#: report.py:331
 #, python-format
 msgid "%(check)s (warning)"
 msgstr "%(check)s (Warnung)"
 
-#: report.py:561 templates/eos_auth_monitor/corporation.html:66
+#: report.py:591 templates/eos_auth_monitor/corporation.html:66
 #: templates/eos_auth_monitor/corporation.html:215
 #: templates/eos_auth_monitor/dashboard.corporation.html:33
 msgid "Not registered in Auth"
 msgstr "Nicht in Auth registriert"
 
-#: report.py:568 templates/eos_auth_monitor/account.html:112
+#: report.py:598 templates/eos_auth_monitor/account.html:112
 #: templates/eos_auth_monitor/account.html:114
 #: templates/eos_auth_monitor/corporation.html:96
 #: templates/eos_auth_monitor/corporation.html:151
@@ -546,24 +564,24 @@ msgstr "Nicht in Auth registriert"
 msgid "GM transactions"
 msgstr "GM-Transaktionen"
 
-#: report.py:610
+#: report.py:641
 msgid "Registered in Auth"
 msgstr "In Auth registriert"
 
-#: report.py:615 templates/eos_auth_monitor/character_audit.html:8
-#: templates/eos_auth_monitor/character_audit.html:20 views.py:293
+#: report.py:646 templates/eos_auth_monitor/character_audit.html:8
+#: templates/eos_auth_monitor/character_audit.html:20 views.py:295
 msgid "Character Audit"
 msgstr "Character-Audit"
 
-#: report.py:909
+#: report.py:958
 msgid "Members registered"
 msgstr "Mitglieder registriert"
 
-#: report.py:922
+#: report.py:971
 msgid "Character Audit complete"
 msgstr "Character-Audit vollständig"
 
-#: report.py:934
+#: report.py:983
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s funktioniert"
@@ -694,7 +712,7 @@ msgstr[1] ""
 "noch geprüft."
 
 #: templates/eos_auth_monitor/base.html:12
-#: templates/eos_auth_monitor/dashboard.own.html:8 views.py:235
+#: templates/eos_auth_monitor/dashboard.own.html:8 views.py:237
 msgid "My account"
 msgstr "Mein Account"
 
@@ -1089,16 +1107,16 @@ msgstr "Fortschritt des Neuaufbaus"
 msgid "%(part)s of %(total)s mains linked"
 msgstr "%(part)s von %(total)s Mains verknüpft"
 
-#: templates/eos_auth_monitor/settings.html:55
+#: templates/eos_auth_monitor/settings.html:56
 msgctxt "eos-auth-monitor"
 msgid "Services"
 msgstr "Dienste"
 
-#: templates/eos_auth_monitor/settings.html:70
+#: templates/eos_auth_monitor/settings.html:71
 msgid "corptools: what the checks count"
 msgstr "corptools: was die Prüfungen zählen"
 
-#: templates/eos_auth_monitor/settings.html:74
+#: templates/eos_auth_monitor/settings.html:75
 msgid ""
 "Untick what the Alliance does not use, e.g. Moon Observations and the mining"
 " scope for an Alliance without moons. A section and its scope are separate "
@@ -1108,12 +1126,12 @@ msgstr ""
 "Mining-Scope für eine Alliance ohne Monde. Ein Abschnitt und sein Scope sind"
 " getrennte Einträge."
 
-#: templates/eos_auth_monitor/settings.html:92
+#: templates/eos_auth_monitor/settings.html:93
 msgid "None of the apps the checks and services read from is installed."
 msgstr ""
 "Keine der Apps, aus denen die Prüfungen und Dienste lesen, ist installiert."
 
-#: templates/eos_auth_monitor/settings.html:96
+#: templates/eos_auth_monitor/settings.html:97
 msgctxt "eos-auth-monitor"
 msgid "Save"
 msgstr "Speichern"
@@ -1134,7 +1152,7 @@ msgstr[1] ""
 "Die Mitgliederlisten von %(counter)s Corporations konnten nicht gelesen "
 "werden; deren unbekannte Characters fehlen hier."
 
-#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:334
+#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:336
 msgid "Unknown characters"
 msgstr "Unbekannte Characters"
 
@@ -1170,24 +1188,24 @@ msgstr "Corporation-Details"
 msgid "Main details"
 msgstr "Main-Details"
 
-#: views.py:176
+#: views.py:178
 msgctxt "eos-auth-monitor"
 msgid "Name"
 msgstr "Name"
 
-#: views.py:181
+#: views.py:183
 msgid "Problem"
 msgstr "Problem"
 
-#: views.py:350
+#: views.py:352
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
-#: views.py:352
+#: views.py:354
 msgid "Settings saved. The overview is being rebuilt."
 msgstr "Einstellungen gespeichert. Die Übersicht wird neu aufgebaut."
 
-#: views.py:356
+#: views.py:358
 msgid ""
 "Settings saved, but the task queue is not reachable: the overview is rebuilt"
 " once it is back."
@@ -1195,11 +1213,11 @@ msgstr ""
 "Einstellungen gespeichert, aber die Task-Warteschlange ist nicht erreichbar:"
 " Die Übersicht wird neu aufgebaut, sobald sie wieder da ist."
 
-#: views.py:380
+#: views.py:382
 msgid "The overview is being rebuilt."
 msgstr "Die Übersicht wird neu aufgebaut."
 
-#: views.py:382
+#: views.py:384
 msgid "The rebuild could not be started: the task queue is not reachable."
 msgstr ""
 "Der Neuaufbau konnte nicht gestartet werden: Die Task-Warteschlange ist "

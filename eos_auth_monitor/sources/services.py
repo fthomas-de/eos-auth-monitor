@@ -19,3 +19,14 @@ def linked_user_ids(service_key: str, users) -> set[int]:
     app_label, model_name, filters = MODELS[service_key]
     model = apps.get_model(app_label, model_name)
     return set(model.objects.filter(user__in=users, **filters).values_list("user_id", flat=True))
+
+
+def mumble_connections(user_ids) -> dict[int, tuple]:
+    """Per account with Mumble linked: when it last connected and disconnected, as Auth's authenticator wrote it."""
+    model = apps.get_model("mumble", "MumbleUser")
+    return {
+        user_id: (connect, disconnect)
+        for user_id, connect, disconnect in model.objects.filter(user_id__in=user_ids).values_list(
+            "user_id", "last_connect", "last_disconnect"
+        )
+    }

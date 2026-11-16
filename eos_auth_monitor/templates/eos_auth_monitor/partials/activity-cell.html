@@ -1,0 +1,8 @@
+{% load eos_auth_monitor %}
+{# A main's Active in Mumble in a service list; `row` is None without Mumble linked. The days as tooltip. #}
+{% if row and row.percent is not None %}
+    <td data-order="{{ row.percent }}" class="fw-semibold eos-auth-monitor-activity {{ row.percent|percent_class }}"
+        title="{% include 'eos_auth_monitor/partials/row-title.html' %}">{{ row.percent }}&nbsp;%</td>
+{% else %}
+    <td data-order="-1" class="text-body-secondary eos-auth-monitor-activity">-</td>
+{% endif %}

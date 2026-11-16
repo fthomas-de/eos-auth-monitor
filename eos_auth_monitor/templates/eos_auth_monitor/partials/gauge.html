@@ -18,6 +18,13 @@
                 {% translate "No problems" %}
             {% endif %}
         </div>
+        {% if gauge.activity %}
+            {# the Mumble tile: of the days its mains played EVE, the share they were in Mumble too #}
+            <div class="small eos-auth-monitor-activity">
+                {{ gauge.activity.label }}:
+                <span class="fw-semibold {{ gauge.activity.percent|percent_class }}">{% if gauge.activity.percent is None %}-{% else %}{{ gauge.activity.percent }}&nbsp;%{% endif %}</span>
+            </div>
+        {% endif %}
         {% if link %}
             <a href="{{ link }}" class="stretched-link" aria-label="{{ gauge.label }}"></a>
         {% endif %}

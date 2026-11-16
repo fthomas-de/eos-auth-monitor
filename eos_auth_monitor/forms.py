@@ -69,6 +69,7 @@ class MonitorConfigurationForm(forms.ModelForm):
             "critical_scope_count",
             "fetch_members",
             "alliance_characters_only",
+            "activity_days",
             "member_notice",
         ]
         # the form field strips the text, so a notice of blanks is stored empty and shows no box

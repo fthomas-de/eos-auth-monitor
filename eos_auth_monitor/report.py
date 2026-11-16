@@ -1,7 +1,8 @@
 """The snapshot as the pages need it: labels, counts, percentages.
 
 Nothing here queries the database - everything comes from the snapshot, so a
-page costs one read however big the Alliance is.
+page costs one read however big the Alliance is. What a page adds on top
+(spy markers, GM transactions, Active in Mumble) the view reads and hands in.
 """
 
 from dataclasses import dataclass, field, replace
@@ -141,6 +142,8 @@ class Account:
     main_corporation_name: str = ""
     # the names of the account's characters that are Directors of its main's Corporation, alts elsewhere included
     directors: list[str] = field(default_factory=list)
+    # Active in Mumble (Report.add_activity): its days with Mumble of its days in EVE; None without Mumble linked
+    activity: "Row | None" = None
 
     @property
     def problem_characters(self) -> list[Character]:
@@ -264,9 +267,15 @@ class Row:
     # the list behind a tile that is not a service's: a URL name and its arguments
     url_name: str | None = None
     url_args: tuple = ()
+    # a percentage that is no share of a count: the mean of the mains' Active in Mumble
+    average: int | None = None
+    # on the Mumble tile: Active in Mumble, shown below the linked share
+    activity: "Row | None" = None
 
     @property
     def percent(self) -> int | None:
+        if self.average is not None:
+            return self.average
         if self.problems is not None:
             return 0 if self.problems else 100
         return percent(self.part or 0, self.total or 0)
@@ -282,6 +291,21 @@ class Row:
             return reverse(self.url_name, args=self.url_args)
         except NoReverseMatch:
             return ""
+
+
+MUMBLE = "mumble"
+ACTIVITY_LABEL = _("Active in Mumble")
+ACTIVITY_ICON = "fas fa-microphone-lines"
+
+
+def _mean_activity(accounts) -> Row:
+    """Active in Mumble of several mains: the mean of their shares, each main counting once.
+
+    A main without Mumble linked or without a day in EVE has no share and stays out.
+    """
+    shares = [account.activity.percent for account in accounts if account.activity]
+    shares = [share for share in shares if share is not None]
+    return Row(ACTIVITY_LABEL, ACTIVITY_ICON, average=round(sum(shares) / len(shares)) if shares else None)
 
 
 @dataclass
@@ -404,10 +428,16 @@ class Corporation:
     spy_kinds: tuple | None = None
     # set by Report.add_gm_transactions: the viewer may see eos-tax's GM transactions
     gm_shown: bool = False
+    # set by Report.add_activity
+    activity_shown: bool = False
 
     @property
     def spy_shown(self) -> bool:
         return self.spy_kinds is not None
+
+    @property
+    def activity(self) -> Row:
+        return _mean_activity(self.accounts)
 
     @property
     def gm_characters(self) -> list[Character]:
@@ -593,14 +623,15 @@ class Corporation:
                 sum(account.is_linked(service.key) for account in self.accounts),
                 self.mains,
                 service=service,
+                activity=self.activity if self.activity_shown and service.key == MUMBLE else None,
             )
             for service in self.services
         ]
 
     @property
     def rows(self) -> list[Row]:
-        """What the tile lists: every app that ran, with its share of complete entries."""
-        return self.check_rows + self.service_counts
+        """What the tile lists: every app that ran with its share of complete entries, then Active in Mumble."""
+        return self.check_rows + self.service_counts + ([self.activity] if self.activity_shown else [])
 
     @property
     def check_rows(self) -> list[Row]:
@@ -646,6 +677,8 @@ class Report:
         self.spy_shown = False
         # set by add_gm_transactions: the viewer may see eos-tax's GM transactions
         self.gm_shown = False
+        # set by add_activity
+        self.activity_shown = False
         rows = data["corporations"]
         # the whole accounts, by the Corporation of their main: the account pages and the Alliance-wide lists
         self._accounts = {
@@ -812,6 +845,21 @@ class Report:
             corporation.gm_shown = True
         self.gm_shown = True
 
+    def add_activity(self, rates: dict[int, tuple[int, int]]) -> None:
+        """Give each main with Mumble linked its Active in Mumble: user ID -> (days with Mumble, days in EVE).
+
+        Nothing where the Mumble service is switched off or not installed.
+        """
+        if self.service(MUMBLE) is None:
+            return
+        # the Corporations hold copies of the accounts, not the accounts themselves
+        for account in [*self._accounts.values(), *(a for c in self.corporations for a in c.accounts)]:
+            if account.is_linked(MUMBLE):
+                account.activity = Row(ACTIVITY_LABEL, ACTIVITY_ICON, *rates.get(account.user_id, (0, 0)))
+        for corporation in self.corporations:
+            corporation.activity_shown = True
+        self.activity_shown = True
+
     @property
     def gm_characters(self) -> list[Character]:
         """Every character of the Alliance with a GM transaction."""
@@ -898,6 +946,7 @@ class Report:
                 # the mains only: the members unknown to Auth have a tile of their own
                 len(accounts),
                 service=service,
+                activity=_mean_activity(accounts) if self.activity_shown and service.key == MUMBLE else None,
             )
             for service in self.services
         ]

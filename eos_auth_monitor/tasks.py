@@ -3,7 +3,7 @@ from celery import shared_task
 from allianceauth.services.hooks import get_extension_logger
 from allianceauth.services.tasks import QueueOnce
 
-from . import progress, snapshot
+from . import activity, progress, snapshot
 
 logger = get_extension_logger(__name__)
 
@@ -19,3 +19,9 @@ def update_snapshot():
         progress.failed()
         raise
     progress.finished()
+
+
+@shared_task
+def record_activity():
+    """Note who played EVE and who was connected to Mumble, per main and day."""
+    activity.record()

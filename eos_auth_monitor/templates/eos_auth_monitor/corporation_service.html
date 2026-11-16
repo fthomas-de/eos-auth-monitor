@@ -17,6 +17,7 @@
                         <tr>
                             <th>{% translate "Main" context "EVE jargon" %}</th>
                             <th>{{ service.label }}</th>
+                            {% if report.activity_shown and service.key == "mumble" %}<th>{% translate "Active in Mumble" %}</th>{% endif %}
                         </tr>
                     </thead>
                     <tbody>
@@ -31,6 +32,7 @@
                                     </div>
                                 </td>
                                 <td data-order="{% if account|is_linked:service.key %}1{% else %}0{% endif %}">{% include "eos_auth_monitor/partials/link-badge.html" %}</td>
+                                {% if report.activity_shown and service.key == "mumble" %}{% include "eos_auth_monitor/partials/activity-cell.html" with row=account.activity %}{% endif %}
                             </tr>
                         {% endif %}{% endfor %}
                     </tbody>

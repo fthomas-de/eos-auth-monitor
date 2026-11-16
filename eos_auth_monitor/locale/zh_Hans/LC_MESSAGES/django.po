@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 09:43+0000\n"
-"PO-Revision-Date: 2026-11-16 09:43+0000\n"
+"POT-Creation-Date: 2026-11-16 13:39+0000\n"
+"PO-Revision-Date: 2026-11-16 13:39+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: zh_Hans\n"
 "Language: zh_Hans\n"
@@ -399,7 +399,7 @@ msgid ""
 "Alliance; alts elsewhere are left out."
 msgstr "只检查、显示和统计账号中属于该 Alliance 的 Character；其他地方的小号不计入。"
 
-#: models.py:85 templates/eos_auth_monitor/settings.html:28
+#: models.py:85 templates/eos_auth_monitor/settings.html:29
 msgid "Notice to members"
 msgstr "致成员的通知"
 
@@ -409,73 +409,88 @@ msgid ""
 "show none."
 msgstr "在“我的账号”和“我的 Corporation”页面上以信息框显示。留空则不显示。"
 
-#: models.py:91 models.py:94
+#: models.py:91
+msgid "Mumble activity: days"
+msgstr "Mumble 活跃度：天数"
+
+#: models.py:93
+msgid ""
+"Active in Mumble compares, over this many past days, the days a main played "
+"EVE with the days it was also connected to Mumble. Older days are deleted."
+msgstr "Mumble 活跃度在过去这些天内，比较 Main 玩 EVE 的天数与同时连接 Mumble 的天数。更早的天数会被删除。"
+
+#: models.py:100 models.py:103
 msgid "Configuration"
 msgstr "配置"
 
-#: models.py:128
+#: models.py:156
 msgid "Pass accounts whose characters HAVE problems instead of those without."
 msgstr "放行其 Character 有问题的账号，而不是没有问题的账号。"
 
-#: models.py:132
+#: models.py:160
 msgid "Smart Filter: Auth Monitor character problems"
 msgstr "Smart Filter：Auth Monitor Character 问题"
 
-#: report.py:18
+#: report.py:19
 msgid "Corporation Audit"
 msgstr "Corporation 审计"
 
-#: report.py:19
+#: report.py:20
 msgctxt "eos-auth-monitor"
 msgid "Structures"
 msgstr "建筑"
 
-#: report.py:25
+#: report.py:26
 msgid "Reading accounts"
 msgstr "正在读取账号"
 
-#: report.py:26
+#: report.py:27
 msgid "Checking characters"
 msgstr "正在检查 Character"
 
-#: report.py:27
+#: report.py:28
 msgid "Checking Corporations"
 msgstr "正在检查 Corporation"
 
-#: report.py:28
+#: report.py:29
 msgid "Reading member lists"
 msgstr "正在读取成员列表"
 
-#: report.py:29
+#: report.py:30
 msgid "Reading services"
 msgstr "正在读取服务"
 
-#: report.py:30
+#: report.py:31
 msgid "Saving"
 msgstr "正在保存"
 
-#: report.py:37
+#: report.py:38
 msgid "never updated"
 msgstr "从未更新"
 
-#: report.py:51
+#: report.py:52
 #, python-format
 msgid "and %(count)d more"
 msgid_plural "and %(count)d more"
 msgstr[0] "等另外 %(count)d 个"
 
-#: report.py:307
+#: report.py:297 templates/eos_auth_monitor/corporation_service.html:20
+#: templates/eos_auth_monitor/service.html:22
+msgid "Active in Mumble"
+msgstr "Mumble 活跃度"
+
+#: report.py:331
 #, python-format
 msgid "%(check)s (warning)"
 msgstr "%(check)s（警告）"
 
-#: report.py:561 templates/eos_auth_monitor/corporation.html:66
+#: report.py:591 templates/eos_auth_monitor/corporation.html:66
 #: templates/eos_auth_monitor/corporation.html:215
 #: templates/eos_auth_monitor/dashboard.corporation.html:33
 msgid "Not registered in Auth"
 msgstr "未在 Auth 注册"
 
-#: report.py:568 templates/eos_auth_monitor/account.html:112
+#: report.py:598 templates/eos_auth_monitor/account.html:112
 #: templates/eos_auth_monitor/account.html:114
 #: templates/eos_auth_monitor/corporation.html:96
 #: templates/eos_auth_monitor/corporation.html:151
@@ -484,24 +499,24 @@ msgstr "未在 Auth 注册"
 msgid "GM transactions"
 msgstr "GM 交易"
 
-#: report.py:610
+#: report.py:641
 msgid "Registered in Auth"
 msgstr "已在 Auth 注册"
 
-#: report.py:615 templates/eos_auth_monitor/character_audit.html:8
-#: templates/eos_auth_monitor/character_audit.html:20 views.py:293
+#: report.py:646 templates/eos_auth_monitor/character_audit.html:8
+#: templates/eos_auth_monitor/character_audit.html:20 views.py:295
 msgid "Character Audit"
 msgstr "Character 审计"
 
-#: report.py:909
+#: report.py:958
 msgid "Members registered"
 msgstr "已注册成员"
 
-#: report.py:922
+#: report.py:971
 msgid "Character Audit complete"
 msgstr "Character 审计完整"
 
-#: report.py:934
+#: report.py:983
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s 正常运行"
@@ -618,7 +633,7 @@ msgid_plural ""
 msgstr[0] "%(counter)s 个 Alliance 之外的 Character 在此既不显示也不检查。"
 
 #: templates/eos_auth_monitor/base.html:12
-#: templates/eos_auth_monitor/dashboard.own.html:8 views.py:235
+#: templates/eos_auth_monitor/dashboard.own.html:8 views.py:237
 msgid "My account"
 msgstr "我的账号"
 
@@ -988,16 +1003,16 @@ msgstr "重建进度"
 msgid "%(part)s of %(total)s mains linked"
 msgstr "已关联 %(part)s / %(total)s 个 Main"
 
-#: templates/eos_auth_monitor/settings.html:55
+#: templates/eos_auth_monitor/settings.html:56
 msgctxt "eos-auth-monitor"
 msgid "Services"
 msgstr "服务"
 
-#: templates/eos_auth_monitor/settings.html:70
+#: templates/eos_auth_monitor/settings.html:71
 msgid "corptools: what the checks count"
 msgstr "corptools：检查所计入的内容"
 
-#: templates/eos_auth_monitor/settings.html:74
+#: templates/eos_auth_monitor/settings.html:75
 msgid ""
 "Untick what the Alliance does not use, e.g. Moon Observations and the mining"
 " scope for an Alliance without moons. A section and its scope are separate "
@@ -1006,11 +1021,11 @@ msgstr ""
 "取消勾选 Alliance 不使用的内容，例如没有月球的 Alliance 可取消 Moon Observations 及采矿 Scope。某个部分与其"
 " Scope 是各自独立的条目。"
 
-#: templates/eos_auth_monitor/settings.html:92
+#: templates/eos_auth_monitor/settings.html:93
 msgid "None of the apps the checks and services read from is installed."
 msgstr "检查和服务所读取的应用均未安装。"
 
-#: templates/eos_auth_monitor/settings.html:96
+#: templates/eos_auth_monitor/settings.html:97
 msgctxt "eos-auth-monitor"
 msgid "Save"
 msgstr "保存"
@@ -1026,7 +1041,7 @@ msgid_plural ""
 "unknown characters are missing here."
 msgstr[0] "无法读取 %(counter)s 个 Corporation 的成员列表，因此这里缺少其中的未知 Character。"
 
-#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:334
+#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:336
 msgid "Unknown characters"
 msgstr "未知 Character"
 
@@ -1061,33 +1076,33 @@ msgstr "Corporation 详情"
 msgid "Main details"
 msgstr "Main 详情"
 
-#: views.py:176
+#: views.py:178
 msgctxt "eos-auth-monitor"
 msgid "Name"
 msgstr "名称"
 
-#: views.py:181
+#: views.py:183
 msgid "Problem"
 msgstr "问题"
 
-#: views.py:350
+#: views.py:352
 msgid "Settings saved."
 msgstr "设置已保存。"
 
-#: views.py:352
+#: views.py:354
 msgid "Settings saved. The overview is being rebuilt."
 msgstr "设置已保存。概览正在重建。"
 
-#: views.py:356
+#: views.py:358
 msgid ""
 "Settings saved, but the task queue is not reachable: the overview is rebuilt"
 " once it is back."
 msgstr "设置已保存，但任务队列无法访问：待其恢复后将重建概览。"
 
-#: views.py:380
+#: views.py:382
 msgid "The overview is being rebuilt."
 msgstr "概览正在重建。"
 
-#: views.py:382
+#: views.py:384
 msgid "The rebuild could not be started: the task queue is not reachable."
 msgstr "无法启动重建：任务队列无法访问。"

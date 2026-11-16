@@ -14,7 +14,7 @@ from django.views.decorators.http import require_POST
 
 from kombu.exceptions import OperationalError
 
-from . import __version__, progress
+from . import __version__, activity, progress
 from . import snapshot as snapshots
 from .forms import MonitorConfigurationForm
 from .models import MonitorConfiguration
@@ -83,6 +83,8 @@ def _report(user=None) -> Report | None:
     if not snapshot:
         return None
     report = Report(snapshot)
+    # read per page view, not stored in the snapshot: the days fill in every 15 minutes
+    report.add_activity(activity.rates(MonitorConfiguration.get_solo().activity_days))
     if user is not None and spy_network.can_view(user):
         report.add_spy_markers(spy_network.character_markers(), spy_network.kinds())
     if user is not None and gm_transactions.can_view(user):

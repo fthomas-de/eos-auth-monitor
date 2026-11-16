@@ -85,6 +85,15 @@ class MonitorConfiguration(SingletonModel):
         verbose_name=_("Notice to members"),
         help_text=_("Shown as an info box on My account and My Corporation. Leave it empty to show none."),
     )
+    activity_days = models.PositiveSmallIntegerField(
+        default=30,
+        validators=[MinValueValidator(1)],
+        verbose_name=_("Mumble activity: days"),
+        help_text=_(
+            "Active in Mumble compares, over this many past days, the days a main played EVE "
+            "with the days it was also connected to Mumble. Older days are deleted."
+        ),
+    )
 
     class Meta:
         default_permissions = ()
@@ -92,6 +101,25 @@ class MonitorConfiguration(SingletonModel):
 
     def __str__(self):
         return str(_("Configuration"))
+
+
+class ActivityDay(models.Model):
+    """A day (EVE time) on which a main with Mumble linked played EVE, was connected to Mumble, or both.
+
+    Written by the periodic task `record_activity`; a flag only ever turns on.
+    """
+
+    user = models.ForeignKey("auth.User", on_delete=models.CASCADE, related_name="+")
+    day = models.DateField()
+    eve_login = models.BooleanField(default=False)
+    mumble = models.BooleanField(default=False)
+
+    class Meta:
+        default_permissions = ()
+        constraints = [models.UniqueConstraint(fields=["user", "day"], name="eos_auth_monitor_activity_user_day")]
+
+    def __str__(self):
+        return f"{self.user_id} {self.day}"
 
 
 class Snapshot(models.Model):

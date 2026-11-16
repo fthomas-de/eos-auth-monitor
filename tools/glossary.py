@@ -218,6 +218,13 @@ TRANSLATIONS = {
         "仅限 Alliance 中的 Character",
     ),
     "In the Alliance since": ("In der Alliance seit", "В Alliance с", "加入 Alliance 时间"),
+    "Active in Mumble": ("Aktiv im Mumble", "Активен в Mumble", "Mumble 活跃度"),
+    "Mumble activity: days": ("Mumble-Aktivität: Tage", "Активность в Mumble: дней", "Mumble 活跃度：天数"),
+    "Active in Mumble compares, over this many past days, the days a main played EVE with the days it was also connected to Mumble. Older days are deleted.": (
+        "Aktiv im Mumble vergleicht über so viele vergangene Tage die Tage, an denen ein Main EVE gespielt hat, mit den Tagen, an denen er zusätzlich im Mumble verbunden war. Ältere Tage werden gelöscht.",
+        "Активен в Mumble сравнивает за указанное число прошедших дней дни, когда Main играл в EVE, с днями, когда он при этом был подключён к Mumble. Более старые дни удаляются.",
+        "Mumble 活跃度在过去这些天内，比较 Main 玩 EVE 的天数与同时连接 Mumble 的天数。更早的天数会被删除。",
+    ),
     "Checks, shows and counts only the characters of an account that are in the Alliance; alts elsewhere are left out.": (
         "Prüft, zeigt und zählt nur die Characters eines Accounts, die in der Alliance sind; Alts anderswo werden weggelassen.",
         "Проверяет, показывает и считает только тех Character аккаунта, которые состоят в Alliance; альты в других местах не учитываются.",

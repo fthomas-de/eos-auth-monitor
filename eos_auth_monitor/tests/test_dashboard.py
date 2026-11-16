@@ -39,6 +39,8 @@ class DashboardTestCase(MonitorTestCase):
         self.member = make_user("member", VIEW_OWN, corporation_id=2001)
         self.ceo = make_user("ceo", BASIC_ACCESS, corporation_id=2001)
         main_id = self.member.profile.main_character.character_id
+        # real users, not fixed IDs: with --keepdb and other modules first, a user a test creates could get one
+        others = [make_user("other-a").pk, make_user("other-b", corporation_id=2002).pk]
         store_snapshot(
             snapshot_data(
                 [
@@ -55,10 +57,10 @@ class DashboardTestCase(MonitorTestCase):
                                 ],
                                 {"discord": True},
                             ),
-                            account_row(33, 3301, [character_row(3301, [AUDIT_MISSING])], {}),
+                            account_row(others[0], 3301, [character_row(3301, [AUDIT_MISSING])], {}),
                         ],
                     ),
-                    corporation_row(2002, [account_row(44, 4401, corporation_id=2002)]),
+                    corporation_row(2002, [account_row(others[1], 4401, corporation_id=2002)]),
                 ],
                 checks=["char_audit_missing", "char_scopes_missing"],
                 services=["discord"],

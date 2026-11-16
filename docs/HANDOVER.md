@@ -4,9 +4,24 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-16 (0.0.25).
+Last updated 2026-11-16 (0.0.25 plus Active in Mumble, uncommitted).
 
 ## Release
+
+- **Unreleased, working tree** (2026-11-16): **Active in Mumble** (see
+  `CHANGELOG.md` and the decisions of 2026-11-16 (Active in Mumble) below).
+  New: `activity.py` (`record()` for the task, `rates()` for the pages),
+  model `ActivityDay` and setting `activity_days` (migration 0010, applied
+  in `aa_dev`), task `tasks.record_activity`, `sources.services.
+  mumble_connections`, `sources.corptools.logins`, `Report.add_activity`
+  (called for every page in `views._report`), `Row.average` and
+  `Row.activity`, `partials/activity-cell.html`, `tests/test_activity.py`
+  (20 tests; 19 sabotages, 19 red after one fix: the rates test did not tell
+  Mumble days from days without). Targeted runs green: test_activity,
+  test_views (187), test_report, test_dashboard, test_snapshot; the full
+  suite and the translations are due at `/commit` (new messages: "Active in
+  Mumble", "Mumble activity: days" and its help text). Not seen in a
+  browser, and never run on real data: `aa_dev` has no Mumble account.
 
 - Version **0.0.25** of 2026-11-16: **Alliance join date in the
   Corporation header** (see `CHANGELOG.md` and the decisions of 2026-11-16
@@ -131,7 +146,7 @@ Last updated 2026-11-16 (0.0.25).
   Corporation header linking to aa-charlink, the check tiles of the
   Corporation page, character names linking to the Character Audit, Discord,
   QQ and Telegram voluntary.
-- Migrations **0001-0009** applied in `aa_dev` (0009 adds `critical_scope_count`; 0008 adds `member_notice`; 0007 adds
+- Migrations **0001-0010** applied in `aa_dev` (0010 adds `ActivityDay` and `activity_days`; 0009 adds `critical_scope_count`; 0008 adds `member_notice`; 0007 adds
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
@@ -653,6 +668,42 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   *ESI member lists* switch. Unlike the member lists (AM-01), an ESI failure
   here does not fail the run: the date is a nicety.
 
+2026-11-16 (Active in Mumble):
+
+- **What it is** ("aktivitätsübersicht ... je main: war einer der chars im
+  mumble verbunden ... war einer der chars an dem tag eingeloggt"): per main
+  and day two flags; the share is days with EVE and Mumble out of days with
+  EVE. The user confirmed: EVE without Mumble lowers it, Mumble without EVE
+  changes nothing.
+- **Where** (the user's words): the Mumble tile of the Alliance overview and
+  of the Corporation page - **both numbers**, the linked share stays and the
+  activity goes below it; **also per Corporation** on the overview (tile row
+  and table column); a column per main in the Mumble lists.
+- **A tile shows the mean of the mains' shares** (the user's choice over
+  pooled days), each main once; mains without a share stay out.
+- **Only mains with Mumble linked are rated** ("die aktivität kann nur
+  erfasst werden, wenn mumble verknüpft ist"): the others show "-" and are
+  not noted. The user's second sentence - Mumble needs a clean character in
+  the Character Audit - is how their Auth is set up, not something to check.
+- **Window and retention one setting**, "letzte 30 tage einstellbar".
+- **Characters as the settings count them** (*Only characters in the
+  Alliance*): taken from the snapshot's accounts.
+- **Mumble hangers**: "maximale verbindungsdauer von 24h ... da der server
+  täglich neugestartet wird" - connected counts for 24 hours after the
+  connect (`activity.CONNECTED_AT_MOST`).
+- **From the review the user asked for and accepted** ("weiter"): the day
+  comes from the timestamp, not from "today"; an online character counts for
+  the day corptools read it; no `total_logins` bookkeeping; today is left
+  out of the share; no own ESI call (corptools reads a character about once
+  a day - `update_subset_of_characters`, every 30 minutes the oldest 1/48 -
+  so a day in EVE shows late and some are lost; told and accepted for now,
+  the remedy would be corptools' `subset` parameter).
+- **Production writes the Mumble timestamps**: 823 `MumbleUser`, 335 with a
+  `last_connect` within 7 days (the user's check, 2026-11-16). Whether
+  `last_disconnect` is written as well was not checked.
+- Shown, never rated - like the spy markers; it keeps `percent_class`'
+  colours though (below 60 % red), as Mumble does.
+
 ## Pitfalls found
 
 - `eos-test` takes one test label only; a second one fails with
@@ -797,6 +848,15 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   "unrecognized arguments". Run the modules one by one or the whole app.
 
 ## Open points / next steps
+
+- **Active in Mumble has never seen real data or a browser.** After
+  deploying: add the beat entry `eos_auth_monitor_record_activity` (README),
+  then look after a few days whether the shares are plausible - above all
+  whether the 24-hour rule and production's `last_disconnect` hold, and how
+  many EVE days corptools' daily read loses. Ideas offered, not asked for:
+  the number of mains behind a tile's mean as tooltip; a minimum of days in
+  EVE before a main counts; the red below 60 % may read as a problem.
+- The dev `local.py` has the new beat entry, but no beat runs in dev.
 
 - **Alliance join date not seen in a browser** (0.0.25): it shows only after
   a rebuild run by a worker with the 0.0.25 code. Check that the header line

@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.26] - 2026-11-16
+
+### Added
+
+- **Active in Mumble**: of the days a main played EVE, the share on which it
+  was connected to Mumble too, over the last 30 whole days (setting *Mumble
+  activity: days*). Shown below the linked share on the Mumble tile of the
+  cockpit and of the Corporation page, per Corporation on the overview (tile
+  row and table column) and per main as a column of the Mumble lists, with
+  its days as tooltip. A tile shows the mean of its mains' shares. Only mains
+  with Mumble linked are rated; shown, never a problem. The days come from
+  the timestamps Alliance Auth's Mumble authenticator and corptools already
+  store - no call to ESI or the Mumble server. Needs the Mumble service and
+  corptools.
+
+### Upgrade notes
+
+- Migration 0010. Active in Mumble needs a new periodic task in `local.py`,
+  see the README's *Installation*; without it the shares stay empty:
+
+  ```python
+  CELERYBEAT_SCHEDULE["eos_auth_monitor_record_activity"] = {
+      "task": "eos_auth_monitor.tasks.record_activity",
+      "schedule": crontab(minute="*/15"),
+  }
+  ```
+
+- The app now keeps a record over time: per main and day, whether it played
+  EVE and was in Mumble (see the README's *Data protection*).
+
 ## [0.0.25] - 2026-11-16
 
 ### Added
