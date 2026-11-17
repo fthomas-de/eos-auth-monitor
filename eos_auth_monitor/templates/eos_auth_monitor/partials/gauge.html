@@ -31,5 +31,6 @@
         {% if link %}
             <a href="{{ link }}" class="stretched-link" aria-label="{{ gauge.label }}"></a>
         {% endif %}
+        {% include "eos_auth_monitor/partials/help.html" with help_text=gauge.help help_more=gauge.activity.help corner=True %}
     </div>
 </div>

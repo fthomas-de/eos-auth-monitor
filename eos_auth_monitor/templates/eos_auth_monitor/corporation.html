@@ -39,7 +39,8 @@
                 {# what the leadership can chase, grouped so that one EVE mail reaches everyone concerned #}
                 <div class="card border-danger mb-4 eos-auth-monitor-todos">
                     <div class="card-header d-flex flex-wrap align-items-center gap-2">
-                        <div class="card-title mb-0 me-auto"><i class="fas fa-list-check"></i> {% translate "To do" %}</div>
+                        {% translate "Everything to chase, grouped by problem. Copy a group's names for one EVE mail, or download the list as CSV." as help_text %}
+                        <div class="card-title mb-0 me-auto"><i class="fas fa-list-check"></i> {% translate "To do" %} {% include "eos_auth_monitor/partials/help.html" %}</div>
                         {# the whole list, one line per name with its problem #}
                         {% include "eos_auth_monitor/partials/csv-button.html" %}
                     </div>
@@ -108,7 +109,8 @@
                 </div>
             {% endif %}
 
-            <h6>{% translate "Mains of this Corporation" %} <span class="badge text-bg-secondary">{{ corporation.mains }}</span></h6>
+            {% translate "A card per main with something open. A red border means a problem, a spy marker or a GM transaction; a warning alone stays open without counting as a problem. The crown marks a Director among the account's characters." as help_text %}
+            <h6>{% translate "Mains of this Corporation" %} <span class="badge text-bg-secondary">{{ corporation.mains }}</span> {% include "eos_auth_monitor/partials/help.html" %}</h6>
             {% if corporation.card_accounts %}
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3 mb-3">
                     {% for account in corporation.card_accounts %}
@@ -165,6 +167,8 @@
                     <div class="card-header small">
                         <i class="fas fa-circle-check text-success"></i> {% translate "Without problems" %}
                         <span class="badge text-bg-secondary">{{ corporation.problem_free_accounts|length }}</span>
+                        {% translate "Mains whose characters here have nothing open." as help_text %}
+                        {% include "eos_auth_monitor/partials/help.html" %}
                     </div>
                     <div class="card-body py-2">
                         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-2 small">
@@ -183,7 +187,8 @@
             {% endif %}
 
             {% if corporation.other_mains %}
-                <h6>{% translate "Members whose main is in another Corporation" %} <span class="badge text-bg-secondary">{{ corporation.other_mains|length }}</span></h6>
+                {% translate "Characters of this Corporation on an account whose main is elsewhere. They count here; the rest of the account counts with the main's Corporation." as help_text %}
+                <h6>{% translate "Members whose main is in another Corporation" %} <span class="badge text-bg-secondary">{{ corporation.other_mains|length }}</span> {% include "eos_auth_monitor/partials/help.html" %}</h6>
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3 mb-4">
                     {% for other in corporation.other_mains %}
                         <div class="col">
@@ -212,7 +217,12 @@
             {# without the list, the characters Auth knows here on an account without a main #}
             {% if corporation.member_count is not None or corporation.unregistered %}
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-2" id="eos-auth-monitor-unregistered">
-                    <h6 class="mb-0 me-auto">{% translate "Not registered in Auth" %} <span class="badge {% if corporation.unregistered %}text-bg-danger{% else %}text-bg-success{% endif %}">{{ corporation.unregistered|length }}</span></h6>
+                    {% if corporation.member_count is None %}
+                        {% translate "The member list could not be read: these are the characters Auth knows in this Corporation on an account without a main." as help_text %}
+                    {% else %}
+                        {% translate "Members from the EVE member list without an account in Auth. They register and add their characters." as help_text %}
+                    {% endif %}
+                    <h6 class="mb-0 me-auto">{% translate "Not registered in Auth" %} <span class="badge {% if corporation.unregistered %}text-bg-danger{% else %}text-bg-success{% endif %}">{{ corporation.unregistered|length }}</span> {% include "eos_auth_monitor/partials/help.html" %}</h6>
                     {% if corporation.unregistered %}
                         {% include "eos_auth_monitor/partials/copy-button.html" with names=corporation.unregistered_names %}
                         {% include "eos_auth_monitor/partials/csv-button.html" with group="unregistered" %}

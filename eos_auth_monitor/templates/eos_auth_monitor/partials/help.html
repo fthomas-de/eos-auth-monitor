@@ -1,0 +1,9 @@
+{% load i18n %}
+{# A text of the help mode (help.js): shown while the navbar's Help mode switch is on, a popover on click. #}
+{# `help_more` appends a second text, the Mumble tile's Active in Mumble; `corner` puts it in a tile's top right corner. #}
+{# z-2 lifts it above a tile's stretched link, or the click would open the tile's page. #}
+{% if help_text %}
+    <a tabindex="0" role="button" class="text-info z-2 {% if corner %}position-absolute top-0 end-0 m-2{% else %}position-relative{% endif %} eos-auth-monitor-help"
+       data-bs-toggle="popover" data-bs-trigger="focus" data-bs-content="{{ help_text }}{% if help_more %} {{ help_more }}{% endif %}"
+       aria-label="{% translate 'Help' %}: {{ help_text }}{% if help_more %} {{ help_more }}{% endif %}"><i class="fas fa-circle-question"></i></a>
+{% endif %}

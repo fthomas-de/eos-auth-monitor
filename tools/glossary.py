@@ -772,6 +772,149 @@ TRANSLATIONS = {
         'GM перевёл ISK для этого Character.',
         'GM 为这个 Character 转移了 ISK。',
     ),
+    # the help mode: the navbar switch and the question marks of partials/help.html
+    "Help": ("Hilfe", "Справка", "帮助"),
+    "Help mode": ("Hilfemodus", "Режим справки", "帮助模式"),
+    "Corporations whose corptools Corporation Audit exists, has a token and updates in time.": (
+        "Corporations, deren corptools-Corporation-Audit existiert, einen Token hat und rechtzeitig aktualisiert wird.",
+        "Corporation, у которых аудит Corporation в corptools существует, имеет токен и обновляется вовремя.",
+        "corptools Corporation 审计存在、有令牌且按时更新的 Corporation。",
+    ),
+    "Corporations set up as an active owner in aa-structures, with a character left and a sync that is up to date.": (
+        "Corporations, die in aa-structures als aktiver Owner eingerichtet sind, mit einem verbleibenden Character und einem aktuellen Sync.",
+        "Corporation, настроенные в aa-structures как активный владелец, с оставшимся Character и актуальной синхронизацией.",
+        "在 aa-structures 中设为活跃所有者、仍有 Character 且同步为最新的 Corporation。",
+    ),
+    'The checks of this app that fail for the Corporation, or "No problems".': (
+        'Die Prüfungen dieser App, die für die Corporation fehlschlagen, oder "Keine Probleme".',
+        'Проверки этого приложения, не пройденные Corporation, или "Проблем нет".',
+        '此应用对该 Corporation 未通过的检查，或"没有问题"。',
+    ),
+    "Share of mains that linked this service to their account in Auth.": (
+        "Anteil der Mains, die diesen Dienst mit ihrem Account in Auth verknüpft haben.",
+        "Доля Main, привязавших этот сервис к своему аккаунту в Auth.",
+        "已在 Auth 中将此服务关联到其账号的 Main 所占比例。",
+    ),
+    "Active in Mumble: of the days the mains played EVE, the share they were in Mumble too; the period is set in the settings.": (
+        "Aktiv im Mumble: von den Tagen, an denen die Mains EVE gespielt haben, der Anteil, an dem sie auch im Mumble waren; der Zeitraum steht in den Einstellungen.",
+        "Активен в Mumble: из дней, когда Main играли в EVE, доля дней, когда они были и в Mumble; период задаётся в настройках.",
+        "Mumble 活跃度：在 Main 玩 EVE 的天数中，同时在 Mumble 的天数所占比例；时间段在设置中设定。",
+    ),
+    "Members of this Corporation whose character belongs to an account in Auth. Click for the list.": (
+        "Mitglieder dieser Corporation, deren Character zu einem Account in Auth gehört. Klick für die Liste.",
+        "Участники этой Corporation, чей Character принадлежит аккаунту в Auth. Нажмите для списка.",
+        "其 Character 属于 Auth 中某个账号的本 Corporation 成员。点击查看列表。",
+    ),
+    "Characters here with a complete Character Audit. Members not registered in Auth count as missing.": (
+        "Characters hier mit vollständigem Character-Audit. Mitglieder, die nicht in Auth registriert sind, zählen als fehlend.",
+        "Character здесь с полным аудитом Character. Участники, не зарегистрированные в Auth, считаются отсутствующими.",
+        "此处拥有完整 Character 审计的 Character。未在 Auth 注册的成员计为缺失。",
+    ),
+    "Members of the Alliance's Corporations whose character belongs to an account in Auth. Only Corporations whose member list could be read count.": (
+        "Mitglieder der Corporations der Alliance, deren Character zu einem Account in Auth gehört. Es zählen nur Corporations, deren Mitgliederliste gelesen werden konnte.",
+        "Участники Corporation этого Alliance, чей Character принадлежит аккаунту в Auth. Учитываются только Corporation, чей список участников удалось прочитать.",
+        "Alliance 各 Corporation 中其 Character 属于 Auth 中某个账号的成员。只计入成员列表可读取的 Corporation。",
+    ),
+    "Characters with a complete corptools Character Audit: present, all scopes granted, up to date. Members not registered in Auth count as missing.": (
+        "Characters mit vollständigem corptools-Character-Audit: vorhanden, alle Scopes erteilt, aktuell. Mitglieder, die nicht in Auth registriert sind, zählen als fehlend.",
+        "Character с полным аудитом Character в corptools: есть, все scope выданы, актуален. Участники, не зарегистрированные в Auth, считаются отсутствующими.",
+        "拥有完整 corptools Character 审计的 Character：已存在、已授予所有 scope、为最新。未在 Auth 注册的成员计为缺失。",
+    ),
+    "Characters with markers in eos-spy-network. Only shown to its viewers.": (
+        "Characters mit Markern in eos-spy-network. Nur für dessen Betrachter sichtbar.",
+        "Character с маркерами в eos-spy-network. Видно только его зрителям.",
+        "在 eos-spy-network 中有标记的 Character。仅对其查看者显示。",
+    ),
+    "Characters with GM transactions in eos-tax. Only shown to its viewers.": (
+        "Characters mit GM-Transaktionen in eos-tax. Nur für dessen Betrachter sichtbar.",
+        "Character с GM-транзакциями в eos-tax. Видно только его зрителям.",
+        "在 eos-tax 中有 GM 交易的 Character。仅对其查看者显示。",
+    ),
+    "The Alliance at a glance: who is registered and audited, and whether the Corporation apps work. Click a tile for the list behind it.": (
+        "Die Alliance auf einen Blick: wer registriert und geprüft ist und ob die Corporation-Apps funktionieren. Klick auf eine Kachel für die Liste dahinter.",
+        "Alliance с первого взгляда: кто зарегистрирован и проверен и работают ли приложения Corporation. Нажмите на плитку, чтобы открыть список за ней.",
+        "Alliance 一览：谁已注册并通过审计，以及 Corporation 应用是否正常。点击卡片查看其背后的列表。",
+    ),
+    "Every Corporation of the Alliance with its accounts with problems and the same shares as the cockpit. Click a Corporation for its page.": (
+        "Jede Corporation der Alliance mit ihren Accounts mit Problemen und denselben Anteilen wie im Cockpit. Klick auf eine Corporation für ihre Seite.",
+        "Каждая Corporation этого Alliance с её аккаунтами с проблемами и теми же долями, что на панели. Нажмите на Corporation, чтобы открыть её страницу.",
+        "Alliance 的每个 Corporation，及其有问题的账号和与仪表盘相同的比例。点击 Corporation 打开其页面。",
+    ),
+    "Hides the Corporations without problems.": (
+        "Blendet die Corporations ohne Probleme aus.",
+        "Скрывает Corporation без проблем.",
+        "隐藏没有问题的 Corporation。",
+    ),
+    "Filters the Corporations by name or ticker.": (
+        "Filtert die Corporations nach Name oder Ticker.",
+        "Фильтрует Corporation по названию или тикеру.",
+        "按名称或简称筛选 Corporation。",
+    ),
+    "Two views of the same Corporations; this browser remembers the choice.": (
+        "Zwei Ansichten derselben Corporations; dieser Browser merkt sich die Wahl.",
+        "Два вида одних и тех же Corporation; этот браузер запоминает выбор.",
+        "同一批 Corporation 的两种视图；此浏览器会记住你的选择。",
+    ),
+    "Everything to chase, grouped by problem. Copy a group's names for one EVE mail, or download the list as CSV.": (
+        "Alles, was nachzuhalten ist, nach Problem gruppiert. Kopiere die Namen einer Gruppe für eine EVE-Mail oder lade die Liste als CSV herunter.",
+        "Всё, чего нужно добиться, по группам проблем. Скопируйте имена группы для одного письма в EVE или скачайте список как CSV.",
+        "所有需要跟进的事项，按问题分组。复制一组的名字发一封 EVE 邮件，或将列表下载为 CSV。",
+    ),
+    "A card per main with something open. A red border means a problem, a spy marker or a GM transaction; a warning alone stays open without counting as a problem. The crown marks a Director among the account's characters.": (
+        "Eine Karte je Main mit offenen Punkten. Ein roter Rahmen bedeutet ein Problem, einen Spy-Marker oder eine GM-Transaktion; eine Warnung allein bleibt offen, ohne als Problem zu zählen. Die Krone markiert einen Director unter den Characters des Accounts.",
+        "Карточка на каждый Main с незакрытыми пунктами. Красная рамка означает проблему, маркер шпиона или GM-транзакцию; одно предупреждение остаётся открытым, не считаясь проблемой. Корона отмечает Director среди Character аккаунта.",
+        "每个有待处理事项的 Main 一张卡片。红色边框表示有问题、间谍标记或 GM 交易；仅有警告时保持待处理，但不计为问题。皇冠标记账号 Character 中的 Director。",
+    ),
+    "Mains whose characters here have nothing open.": (
+        "Mains, deren Characters hier nichts offen haben.",
+        "Main, у чьих Character здесь нет незакрытых пунктов.",
+        "其在此处的 Character 没有待处理事项的 Main。",
+    ),
+    "Characters of this Corporation on an account whose main is elsewhere. They count here; the rest of the account counts with the main's Corporation.": (
+        "Characters dieser Corporation auf einem Account, dessen Main woanders ist. Sie zählen hier; der Rest des Accounts zählt bei der Corporation des Mains.",
+        "Character этой Corporation на аккаунте, чей Main находится в другом месте. Они учитываются здесь; остальной аккаунт учитывается в Corporation его Main.",
+        "本 Corporation 中、其账号的 Main 在别处的 Character。它们计入此处；账号的其余部分计入 Main 所在的 Corporation。",
+    ),
+    "The member list could not be read: these are the characters Auth knows in this Corporation on an account without a main.": (
+        "Die Mitgliederliste konnte nicht gelesen werden: das sind die Characters, die Auth in dieser Corporation auf einem Account ohne Main kennt.",
+        "Список участников не удалось прочитать: это Character, которых Auth знает в этой Corporation на аккаунте без Main.",
+        "无法读取成员列表：这些是 Auth 在本 Corporation 中所知、位于没有 Main 的账号上的 Character。",
+    ),
+    "Members from the EVE member list without an account in Auth. They register and add their characters.": (
+        "Mitglieder aus der EVE-Mitgliederliste ohne Account in Auth. Sie registrieren sich und fügen ihre Characters hinzu.",
+        "Участники из списка участников EVE без аккаунта в Auth. Они регистрируются и добавляют своих Character.",
+        "EVE 成员列表中在 Auth 没有账号的成员。他们需要注册并添加自己的 Character。",
+    ),
+    "Whether you linked this service. Click to link it in Auth.": (
+        "Ob du diesen Dienst verknüpft hast. Klick, um ihn in Auth zu verknüpfen.",
+        "Привязали ли вы этот сервис. Нажмите, чтобы привязать его в Auth.",
+        "你是否已关联此服务。点击在 Auth 中关联。",
+    ),
+    "Whether this account linked this service. Click for the Corporation's list of it, for Mumble the main's days.": (
+        "Ob dieser Account den Dienst verknüpft hat. Klick für die Liste der Corporation dazu, bei Mumble für die Tage des Mains.",
+        "Привязал ли этот аккаунт этот сервис. Нажмите, чтобы открыть список Corporation по нему, для Mumble — дни Main.",
+        "此账号是否已关联此服务。点击查看 Corporation 的相关列表，Mumble 则查看 Main 的天数。",
+    ),
+    "Your characters in the Alliance with their problems and how to fix them.": (
+        "Deine Characters in der Alliance mit ihren Problemen und wie du sie behebst.",
+        "Ваши Character в Alliance с их проблемами и способами их исправить.",
+        "你在 Alliance 中的 Character、它们的问题以及解决方法。",
+    ),
+    "The account's characters in the Alliance with their problems and what to do about them.": (
+        "Die Characters des Accounts in der Alliance mit ihren Problemen und was dagegen zu tun ist.",
+        "Character аккаунта в Alliance с их проблемами и тем, что с ними делать.",
+        "该账号在 Alliance 中的 Character、它们的问题以及应对方法。",
+    ),
+    "Your other characters in the Alliance; nothing to do for them.": (
+        "Deine übrigen Characters in der Alliance; für sie ist nichts zu tun.",
+        "Ваши остальные Character в Alliance; для них ничего делать не нужно.",
+        "你在 Alliance 中的其他 Character；它们无需处理。",
+    ),
+    "The account's other characters in the Alliance; nothing to do for them.": (
+        "Die übrigen Characters des Accounts in der Alliance; für sie ist nichts zu tun.",
+        "Остальные Character аккаунта в Alliance; для них ничего делать не нужно.",
+        "该账号在 Alliance 中的其他 Character；它们无需处理。",
+    ),
 }
 
 PLURALS = {

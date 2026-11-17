@@ -45,6 +45,12 @@
                             {% else %}
                                 <a href="{% url 'eos_auth_monitor:corporation_service' corporation.id link.service.key %}" class="stretched-link" aria-label="{{ link.service.label }}"></a>
                             {% endif %}
+                            {% if own %}
+                                {% translate "Whether you linked this service. Click to link it in Auth." as help_text %}
+                            {% else %}
+                                {% translate "Whether this account linked this service. Click for the Corporation's list of it, for Mumble the main's days." as help_text %}
+                            {% endif %}
+                            {% include "eos_auth_monitor/partials/help.html" with corner=True %}
                         </div>
                     </div>
                 </div>
@@ -56,7 +62,12 @@
     <div class="card">
         <div class="card-header d-flex flex-wrap align-items-center gap-2">
             <img src="{{ account.main_id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
-            <div class="card-title mb-0 me-auto text-break">{{ account.main_name }}</div>
+            {% if own %}
+                {% translate "Your characters in the Alliance with their problems and how to fix them." as help_text %}
+            {% else %}
+                {% translate "The account's characters in the Alliance with their problems and what to do about them." as help_text %}
+            {% endif %}
+            <div class="card-title mb-0 me-auto text-break">{{ account.main_name }} {% include "eos_auth_monitor/partials/help.html" %}</div>
         </div>
 
         <div class="card-body">
@@ -138,6 +149,12 @@
                     <details class="mt-3 eos-auth-monitor-problem-free">
                         <summary class="small">
                             {% blocktranslate count counter=fine|length context "EVE jargon" %}{{ counter }} character without problems{% plural %}{{ counter }} characters without problems{% endblocktranslate %}
+                            {% if own %}
+                                {% translate "Your other characters in the Alliance; nothing to do for them." as help_text %}
+                            {% else %}
+                                {% translate "The account's other characters in the Alliance; nothing to do for them." as help_text %}
+                            {% endif %}
+                            {% include "eos_auth_monitor/partials/help.html" %}
                         </summary>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-2 small mt-1">
                             {# numbered on from the table, so the last number is the count of characters shown #}

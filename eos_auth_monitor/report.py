@@ -23,6 +23,26 @@ CORPORATION_GROUPS = (
 )
 CORPORATION_GROUP_LABELS = {group: label for group, label, _icon in CORPORATION_GROUPS}
 
+# the help mode's texts of the tiles (partials/help.html)
+COCKPIT_GROUP_HELP = {
+    "corptools_corporations": _(
+        "Corporations whose corptools Corporation Audit exists, has a token and updates in time."
+    ),
+    "structures": _(
+        "Corporations set up as an active owner in aa-structures, with a character left and a sync "
+        "that is up to date."
+    ),
+}
+REGISTERED_HELP = _(
+    "Members of this Corporation whose character belongs to an account in Auth. Click for the list."
+)
+CORPORATION_GROUP_HELP = _('The checks of this app that fail for the Corporation, or "No problems".')
+SERVICE_HELP = _("Share of mains that linked this service to their account in Auth.")
+ACTIVITY_HELP = _(
+    "Active in Mumble: of the days the mains played EVE, the share they were in Mumble too; "
+    "the period is set in the settings."
+)
+
 
 PHASE_LABELS = {
     "accounts": _("Reading accounts"),
@@ -280,6 +300,8 @@ class Row:
     activity: "Row | None" = None
     # a count without a total, and why: shown instead of a share
     note: str = ""
+    # what the tile counts, for the help mode
+    help: str = ""
 
     @property
     def percent(self) -> int | None:
@@ -317,7 +339,12 @@ def _mean_activity(accounts) -> Row:
     """
     shares = [account.activity.percent for account in accounts if account.activity]
     shares = [share for share in shares if share is not None]
-    return Row(ACTIVITY_LABEL, ACTIVITY_ICON, average=round(sum(shares) / len(shares)) if shares else None)
+    return Row(
+        ACTIVITY_LABEL,
+        ACTIVITY_ICON,
+        average=round(sum(shares) / len(shares)) if shares else None,
+        help=ACTIVITY_HELP,
+    )
 
 
 @dataclass
@@ -644,6 +671,7 @@ class Corporation:
                 self.mains,
                 service=service,
                 activity=self.activity if self.activity_shown and service.key == MUMBLE else None,
+                help=SERVICE_HELP,
             )
             for service in self.services
         ]
@@ -670,6 +698,7 @@ class Corporation:
                     self.member_count,
                     url_name="eos_auth_monitor:corporation_registered",
                     url_args=(self.id,),
+                    help=REGISTERED_HELP,
                 )
             )
         elif self.member_list_unread:
@@ -681,6 +710,7 @@ class Corporation:
                     url_name="eos_auth_monitor:corporation_registered",
                     url_args=(self.id,),
                     note=MEMBER_LIST_UNREAD,
+                    help=REGISTERED_HELP,
                 )
             )
         if any(check.scope == CHARACTER for check in self.checks):
@@ -693,12 +723,21 @@ class Corporation:
                     len(self.audited_characters) + len(self.unregistered),
                     url_name="eos_auth_monitor:corporation_character_audit",
                     url_args=(self.id,),
+                    help=_(
+                        "Characters here with a complete Character Audit. "
+                        "Members not registered in Auth count as missing."
+                    ),
                 )
             )
         for group, label, icon in CORPORATION_GROUPS:
             if any(check.group == group for check in self.checks):
                 rows.append(
-                    Row(label, icon, problems=[problem for problem in self.problems if problem.check.group == group])
+                    Row(
+                        label,
+                        icon,
+                        problems=[problem for problem in self.problems if problem.check.group == group],
+                        help=CORPORATION_GROUP_HELP,
+                    )
                 )
         return rows
 
@@ -1035,6 +1074,7 @@ class Report:
                 len(accounts),
                 service=service,
                 activity=_mean_activity(accounts) if self.activity_shown and service.key == MUMBLE else None,
+                help=SERVICE_HELP,
             )
             for service in self.services
         ]
@@ -1049,6 +1089,10 @@ class Report:
                     sum(corporation.member_count for corporation in counted),
                     # the list of the rest: the members without a main in Auth
                     url_name="eos_auth_monitor:unknown_characters",
+                    help=_(
+                        "Members of the Alliance's Corporations whose character belongs to an account in Auth. "
+                        "Only Corporations whose member list could be read count."
+                    ),
                 )
             )
 
@@ -1062,6 +1106,10 @@ class Report:
                     # as on the Corporation tiles: members without a main in Auth count as failing
                     len(characters) + sum(len(corporation.unregistered) for corporation in self.corporations),
                     url_name="eos_auth_monitor:character_audit",
+                    help=_(
+                        "Characters with a complete corptools Character Audit: present, all scopes granted, "
+                        "up to date. Members not registered in Auth count as missing."
+                    ),
                 )
             )
 
@@ -1078,6 +1126,7 @@ class Report:
                         len(self.corporations),
                         url_name="eos_auth_monitor:directors",
                         url_args=(group,),
+                        help=COCKPIT_GROUP_HELP[group],
                     )
                 )
 

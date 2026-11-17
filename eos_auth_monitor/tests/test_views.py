@@ -9,6 +9,7 @@ from kombu.exceptions import OperationalError
 from django.apps import apps
 from django.test import RequestFactory
 from django.urls import reverse
+from django.utils.html import escape
 
 import eos_auth_monitor
 from eos_auth_monitor import progress
@@ -2226,3 +2227,70 @@ class TestTileLists(ViewTestCase):
 
         self.assertEqual(self.rows(response), [("member", "Char 2201")])
         self.assertContains(response, 'class="alert alert-warning small eos-auth-monitor-note"')
+
+
+class TestHelpMode(ViewTestCase):
+    """The navbar's Help mode switch, on by default, and the question marks it hides (help.js)."""
+
+    def test_should_render_the_switch_on_for_help_js(self):
+        content = self.get(self.leader, "index").content.decode()
+
+        self.assertRegex(content, r'<li class="nav-item d-none eos-auth-monitor-help-mode">')
+        self.assertRegex(content, r'id="eos-auth-monitor-help-mode" checked data-eos-auth-monitor-help-toggle>')
+        self.assertIn("Help mode", content)
+        # the manifest storage adds a hash to the name
+        self.assertIn("eos_auth_monitor/js/help.", content)
+
+    def test_should_explain_the_overview(self):
+        response = self.get(self.leader, "index")
+        content = response.content.decode()
+
+        self.assertIn("The Alliance at a glance", content)
+        self.assertIn("Hides the Corporations without problems.", content)
+        self.assertIn("Filters the Corporations by name or ticker.", content)
+        self.assertNotRegex(content, r'class="[^"]*d-none[^"]*eos-auth-monitor-help"')
+        for row in response.context["cockpit"]:
+            with self.subTest(str(row.label)):
+                self.assertTrue(row.help)
+                self.assertIn(escape(str(row.help)), content)
+
+    def test_should_put_the_question_mark_in_a_tiles_corner(self):
+        content = self.get(self.leader, "index").content.decode()
+
+        # within the Character Audit tile, before the next card starts
+        self.assertRegex(
+            content,
+            re.compile(
+                r"fas fa-user-check fa-lg mb-2(?:(?!card h-100).)*position-absolute top-0 end-0 m-2 eos-auth-monitor-help",
+                re.DOTALL,
+            ),
+        )
+
+    def test_should_explain_the_corporation_page(self):
+        response = self.get(self.leader, "corporation", 2002)
+        content = response.content.decode()
+        corporation = response.context["corporation"]
+
+        self.assertIn("Everything to chase, grouped by problem.", content)
+        self.assertIn("A card per main with something open.", content)
+        for row in corporation.check_rows + corporation.service_counts:
+            with self.subTest(str(row.label)):
+                self.assertTrue(row.help)
+                self.assertIn(escape(str(row.help)), content)
+
+    def test_should_speak_to_the_member_on_my_account(self):
+        member = make_user("member", VIEW_OWN, corporation_id=2002)
+        snapshot = Snapshot.objects.get()
+        main_id = member.profile.main_character.character_id
+        snapshot.data["corporations"][1]["accounts"].append(
+            account_row(member.pk, main_id, [character_row(main_id, [AUDIT_MISSING], corporation_id=2002)], {})
+        )
+        snapshot.save()
+
+        own = self.get(member, "own_account").content.decode()
+        other = self.get(self.leader, "account", 22).content.decode()
+
+        self.assertIn("Your characters in the Alliance with their problems and how to fix them.", own)
+        self.assertNotIn("characters in the Alliance with their problems and what to do", own)
+        header = other[other.index("card-title"):][:800]
+        self.assertIn("characters in the Alliance with their problems and what to do about them.", other, header)

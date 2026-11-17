@@ -32,6 +32,19 @@
     {% endif %}
 {% endblock %}
 
+{% block header_nav_collapse_right %}
+    {# on by default; help.js shows it where the page has help texts and hides the texts when switched off #}
+    <li class="nav-item d-none eos-auth-monitor-help-mode">
+        <div class="nav-link">
+            <div class="form-check form-switch mb-0">
+                {# green while on: the theme's primary colour would vanish on the primary-coloured navbar #}
+                <input class="form-check-input bg-success border-success" type="checkbox" role="switch" id="eos-auth-monitor-help-mode" checked data-eos-auth-monitor-help-toggle>
+                <label class="form-check-label" for="eos-auth-monitor-help-mode">{% translate "Help mode" %}</label>
+            </div>
+        </div>
+    </li>
+{% endblock %}
+
 {% block content %}
     {% get_current_language as current_language %}
     {% get_datatables_language_static current_language as datatables_language %}
@@ -62,4 +75,5 @@
     {% sri_static "eos_auth_monitor/js/filter.js" %}
     {% sri_static "eos_auth_monitor/js/view.js" %}
     {% sri_static "eos_auth_monitor/js/copy.js" %}
+    {% sri_static "eos_auth_monitor/js/help.js" %}
 {% endblock %}

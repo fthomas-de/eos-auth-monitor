@@ -6,14 +6,15 @@
 {% block details %}
     {% if report %}
         {% if cockpit or report.spy_shown or report.gm_shown %}
-            <h5>{% translate "Cockpit" %}</h5>
+            {% translate "The Alliance at a glance: who is registered and audited, and whether the Corporation apps work. Click a tile for the list behind it." as help_text %}
+            <h5>{% translate "Cockpit" %} {% include "eos_auth_monitor/partials/help.html" %}</h5>
             <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 row-cols-xxl-6 g-3 mb-4">
                 {% if report.services %}
                     <div class="col">
                         <div class="card h-100">
                             <div class="card-body">
                                 <div class="text-center mb-2"><i class="fas fa-plug fa-lg"></i></div>
-                                <div class="small text-center mb-2">{% translate "Connections" %}</div>
+                                <div class="small text-center mb-2">{% translate "Connections" %} {% include "eos_auth_monitor/partials/help.html" with help_text=cockpit.0.help %}</div>
                                 <ul class="list-unstyled small mb-0">
                                     {# the service tiles of the cockpit: linked accounts per service #}
                                     {% for gauge in cockpit %}{% if gauge.service %}
@@ -45,12 +46,17 @@
         {% endif %}
 
         <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-            <h5 class="mb-0 me-auto">{% translate "Corporations" context "EVE jargon" %}</h5>
+            {% translate "Every Corporation of the Alliance with its accounts with problems and the same shares as the cockpit. Click a Corporation for its page." as help_text %}
+            <h5 class="mb-0 me-auto">{% translate "Corporations" context "EVE jargon" %} {% include "eos_auth_monitor/partials/help.html" %}</h5>
             {% if report.corporations %}
                 <div class="form-check form-switch mb-0">
                     <input class="form-check-input" type="checkbox" role="switch" id="eos-auth-monitor-problems-only">
                     <label class="form-check-label small" for="eos-auth-monitor-problems-only">{% translate "Only with problems" %}</label>
+                    {% translate "Hides the Corporations without problems." as help_text %}
+                    {% include "eos_auth_monitor/partials/help.html" %}
                 </div>
+                {% translate "Filters the Corporations by name or ticker." as help_text %}
+                {% include "eos_auth_monitor/partials/help.html" %}
                 <input type="search" class="form-control form-control-sm w-auto" style="min-width: 14rem"
                        placeholder="{% translate 'Filter Corporations ...' %}" aria-label="{% translate 'Filter Corporations' %}"
                        data-eos-auth-monitor-filter=".eos-auth-monitor-corporation"
@@ -67,6 +73,8 @@
                         <i class="fas fa-table-list"></i>
                     </button>
                 </div>
+                {% translate "Two views of the same Corporations; this browser remembers the choice." as help_text %}
+                {% include "eos_auth_monitor/partials/help.html" %}
             {% endif %}
         </div>
         {# without a table line the tiles stay, they carry the notice that there is no Corporation #}

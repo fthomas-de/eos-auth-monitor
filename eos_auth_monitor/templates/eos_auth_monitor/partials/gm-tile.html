@@ -7,5 +7,7 @@
         <div class="small">{% translate "GM transactions" %}</div>
         <div class="small text-body-secondary">{% translate "Characters with GM transactions" %}</div>
         <a href="{% url 'eos_tax:gm_transactions' %}" class="stretched-link" aria-label="{% translate 'GM transactions' %}"></a>
+        {% translate "Characters with GM transactions in eos-tax. Only shown to its viewers." as help_text %}
+        {% include "eos_auth_monitor/partials/help.html" with corner=True %}
     </div>
 </div>

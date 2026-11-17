@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.34] - 2026-11-17
+
+### Added
+
+- **Help mode**: a *Help mode* switch in the app navbar, on with every page
+  load, shows a question mark beside each area of the Alliance overview, the
+  Corporation page and the account pages (*My account* in its own words);
+  a click opens a popover saying what the area shows. On the tiles it sits
+  in the top right corner. Switching it off hides them until the next page
+  load. Not on the settings, the lists or the dashboard widgets.
+
 ## [0.0.33] - 2026-11-17
 
 ### Added
