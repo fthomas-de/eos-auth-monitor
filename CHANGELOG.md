@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.29] - 2026-11-17
+
+### Changed
+
+- **Main details numbers the characters**: a `#` column in the problem table,
+  continued in the folded list of characters without problems, so the last
+  number is the count shown. A number stays with its character when the table
+  is sorted.
+- **Alliance overview**: the Corporation column of the table keeps a minimum
+  width of 14rem, so a long name no longer breaks over many lines.
+
 ## [0.0.28] - 2026-11-17
 
 ### Added

@@ -65,6 +65,7 @@
                     <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>{% translate "Character" context "EVE jargon" %}</th>
                                 <th>{% translate "Corporation" context "EVE jargon" %}</th>
                                 <th class="d-none d-md-table-cell">{% translate "Alliance" context "EVE jargon" %}</th>
@@ -74,6 +75,8 @@
                         <tbody>
                             {% for character in account.listed_characters %}
                                 <tr>
+                                    {# the number stays with its character, sorting by it restores the order #}
+                                    <td data-order="{{ forloop.counter }}" class="text-body-secondary eos-auth-monitor-number">{{ forloop.counter }}</td>
                                     <td data-order="{{ character.name }}">
                                         {% include "eos_auth_monitor/partials/character-cell.html" %}
                                     </td>
@@ -137,14 +140,16 @@
                             {% blocktranslate count counter=fine|length context "EVE jargon" %}{{ counter }} character without problems{% plural %}{{ counter }} characters without problems{% endblocktranslate %}
                         </summary>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-2 small mt-1">
-                            {% for character in fine %}
+                            {# numbered on from the table, so the last number is the count of characters shown #}
+                            {% with offset=account.listed_characters|length %}{% for character in fine %}
                                 <div class="col d-flex flex-wrap align-items-center gap-2">
+                                    <span class="text-body-secondary eos-auth-monitor-number">{{ forloop.counter|add:offset }}</span>
                                     <img src="{{ character.id|character_portrait_url:32 }}" width="24" height="24" class="rounded flex-shrink-0" alt="">
                                     {% include "eos_auth_monitor/partials/character-name.html" %}
                                     {% if character.is_main %}<span class="badge text-bg-primary">{% translate "Main" context "EVE jargon" %}</span>{% endif %}
                                     <span class="text-body-secondary text-break">{{ character.corporation_name }} [{{ character.corporation_ticker }}]</span>
                                 </div>
-                            {% endfor %}
+                            {% endfor %}{% endwith %}
                         </div>
                     </details>
                 {% endif %}

@@ -643,6 +643,19 @@ class TestPages(ViewTestCase):
         self.assertIn("Char 2202", folded)
         self.assertIn("1 character without problems", folded)
 
+    def test_should_number_the_characters_on_from_the_table_into_the_folded_list(self):
+        snapshot = Snapshot.objects.get()
+        account = snapshot.data["corporations"][1]["accounts"][0]
+        account["characters"] += [character_row(2202, corporation_id=2002), character_row(2203, corporation_id=2002)]
+        snapshot.save()
+
+        content = self.get(self.leader, "account", 22).content.decode()
+
+        table = content[content.index("eos-auth-monitor-sortable"):content.index("</table>")]
+        folded = content[content.index("eos-auth-monitor-problem-free"):content.index("</details>")]
+        self.assertEqual(re.findall(r'eos-auth-monitor-number">(\d+)<', table), ["1"])
+        self.assertEqual(re.findall(r'eos-auth-monitor-number">(\d+)<', folded), ["2", "3"])
+
     def test_should_link_each_character_to_its_character_audit(self):
         snapshot = Snapshot.objects.get()
         account = snapshot.data["corporations"][1]["accounts"][0]
@@ -1883,7 +1896,7 @@ class TestVoluntaryServices(ViewTestCase):
         content = self.get(self.leader, "index").content.decode()
         head = content[content.index("eos-auth-monitor-overview-table"):content.index("</thead>")]
 
-        self.assertIn('<th title="Corporation">Corp</th>', head)
+        self.assertIn('<th title="Corporation" style="min-width: 14rem">Corp</th>', head)
         self.assertIn("</i> Chars</th>", head)
         # the columns of the tiles go through the same filter; this snapshot has no character check
         self.assertIn('<th title="Discord"><i class="fab fa-discord fa-fw"></i> Discord</th>', head)
