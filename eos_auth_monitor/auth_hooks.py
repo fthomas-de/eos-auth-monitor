@@ -4,6 +4,7 @@ from allianceauth import hooks
 from allianceauth.services.hooks import MenuItemHook, UrlHook
 
 from . import urls
+from .checks import is_app_installed
 from .permissions import has_app_access
 from .views import dashboard_corporation, dashboard_own
 
@@ -41,6 +42,14 @@ def register_filters():
     from .models import CharacterProblemsFilter
 
     return [CharacterProblemsFilter]
+
+
+if is_app_installed("corptools") and is_app_installed("charlink"):
+
+    @hooks.register("charlink")
+    def register_charlink():
+        # aa-charlink imports the module itself; without corptools it could not
+        return "eos_auth_monitor.charlink_hook"
 
 
 # The same place on the dashboard as eos-invoices' widget. Alliance Auth sorts

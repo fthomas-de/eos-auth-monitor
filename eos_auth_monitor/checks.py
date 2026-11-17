@@ -48,8 +48,6 @@ class Check:
     own_app_hint: str = ""
     # the detail is a list of scopes: the pages name the first ones and count the rest
     lists_scopes: bool = False
-    # scopes aa-charlink never asks for: a problem missing one keeps the check's app
-    beyond_charlink: tuple[str, ...] = ()
 
     @property
     def is_installed(self) -> bool:
@@ -165,15 +163,15 @@ CHECKS = (
         ),
         fix_url="corptools:corp_react",
         fix_group="corptools_corporations",
-        charlink_hint=_("The Director ticks Corporation Audit in CharLink and logs in with this character."),
-        own_hint=_("Tick Corporation Audit in CharLink and log in with this character."),
+        # the box charlink_hook.py adds: CharLink's own Corporation Audit lacks the sovereignty scope
+        charlink_hint=_(
+            "The Director ticks Corporation Audit (Sovereignty) in CharLink and logs in with this character."
+        ),
+        own_hint=_("Tick Corporation Audit (Sovereignty) in CharLink and log in with this character."),
         own_app_hint=_(
             "Click Add Token in the corptools Corporation Audit, tick every box and log in with this character."
         ),
         lists_scopes=True,
-        # CharLink asks for corptools' fixed list, without the sovereignty scope; only corptools'
-        # own Add Token asks for it, with Sovereignty ticked
-        beyond_charlink=(SOVEREIGNTY_SCOPE,),
     ),
     Check(
         "corp_audit_missing",

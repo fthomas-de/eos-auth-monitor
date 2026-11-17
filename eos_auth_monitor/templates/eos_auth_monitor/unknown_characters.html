@@ -42,13 +42,7 @@
                                     </td>
                                     {# not in Auth: the player registers; in Auth without a main: the player picks one #}
                                     <td data-order="{% if character.in_auth is None %}2{% elif character.in_auth %}1{% else %}0{% endif %}">
-                                        {% if character.in_auth is None %}
-                                            -
-                                        {% elif character.in_auth %}
-                                            <span class="badge text-bg-warning eos-auth-monitor-no-main">{% translate "no main" %}</span>
-                                        {% else %}
-                                            <span class="badge text-bg-secondary eos-auth-monitor-not-in-auth">{% translate "not in Auth" %}</span>
-                                        {% endif %}
+                                        {% include "eos_auth_monitor/partials/unknown-status.html" with in_auth=character.in_auth %}
                                     </td>
                                 </tr>
                             {% endfor %}

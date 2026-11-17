@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 14:11+0000\n"
-"PO-Revision-Date: 2026-11-16 14:11+0000\n"
+"POT-Creation-Date: 2026-11-17 08:29+0000\n"
+"PO-Revision-Date: 2026-11-17 08:29+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: zh_Hans\n"
 "Language: zh_Hans\n"
@@ -16,97 +16,97 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: auth_hooks.py:15 templates/eos_auth_monitor/base.html:6
+#: auth_hooks.py:16 templates/eos_auth_monitor/base.html:6
 #: templates/eos_auth_monitor/base.html:40
 msgid "Auth Monitor"
 msgstr "Auth Monitor"
 
-#: checks.py:90
+#: checks.py:88
 msgid "corptools - Character Audit"
 msgstr "corptools - Character 审计"
 
-#: checks.py:91
+#: checks.py:89
 msgid "corptools - Corporation Audit"
 msgstr "corptools - Corporation 审计"
 
-#: checks.py:92
+#: checks.py:90
 msgid "aa-structures"
 msgstr "aa-structures"
 
-#: checks.py:103
+#: checks.py:101
 msgid "Audit missing"
 msgstr "缺少审计"
 
-#: checks.py:104
+#: checks.py:102
 msgid "The character has no corptools Character Audit."
 msgstr "该 Character 没有 corptools Character 审计。"
 
-#: checks.py:105
+#: checks.py:103
 msgid "The player adds this character in the corptools Character Audit."
 msgstr "玩家在 corptools Character 审计中添加此 Character。"
 
-#: checks.py:107
+#: checks.py:105
 msgid ""
 "The player ticks Character Audit in CharLink and logs in with this "
 "character."
 msgstr "玩家在 CharLink 中勾选 Character Audit，并用此 Character 登录。"
 
-#: checks.py:108
+#: checks.py:106
 msgid "Tick Character Audit in CharLink and log in with this character."
 msgstr "请在 CharLink 中勾选 Character Audit，并用此 Character 登录。"
 
-#: checks.py:109
+#: checks.py:107
 msgid "Add this character in the corptools Character Audit."
 msgstr "请在 corptools Character 审计中添加此 Character。"
 
-#: checks.py:115
+#: checks.py:113
 msgid "Scopes missing"
 msgstr "缺少 Scope"
 
-#: checks.py:116
+#: checks.py:114
 msgid "None of the character's tokens carries all scopes corptools asks for."
 msgstr "该 Character 的令牌中没有一个包含 corptools 所需的全部 Scope。"
 
-#: checks.py:118
+#: checks.py:116
 msgid ""
 "The player adds this character in the corptools Character Audit again and "
 "grants every scope it asks for."
 msgstr "玩家在 corptools Character 审计中重新添加此 Character，并授予其要求的全部 Scope。"
 
-#: checks.py:123
+#: checks.py:121
 msgid ""
 "The player ticks Character Audit in CharLink, logs in with this character "
 "again and grants every scope it asks for."
 msgstr "玩家在 CharLink 中勾选 Character Audit，重新用此 Character 登录，并授予其要求的全部 Scope。"
 
-#: checks.py:127
+#: checks.py:125
 msgid ""
 "Tick Character Audit in CharLink, log in with this character again and grant"
 " every scope it asks for."
 msgstr "请在 CharLink 中勾选 Character Audit，重新用此 Character 登录，并授予其要求的全部 Scope。"
 
-#: checks.py:131
+#: checks.py:129
 msgid ""
 "Add this character in the corptools Character Audit again and grant every "
 "scope it asks for."
 msgstr "请在 corptools Character 审计中重新添加此 Character，并授予其要求的全部 Scope。"
 
-#: checks.py:139
+#: checks.py:137
 msgid "Audit inactive"
 msgstr "审计未激活"
 
-#: checks.py:140
+#: checks.py:138
 msgid ""
 "corptools marks the audit inactive: a section has not updated for too long."
 msgstr "corptools 将该审计标记为未激活：某个部分太久没有更新。"
 
-#: checks.py:141
+#: checks.py:139
 msgid ""
 "The next corptools update usually clears this; if it stays, the player adds "
 "the character again."
 msgstr "通常下一次 corptools 更新后即可恢复；如果仍然存在，玩家需重新添加该 Character。"
 
-#: checks.py:144
+#: checks.py:142
 msgid ""
 "The next corptools update usually clears this; if it stays, the player ticks"
 " Character Audit in CharLink and logs in with this character again."
@@ -114,7 +114,7 @@ msgstr ""
 "通常下一次 corptools 更新后即可恢复；如果仍然存在，玩家需在 CharLink 中勾选 Character Audit 并重新用此 "
 "Character 登录。"
 
-#: checks.py:148
+#: checks.py:146
 msgid ""
 "The next corptools update usually clears this; if it stays, tick Character "
 "Audit in CharLink and log in with this character again."
@@ -122,17 +122,17 @@ msgstr ""
 "通常下一次 corptools 更新后即可恢复；如果仍然存在，请在 CharLink 中勾选 Character Audit 并重新用此 "
 "Character 登录。"
 
-#: checks.py:151
+#: checks.py:149
 msgid ""
 "The next corptools update usually clears this; if it stays, add the "
 "character again."
 msgstr "通常下一次 corptools 更新后即可恢复；如果仍然存在，请重新添加该 Character。"
 
-#: checks.py:157
+#: checks.py:155
 msgid "Director token missing"
 msgstr "缺少 Director 令牌"
 
-#: checks.py:159
+#: checks.py:157
 msgid ""
 "The character is a Director of its Corporation, but none of its tokens "
 "carries all scopes corptools needs for the Corporation audit."
@@ -140,7 +140,7 @@ msgstr ""
 "该 Character 是其 Corporation 的 Director，但其令牌中没有一个包含 corptools 进行 Corporation "
 "审计所需的全部 Scope。"
 
-#: checks.py:163
+#: checks.py:161
 msgid ""
 "The Director clicks Add Token in the corptools Corporation Audit, ticks "
 "every box and logs in with this character."
@@ -149,70 +149,73 @@ msgstr ""
 
 #: checks.py:168
 msgid ""
-"The Director ticks Corporation Audit in CharLink and logs in with this "
+"The Director ticks Corporation Audit (Sovereignty) in CharLink and logs in "
+"with this character."
+msgstr ""
+"该 Director 在 CharLink 中勾选 Corporation Audit (Sovereignty)，并用此 Character 登录。"
+
+#: checks.py:170
+msgid ""
+"Tick Corporation Audit (Sovereignty) in CharLink and log in with this "
 "character."
-msgstr "该 Director 在 CharLink 中勾选 Corporation Audit，并用此 Character 登录。"
+msgstr "请在 CharLink 中勾选 Corporation Audit (Sovereignty)，并用此 Character 登录。"
 
-#: checks.py:169
-msgid "Tick Corporation Audit in CharLink and log in with this character."
-msgstr "请在 CharLink 中勾选 Corporation Audit，并用此 Character 登录。"
-
-#: checks.py:171
+#: checks.py:172
 msgid ""
 "Click Add Token in the corptools Corporation Audit, tick every box and log "
 "in with this character."
 msgstr "请在 corptools Corporation 审计中点击 Add Token，勾选所有选项，并用此 Character 登录。"
 
-#: checks.py:182
+#: checks.py:180
 msgid "Corporation audit missing"
 msgstr "缺少 Corporation 审计"
 
-#: checks.py:183
+#: checks.py:181
 msgid "The Corporation has no corptools Corporation Audit."
 msgstr "该 Corporation 没有 corptools Corporation 审计。"
 
-#: checks.py:184
+#: checks.py:182
 msgid "A Director adds the Corporation in the corptools Corporation Audit."
 msgstr "由一名 Director 在 corptools Corporation 审计中添加该 Corporation。"
 
-#: checks.py:186 checks.py:196
+#: checks.py:184 checks.py:194
 msgid ""
 "A Director ticks Corporation Audit in CharLink and logs in with the Director"
 " character."
 msgstr ""
 "由一名 Director 在 CharLink 中勾选 Corporation Audit，并用该 Director 的 Character 登录。"
 
-#: checks.py:192
+#: checks.py:190
 msgid "Corporation token missing"
 msgstr "缺少 Corporation 令牌"
 
-#: checks.py:193
+#: checks.py:191
 msgid ""
 "No character of the Corporation has a token with the scopes the Corporation "
 "audit needs."
 msgstr "该 Corporation 没有任何 Character 拥有 Corporation 审计所需 Scope 的令牌。"
 
-#: checks.py:194
+#: checks.py:192
 msgid ""
 "A Director adds a Corporation token in the corptools Corporation Audit."
 msgstr "由一名 Director 在 corptools Corporation 审计中添加 Corporation 令牌。"
 
-#: checks.py:202
+#: checks.py:200
 msgid "Corporation data stale"
 msgstr "Corporation 数据已过期"
 
-#: checks.py:203
+#: checks.py:201
 msgid "A section of the Corporation audit has not updated within the limit."
 msgstr "Corporation 审计的某个部分未在期限内更新。"
 
-#: checks.py:205
+#: checks.py:203
 msgid ""
 "A Director checks the Corporation token in the corptools Corporation Audit "
 "and adds a new one if it lost its roles."
 msgstr ""
 "由一名 Director 在 corptools Corporation 审计中检查 Corporation 令牌，如其已失去角色则添加新令牌。"
 
-#: checks.py:210
+#: checks.py:208
 msgid ""
 "A Director ticks Corporation Audit in CharLink and logs in again with the "
 "Director character; the old token may have lost its roles."
@@ -220,69 +223,69 @@ msgstr ""
 "由一名 Director 在 CharLink 中勾选 Corporation Audit，并重新用该 Director 的 Character "
 "登录；旧令牌可能已失去其角色。"
 
-#: checks.py:218
+#: checks.py:216
 msgid "No structure owner"
 msgstr "没有建筑所有者"
 
-#: checks.py:219
+#: checks.py:217
 msgid "The Corporation is not set up as an owner in aa-structures."
 msgstr "该 Corporation 未在 aa-structures 中设置为所有者。"
 
-#: checks.py:220
+#: checks.py:218
 msgid ""
 "A character with the Station Manager role adds the Corporation as an owner "
 "in aa-structures."
 msgstr ""
 "由拥有 Station Manager 角色的 Character 在 aa-structures 中将该 Corporation 添加为所有者。"
 
-#: checks.py:222 checks.py:240
+#: checks.py:220 checks.py:238
 msgid ""
 "A character with the Station Manager role ticks Structures in CharLink and "
 "logs in."
 msgstr "由拥有 Station Manager 角色的 Character 在 CharLink 中勾选 Structures 并登录。"
 
-#: checks.py:228
+#: checks.py:226
 msgid "Structure owner inactive"
 msgstr "建筑所有者未启用"
 
-#: checks.py:229
+#: checks.py:227
 msgid "The aa-structures owner of the Corporation is switched off."
 msgstr "该 Corporation 的 aa-structures 所有者已被关闭。"
 
-#: checks.py:230
+#: checks.py:228
 msgid "An admin switches the owner on again in the aa-structures admin."
 msgstr "由管理员在 aa-structures 管理后台重新启用该所有者。"
 
-#: checks.py:236
+#: checks.py:234
 msgid "No structure owner character"
 msgstr "没有建筑所有者 Character"
 
-#: checks.py:237
+#: checks.py:235
 msgid ""
 "The aa-structures owner has no enabled character left to fetch data with."
 msgstr "该 aa-structures 所有者没有剩余的已启用 Character 可用于获取数据。"
 
-#: checks.py:238
+#: checks.py:236
 msgid ""
 "A character with the Station Manager role adds itself to the owner in aa-"
 "structures."
 msgstr "由拥有 Station Manager 角色的 Character 在 aa-structures 中将自己添加到该所有者。"
 
-#: checks.py:246
+#: checks.py:244
 msgid "Structure sync failing"
 msgstr "建筑同步失败"
 
-#: checks.py:247
+#: checks.py:245
 msgid "aa-structures reports a sync that is not up to date."
 msgstr "aa-structures 报告有同步未保持最新。"
 
-#: checks.py:248
+#: checks.py:246
 msgid ""
 "Check the owner in aa-structures: its characters may have lost the Station "
 "Manager role."
 msgstr "请在 aa-structures 中检查该所有者：其 Character 可能已失去 Station Manager 角色。"
 
-#: checks.py:251
+#: checks.py:249
 msgid ""
 "A character with the Station Manager role ticks Structures in CharLink and "
 "logs in again; the owner's characters may have lost the role."
@@ -290,19 +293,19 @@ msgstr ""
 "由拥有 Station Manager 角色的 Character 在 CharLink 中勾选 Structures 并重新登录；该所有者的 "
 "Character 可能已失去该角色。"
 
-#: checks.py:259
+#: checks.py:257
 msgid "Discord"
 msgstr "Discord"
 
-#: checks.py:260
+#: checks.py:258
 msgid "Mumble"
 msgstr "Mumble"
 
-#: checks.py:261
+#: checks.py:259
 msgid "QQ"
 msgstr "QQ"
 
-#: checks.py:265
+#: checks.py:263
 msgid "Telegram"
 msgstr "Telegram"
 
@@ -474,23 +477,23 @@ msgid "and %(count)d more"
 msgid_plural "and %(count)d more"
 msgstr[0] "等另外 %(count)d 个"
 
-#: report.py:297 templates/eos_auth_monitor/corporation_service.html:20
+#: report.py:294 templates/eos_auth_monitor/corporation_service.html:20
 #: templates/eos_auth_monitor/service.html:22
 msgid "Active in Mumble"
 msgstr "Mumble 活跃度"
 
-#: report.py:331
+#: report.py:328
 #, python-format
 msgid "%(check)s (warning)"
 msgstr "%(check)s（警告）"
 
-#: report.py:591 templates/eos_auth_monitor/corporation.html:66
+#: report.py:593 templates/eos_auth_monitor/corporation.html:66
 #: templates/eos_auth_monitor/corporation.html:215
 #: templates/eos_auth_monitor/dashboard.corporation.html:33
 msgid "Not registered in Auth"
 msgstr "未在 Auth 注册"
 
-#: report.py:598 templates/eos_auth_monitor/account.html:117
+#: report.py:600 templates/eos_auth_monitor/account.html:117
 #: templates/eos_auth_monitor/account.html:119
 #: templates/eos_auth_monitor/corporation.html:96
 #: templates/eos_auth_monitor/corporation.html:151
@@ -499,24 +502,25 @@ msgstr "未在 Auth 注册"
 msgid "GM transactions"
 msgstr "GM 交易"
 
-#: report.py:641
+#: report.py:645 views.py:320
 msgid "Registered in Auth"
 msgstr "已在 Auth 注册"
 
-#: report.py:646 templates/eos_auth_monitor/character_audit.html:8
-#: templates/eos_auth_monitor/character_audit.html:20 views.py:324
+#: report.py:656 templates/eos_auth_monitor/character_audit.html:8
+#: templates/eos_auth_monitor/character_audit.html:20 views.py:332
+#: views.py:369
 msgid "Character Audit"
 msgstr "Character 审计"
 
-#: report.py:958
+#: report.py:997
 msgid "Members registered"
 msgstr "已注册成员"
 
-#: report.py:971
+#: report.py:1010
 msgid "Character Audit complete"
 msgstr "Character 审计完整"
 
-#: report.py:983
+#: report.py:1023
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s 正常运行"
@@ -529,7 +533,9 @@ msgstr "Auth Monitor 尚无结果"
 msgid "Not in the Auth Monitor overview"
 msgstr "不在 Auth Monitor 概览中"
 
-#: smart_filters.py:38 templates/eos_auth_monitor/partials/gauge.html:18
+#: smart_filters.py:38
+#: templates/eos_auth_monitor/partials/audited-character.html:23
+#: templates/eos_auth_monitor/partials/gauge.html:18
 #: templates/eos_auth_monitor/partials/problem-count.html:15
 msgid "No problems"
 msgstr "没有问题"
@@ -553,6 +559,8 @@ msgid "not linked"
 msgstr "未关联"
 
 #: templates/eos_auth_monitor/account.html:68
+#: templates/eos_auth_monitor/corporation_character_audit.html:18
+#: templates/eos_auth_monitor/corporation_registered.html:18
 #: templates/eos_auth_monitor/unknown_characters.html:25
 msgctxt "EVE jargon"
 msgid "Character"
@@ -602,6 +610,8 @@ msgstr[0] "%(counter)s 个没有问题的 Character"
 
 #: templates/eos_auth_monitor/account.html:144
 #: templates/eos_auth_monitor/character_audit.html:18
+#: templates/eos_auth_monitor/corporation_character_audit.html:19
+#: templates/eos_auth_monitor/corporation_registered.html:19
 #: templates/eos_auth_monitor/corporation_service.html:18
 #: templates/eos_auth_monitor/directors.html:30
 #: templates/eos_auth_monitor/partials/character-cell.html:8
@@ -746,6 +756,18 @@ msgid ""
 " with the membership scope."
 msgstr "无法读取此 Corporation 的成员列表：没有任何成员拥有带成员资格 Scope 的令牌。"
 
+#: templates/eos_auth_monitor/corporation_character_audit.html:11
+#: templates/eos_auth_monitor/corporation_registered.html:11
+#: templates/eos_auth_monitor/partials/gauge.html:13
+#: templates/eos_auth_monitor/partials/row-title.html:1
+#, python-format
+msgid "%(part)s of %(total)s"
+msgstr "%(part)s / %(total)s"
+
+#: templates/eos_auth_monitor/corporation_registered.html:44
+msgid "registered"
+msgstr "已注册"
+
 #: templates/eos_auth_monitor/dashboard.corporation.html:28
 #: templates/eos_auth_monitor/index.html:91
 #: templates/eos_auth_monitor/index.html:124
@@ -813,7 +835,7 @@ msgid "Token"
 msgstr "令牌"
 
 #: templates/eos_auth_monitor/directors.html:46
-#: templates/eos_auth_monitor/unknown_characters.html:50
+#: templates/eos_auth_monitor/partials/unknown-status.html:8
 msgid "not in Auth"
 msgstr "不在 Auth 中"
 
@@ -911,12 +933,6 @@ msgstr "将名称下载为 CSV 文件"
 #: templates/eos_auth_monitor/partials/director-icon.html:4
 msgid "Director of the main's Corporation"
 msgstr "Main 所在 Corporation 的 Director"
-
-#: templates/eos_auth_monitor/partials/gauge.html:13
-#: templates/eos_auth_monitor/partials/row-title.html:1
-#, python-format
-msgid "%(part)s of %(total)s"
-msgstr "%(part)s / %(total)s"
 
 #: templates/eos_auth_monitor/partials/gm-tile.html:8
 msgid "Characters with GM transactions"
@@ -1026,6 +1042,10 @@ msgstr "重建失败。概览显示的是上一次成功的结果。"
 msgid "Rebuild progress"
 msgstr "重建进度"
 
+#: templates/eos_auth_monitor/partials/unknown-status.html:6
+msgid "no main"
+msgstr "无 Main"
+
 #: templates/eos_auth_monitor/service.html:11
 #, python-format
 msgid "%(part)s of %(total)s mains linked"
@@ -1069,7 +1089,7 @@ msgid_plural ""
 "unknown characters are missing here."
 msgstr[0] "无法读取 %(counter)s 个 Corporation 的成员列表，因此这里缺少其中的未知 Character。"
 
-#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:365
+#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:410
 msgid "Unknown characters"
 msgstr "未知 Character"
 
@@ -1084,11 +1104,7 @@ msgctxt "eos-auth-monitor"
 msgid "Status"
 msgstr "状态"
 
-#: templates/eos_auth_monitor/unknown_characters.html:48
-msgid "no main"
-msgstr "无 Main"
-
-#: templates/eos_auth_monitor/unknown_characters.html:59
+#: templates/eos_auth_monitor/unknown_characters.html:53
 msgid "Every member has a main in Auth."
 msgstr "每个成员在 Auth 中都有 Main。"
 
@@ -1113,24 +1129,24 @@ msgstr "名称"
 msgid "Problem"
 msgstr "问题"
 
-#: views.py:381
+#: views.py:426
 msgid "Settings saved."
 msgstr "设置已保存。"
 
-#: views.py:383
+#: views.py:428
 msgid "Settings saved. The overview is being rebuilt."
 msgstr "设置已保存。概览正在重建。"
 
-#: views.py:387
+#: views.py:432
 msgid ""
 "Settings saved, but the task queue is not reachable: the overview is rebuilt"
 " once it is back."
 msgstr "设置已保存，但任务队列无法访问：待其恢复后将重建概览。"
 
-#: views.py:411
+#: views.py:456
 msgid "The overview is being rebuilt."
 msgstr "概览正在重建。"
 
-#: views.py:413
+#: views.py:458
 msgid "The rebuild could not be started: the task queue is not reachable."
 msgstr "无法启动重建：任务队列无法访问。"

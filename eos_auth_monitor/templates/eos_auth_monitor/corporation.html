@@ -17,7 +17,7 @@
             {% if corporation.check_rows or corporation.service_counts or corporation.spy_shown or corporation.gm_shown %}
                 <div class="row row-cols-2 row-cols-md-4 row-cols-xl-6 g-3 mb-4">
                     {% for gauge in corporation.check_rows %}
-                        <div class="col">{% include "eos_auth_monitor/partials/gauge.html" %}</div>
+                        <div class="col">{% include "eos_auth_monitor/partials/gauge.html" with link=gauge.url %}</div>
                     {% endfor %}
                     {% if corporation.spy_shown %}
                         {% url 'eos_spy_network:corporation' corporation.id as spy_link %}
@@ -49,8 +49,8 @@
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                                     <span class="badge {% if todo.warning %}text-bg-warning{% else %}text-bg-danger{% endif %} text-wrap" title="{{ todo.check.description }}">{{ todo.label }}</span>
                                     <span class="badge text-bg-secondary">{{ todo.accounts|length }}</span>
-                                    {# the players add their characters in aa-charlink where it is installed - unless one of them lacks a scope CharLink never asks for #}
-                                    <span class="small text-body-secondary me-auto">{% if charlink_url and not todo.beyond_charlink %}{% firstof todo.check.charlink_hint todo.check.hint %}{% else %}{{ todo.check.hint }}{% endif %}</span>
+                                    {# the players add their characters in aa-charlink where it is installed #}
+                                    <span class="small text-body-secondary me-auto">{% if charlink_url %}{% firstof todo.check.charlink_hint todo.check.hint %}{% else %}{{ todo.check.hint }}{% endif %}</span>
                                     {% include "eos_auth_monitor/partials/copy-button.html" with names=todo.names %}
                                     {% include "eos_auth_monitor/partials/csv-button.html" with group=todo.group %}
                                 </div>

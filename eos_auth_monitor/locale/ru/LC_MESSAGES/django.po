@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 14:11+0000\n"
-"PO-Revision-Date: 2026-11-16 14:11+0000\n"
+"POT-Creation-Date: 2026-11-17 08:29+0000\n"
+"PO-Revision-Date: 2026-11-17 08:29+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: ru\n"
 "Language: ru\n"
@@ -16,60 +16,60 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: auth_hooks.py:15 templates/eos_auth_monitor/base.html:6
+#: auth_hooks.py:16 templates/eos_auth_monitor/base.html:6
 #: templates/eos_auth_monitor/base.html:40
 msgid "Auth Monitor"
 msgstr "Auth Monitor"
 
-#: checks.py:90
+#: checks.py:88
 msgid "corptools - Character Audit"
 msgstr "corptools - аудит Character"
 
-#: checks.py:91
+#: checks.py:89
 msgid "corptools - Corporation Audit"
 msgstr "corptools - аудит Corporation"
 
-#: checks.py:92
+#: checks.py:90
 msgid "aa-structures"
 msgstr "aa-structures"
 
-#: checks.py:103
+#: checks.py:101
 msgid "Audit missing"
 msgstr "Аудит отсутствует"
 
-#: checks.py:104
+#: checks.py:102
 msgid "The character has no corptools Character Audit."
 msgstr "У Character нет аудита Character в corptools."
 
-#: checks.py:105
+#: checks.py:103
 msgid "The player adds this character in the corptools Character Audit."
 msgstr "Игрок добавляет этого Character в аудит Character в corptools."
 
-#: checks.py:107
+#: checks.py:105
 msgid ""
 "The player ticks Character Audit in CharLink and logs in with this "
 "character."
 msgstr "Игрок отмечает Character Audit в CharLink и входит этим Character."
 
-#: checks.py:108
+#: checks.py:106
 msgid "Tick Character Audit in CharLink and log in with this character."
 msgstr "Отметь Character Audit в CharLink и войди этим Character."
 
-#: checks.py:109
+#: checks.py:107
 msgid "Add this character in the corptools Character Audit."
 msgstr "Добавь этого Character в аудит Character в corptools."
 
-#: checks.py:115
+#: checks.py:113
 msgid "Scopes missing"
 msgstr "Не хватает скоупов"
 
-#: checks.py:116
+#: checks.py:114
 msgid "None of the character's tokens carries all scopes corptools asks for."
 msgstr ""
 "Ни один из токенов Character не содержит все скоупы, которые требует "
 "corptools."
 
-#: checks.py:118
+#: checks.py:116
 msgid ""
 "The player adds this character in the corptools Character Audit again and "
 "grants every scope it asks for."
@@ -77,7 +77,7 @@ msgstr ""
 "Игрок заново добавляет этого Character в аудит Character в corptools и "
 "выдаёт все запрошенные скоупы."
 
-#: checks.py:123
+#: checks.py:121
 msgid ""
 "The player ticks Character Audit in CharLink, logs in with this character "
 "again and grants every scope it asks for."
@@ -85,7 +85,7 @@ msgstr ""
 "Игрок отмечает Character Audit в CharLink, заново входит этим Character и "
 "выдаёт все запрошенные скоупы."
 
-#: checks.py:127
+#: checks.py:125
 msgid ""
 "Tick Character Audit in CharLink, log in with this character again and grant"
 " every scope it asks for."
@@ -93,7 +93,7 @@ msgstr ""
 "Отметь Character Audit в CharLink, заново войди этим Character и выдай все "
 "запрошенные скоупы."
 
-#: checks.py:131
+#: checks.py:129
 msgid ""
 "Add this character in the corptools Character Audit again and grant every "
 "scope it asks for."
@@ -101,18 +101,18 @@ msgstr ""
 "Заново добавь этого Character в аудит Character в corptools и выдай все "
 "запрошенные скоупы."
 
-#: checks.py:139
+#: checks.py:137
 msgid "Audit inactive"
 msgstr "Аудит неактивен"
 
-#: checks.py:140
+#: checks.py:138
 msgid ""
 "corptools marks the audit inactive: a section has not updated for too long."
 msgstr ""
 "corptools считает аудит неактивным: один из разделов слишком долго не "
 "обновлялся."
 
-#: checks.py:141
+#: checks.py:139
 msgid ""
 "The next corptools update usually clears this; if it stays, the player adds "
 "the character again."
@@ -120,7 +120,7 @@ msgstr ""
 "Обычно это исчезает после следующего обновления corptools; если нет, игрок "
 "заново добавляет Character."
 
-#: checks.py:144
+#: checks.py:142
 msgid ""
 "The next corptools update usually clears this; if it stays, the player ticks"
 " Character Audit in CharLink and logs in with this character again."
@@ -128,7 +128,7 @@ msgstr ""
 "Обычно это исчезает после следующего обновления corptools; если нет, игрок "
 "отмечает Character Audit в CharLink и заново входит этим Character."
 
-#: checks.py:148
+#: checks.py:146
 msgid ""
 "The next corptools update usually clears this; if it stays, tick Character "
 "Audit in CharLink and log in with this character again."
@@ -136,7 +136,7 @@ msgstr ""
 "Обычно это исчезает после следующего обновления corptools; если нет, отметь "
 "Character Audit в CharLink и заново войди этим Character."
 
-#: checks.py:151
+#: checks.py:149
 msgid ""
 "The next corptools update usually clears this; if it stays, add the "
 "character again."
@@ -144,11 +144,11 @@ msgstr ""
 "Обычно это исчезает после следующего обновления corptools; если нет, заново "
 "добавь этого Character."
 
-#: checks.py:157
+#: checks.py:155
 msgid "Director token missing"
 msgstr "Нет токена Director"
 
-#: checks.py:159
+#: checks.py:157
 msgid ""
 "The character is a Director of its Corporation, but none of its tokens "
 "carries all scopes corptools needs for the Corporation audit."
@@ -156,7 +156,7 @@ msgstr ""
 "Character — Director своей Corporation, но ни один из его токенов не "
 "содержит все скоупы, нужные corptools для аудита Corporation."
 
-#: checks.py:163
+#: checks.py:161
 msgid ""
 "The Director clicks Add Token in the corptools Corporation Audit, ticks "
 "every box and logs in with this character."
@@ -166,16 +166,20 @@ msgstr ""
 
 #: checks.py:168
 msgid ""
-"The Director ticks Corporation Audit in CharLink and logs in with this "
+"The Director ticks Corporation Audit (Sovereignty) in CharLink and logs in "
+"with this character."
+msgstr ""
+"Director отмечает Corporation Audit (Sovereignty) в CharLink и входит этим "
+"Character."
+
+#: checks.py:170
+msgid ""
+"Tick Corporation Audit (Sovereignty) in CharLink and log in with this "
 "character."
 msgstr ""
-"Director отмечает Corporation Audit в CharLink и входит этим Character."
+"Отметь Corporation Audit (Sovereignty) в CharLink и войди этим Character."
 
-#: checks.py:169
-msgid "Tick Corporation Audit in CharLink and log in with this character."
-msgstr "Отметь Corporation Audit в CharLink и войди этим Character."
-
-#: checks.py:171
+#: checks.py:172
 msgid ""
 "Click Add Token in the corptools Corporation Audit, tick every box and log "
 "in with this character."
@@ -183,20 +187,20 @@ msgstr ""
 "Нажми Add Token в аудите Corporation в corptools, отметь все флажки и войди "
 "этим Character."
 
-#: checks.py:182
+#: checks.py:180
 msgid "Corporation audit missing"
 msgstr "Аудит Corporation отсутствует"
 
-#: checks.py:183
+#: checks.py:181
 msgid "The Corporation has no corptools Corporation Audit."
 msgstr "У Corporation нет аудита Corporation в corptools."
 
-#: checks.py:184
+#: checks.py:182
 msgid "A Director adds the Corporation in the corptools Corporation Audit."
 msgstr ""
 "Один из Director добавляет Corporation в аудит Corporation в corptools."
 
-#: checks.py:186 checks.py:196
+#: checks.py:184 checks.py:194
 msgid ""
 "A Director ticks Corporation Audit in CharLink and logs in with the Director"
 " character."
@@ -204,11 +208,11 @@ msgstr ""
 "Director отмечает Corporation Audit в CharLink и входит своим Character-"
 "Director."
 
-#: checks.py:192
+#: checks.py:190
 msgid "Corporation token missing"
 msgstr "Нет токена Corporation"
 
-#: checks.py:193
+#: checks.py:191
 msgid ""
 "No character of the Corporation has a token with the scopes the Corporation "
 "audit needs."
@@ -216,24 +220,24 @@ msgstr ""
 "Ни у одного Character из Corporation нет токена со скоупами, нужными для "
 "аудита Corporation."
 
-#: checks.py:194
+#: checks.py:192
 msgid ""
 "A Director adds a Corporation token in the corptools Corporation Audit."
 msgstr ""
 "Один из Director добавляет токен Corporation в аудите Corporation в "
 "corptools."
 
-#: checks.py:202
+#: checks.py:200
 msgid "Corporation data stale"
 msgstr "Данные Corporation устарели"
 
-#: checks.py:203
+#: checks.py:201
 msgid "A section of the Corporation audit has not updated within the limit."
 msgstr ""
 "Один из разделов аудита Corporation не обновлялся в пределах установленного "
 "срока."
 
-#: checks.py:205
+#: checks.py:203
 msgid ""
 "A Director checks the Corporation token in the corptools Corporation Audit "
 "and adds a new one if it lost its roles."
@@ -241,7 +245,7 @@ msgstr ""
 "Один из Director проверяет токен Corporation в аудите Corporation в "
 "corptools и добавляет новый, если тот потерял роли."
 
-#: checks.py:210
+#: checks.py:208
 msgid ""
 "A Director ticks Corporation Audit in CharLink and logs in again with the "
 "Director character; the old token may have lost its roles."
@@ -249,15 +253,15 @@ msgstr ""
 "Director отмечает Corporation Audit в CharLink и заново входит своим "
 "Character-Director; старый токен мог потерять роли."
 
-#: checks.py:218
+#: checks.py:216
 msgid "No structure owner"
 msgstr "Нет владельца структур"
 
-#: checks.py:219
+#: checks.py:217
 msgid "The Corporation is not set up as an owner in aa-structures."
 msgstr "Corporation не настроена как владелец в aa-structures."
 
-#: checks.py:220
+#: checks.py:218
 msgid ""
 "A character with the Station Manager role adds the Corporation as an owner "
 "in aa-structures."
@@ -265,37 +269,37 @@ msgstr ""
 "Character с ролью Station Manager добавляет Corporation как владельца в aa-"
 "structures."
 
-#: checks.py:222 checks.py:240
+#: checks.py:220 checks.py:238
 msgid ""
 "A character with the Station Manager role ticks Structures in CharLink and "
 "logs in."
 msgstr ""
 "Character с ролью Station Manager отмечает Structures в CharLink и входит."
 
-#: checks.py:228
+#: checks.py:226
 msgid "Structure owner inactive"
 msgstr "Владелец структур неактивен"
 
-#: checks.py:229
+#: checks.py:227
 msgid "The aa-structures owner of the Corporation is switched off."
 msgstr "Владелец aa-structures для Corporation отключён."
 
-#: checks.py:230
+#: checks.py:228
 msgid "An admin switches the owner on again in the aa-structures admin."
 msgstr "Администратор снова включает владельца в админке aa-structures."
 
-#: checks.py:236
+#: checks.py:234
 msgid "No structure owner character"
 msgstr "Нет Character владельца структур"
 
-#: checks.py:237
+#: checks.py:235
 msgid ""
 "The aa-structures owner has no enabled character left to fetch data with."
 msgstr ""
 "У владельца aa-structures не осталось включённого Character для получения "
 "данных."
 
-#: checks.py:238
+#: checks.py:236
 msgid ""
 "A character with the Station Manager role adds itself to the owner in aa-"
 "structures."
@@ -303,15 +307,15 @@ msgstr ""
 "Character с ролью Station Manager добавляет себя к владельцу в aa-"
 "structures."
 
-#: checks.py:246
+#: checks.py:244
 msgid "Structure sync failing"
 msgstr "Синхронизация структур не удаётся"
 
-#: checks.py:247
+#: checks.py:245
 msgid "aa-structures reports a sync that is not up to date."
 msgstr "aa-structures сообщает о синхронизации, которая не актуальна."
 
-#: checks.py:248
+#: checks.py:246
 msgid ""
 "Check the owner in aa-structures: its characters may have lost the Station "
 "Manager role."
@@ -319,7 +323,7 @@ msgstr ""
 "Проверьте владельца в aa-structures: его Character могли потерять роль "
 "Station Manager."
 
-#: checks.py:251
+#: checks.py:249
 msgid ""
 "A character with the Station Manager role ticks Structures in CharLink and "
 "logs in again; the owner's characters may have lost the role."
@@ -327,19 +331,19 @@ msgstr ""
 "Character с ролью Station Manager отмечает Structures в CharLink и заново "
 "входит; Character владельца могли потерять эту роль."
 
-#: checks.py:259
+#: checks.py:257
 msgid "Discord"
 msgstr "Discord"
 
-#: checks.py:260
+#: checks.py:258
 msgid "Mumble"
 msgstr "Mumble"
 
-#: checks.py:261
+#: checks.py:259
 msgid "QQ"
 msgstr "QQ"
 
-#: checks.py:265
+#: checks.py:263
 msgid "Telegram"
 msgstr "Telegram"
 
@@ -529,23 +533,23 @@ msgstr[0] "и ещё %(count)d"
 msgstr[1] "и ещё %(count)d"
 msgstr[2] "и ещё %(count)d"
 
-#: report.py:297 templates/eos_auth_monitor/corporation_service.html:20
+#: report.py:294 templates/eos_auth_monitor/corporation_service.html:20
 #: templates/eos_auth_monitor/service.html:22
 msgid "Active in Mumble"
 msgstr "Активен в Mumble"
 
-#: report.py:331
+#: report.py:328
 #, python-format
 msgid "%(check)s (warning)"
 msgstr "%(check)s (предупреждение)"
 
-#: report.py:591 templates/eos_auth_monitor/corporation.html:66
+#: report.py:593 templates/eos_auth_monitor/corporation.html:66
 #: templates/eos_auth_monitor/corporation.html:215
 #: templates/eos_auth_monitor/dashboard.corporation.html:33
 msgid "Not registered in Auth"
 msgstr "Не зарегистрированы в Auth"
 
-#: report.py:598 templates/eos_auth_monitor/account.html:117
+#: report.py:600 templates/eos_auth_monitor/account.html:117
 #: templates/eos_auth_monitor/account.html:119
 #: templates/eos_auth_monitor/corporation.html:96
 #: templates/eos_auth_monitor/corporation.html:151
@@ -554,24 +558,25 @@ msgstr "Не зарегистрированы в Auth"
 msgid "GM transactions"
 msgstr "GM-транзакции"
 
-#: report.py:641
+#: report.py:645 views.py:320
 msgid "Registered in Auth"
 msgstr "Зарегистрированы в Auth"
 
-#: report.py:646 templates/eos_auth_monitor/character_audit.html:8
-#: templates/eos_auth_monitor/character_audit.html:20 views.py:324
+#: report.py:656 templates/eos_auth_monitor/character_audit.html:8
+#: templates/eos_auth_monitor/character_audit.html:20 views.py:332
+#: views.py:369
 msgid "Character Audit"
 msgstr "Аудит Character"
 
-#: report.py:958
+#: report.py:997
 msgid "Members registered"
 msgstr "Участники зарегистрированы"
 
-#: report.py:971
+#: report.py:1010
 msgid "Character Audit complete"
 msgstr "Аудит Character завершён"
 
-#: report.py:983
+#: report.py:1023
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s работает"
@@ -584,7 +589,9 @@ msgstr "Результатов Auth Monitor пока нет"
 msgid "Not in the Auth Monitor overview"
 msgstr "Нет в обзоре Auth Monitor"
 
-#: smart_filters.py:38 templates/eos_auth_monitor/partials/gauge.html:18
+#: smart_filters.py:38
+#: templates/eos_auth_monitor/partials/audited-character.html:23
+#: templates/eos_auth_monitor/partials/gauge.html:18
 #: templates/eos_auth_monitor/partials/problem-count.html:15
 msgid "No problems"
 msgstr "Проблем нет"
@@ -610,6 +617,8 @@ msgid "not linked"
 msgstr "не привязано"
 
 #: templates/eos_auth_monitor/account.html:68
+#: templates/eos_auth_monitor/corporation_character_audit.html:18
+#: templates/eos_auth_monitor/corporation_registered.html:18
 #: templates/eos_auth_monitor/unknown_characters.html:25
 msgctxt "EVE jargon"
 msgid "Character"
@@ -661,6 +670,8 @@ msgstr[2] "%(counter)s Character без проблем"
 
 #: templates/eos_auth_monitor/account.html:144
 #: templates/eos_auth_monitor/character_audit.html:18
+#: templates/eos_auth_monitor/corporation_character_audit.html:19
+#: templates/eos_auth_monitor/corporation_registered.html:19
 #: templates/eos_auth_monitor/corporation_service.html:18
 #: templates/eos_auth_monitor/directors.html:30
 #: templates/eos_auth_monitor/partials/character-cell.html:8
@@ -824,6 +835,18 @@ msgstr ""
 "Не удалось прочитать список участников этой Corporation: ни у одного "
 "участника нет токена со скоупом членства."
 
+#: templates/eos_auth_monitor/corporation_character_audit.html:11
+#: templates/eos_auth_monitor/corporation_registered.html:11
+#: templates/eos_auth_monitor/partials/gauge.html:13
+#: templates/eos_auth_monitor/partials/row-title.html:1
+#, python-format
+msgid "%(part)s of %(total)s"
+msgstr "%(part)s из %(total)s"
+
+#: templates/eos_auth_monitor/corporation_registered.html:44
+msgid "registered"
+msgstr "зарегистрирован"
+
 #: templates/eos_auth_monitor/dashboard.corporation.html:28
 #: templates/eos_auth_monitor/index.html:91
 #: templates/eos_auth_monitor/index.html:124
@@ -899,7 +922,7 @@ msgid "Token"
 msgstr "Токен"
 
 #: templates/eos_auth_monitor/directors.html:46
-#: templates/eos_auth_monitor/unknown_characters.html:50
+#: templates/eos_auth_monitor/partials/unknown-status.html:8
 msgid "not in Auth"
 msgstr "нет в Auth"
 
@@ -997,12 +1020,6 @@ msgstr "Скачать имена в виде файла CSV"
 #: templates/eos_auth_monitor/partials/director-icon.html:4
 msgid "Director of the main's Corporation"
 msgstr "Director Corporation этого Main"
-
-#: templates/eos_auth_monitor/partials/gauge.html:13
-#: templates/eos_auth_monitor/partials/row-title.html:1
-#, python-format
-msgid "%(part)s of %(total)s"
-msgstr "%(part)s из %(total)s"
 
 #: templates/eos_auth_monitor/partials/gm-tile.html:8
 msgid "Characters with GM transactions"
@@ -1127,6 +1144,10 @@ msgstr "Пересборка не удалась. В обзоре показан
 msgid "Rebuild progress"
 msgstr "Ход пересборки"
 
+#: templates/eos_auth_monitor/partials/unknown-status.html:6
+msgid "no main"
+msgstr "нет Main"
+
 #: templates/eos_auth_monitor/service.html:11
 #, python-format
 msgid "%(part)s of %(total)s mains linked"
@@ -1180,7 +1201,7 @@ msgstr[2] ""
 "Не удалось прочитать списки участников %(counter)s Corporation, поэтому их "
 "неизвестные Character здесь отсутствуют."
 
-#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:365
+#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:410
 msgid "Unknown characters"
 msgstr "Неизвестные Character"
 
@@ -1197,11 +1218,7 @@ msgctxt "eos-auth-monitor"
 msgid "Status"
 msgstr "Статус"
 
-#: templates/eos_auth_monitor/unknown_characters.html:48
-msgid "no main"
-msgstr "нет Main"
-
-#: templates/eos_auth_monitor/unknown_characters.html:59
+#: templates/eos_auth_monitor/unknown_characters.html:53
 msgid "Every member has a main in Auth."
 msgstr "У каждого участника есть Main в Auth."
 
@@ -1226,15 +1243,15 @@ msgstr "Имя"
 msgid "Problem"
 msgstr "Проблема"
 
-#: views.py:381
+#: views.py:426
 msgid "Settings saved."
 msgstr "Настройки сохранены."
 
-#: views.py:383
+#: views.py:428
 msgid "Settings saved. The overview is being rebuilt."
 msgstr "Настройки сохранены. Обзор пересобирается."
 
-#: views.py:387
+#: views.py:432
 msgid ""
 "Settings saved, but the task queue is not reachable: the overview is rebuilt"
 " once it is back."
@@ -1242,10 +1259,10 @@ msgstr ""
 "Настройки сохранены, но очередь задач недоступна: обзор будет пересобран, "
 "когда она снова заработает."
 
-#: views.py:411
+#: views.py:456
 msgid "The overview is being rebuilt."
 msgstr "Обзор пересобирается."
 
-#: views.py:413
+#: views.py:458
 msgid "The rebuild could not be started: the task queue is not reachable."
 msgstr "Не удалось запустить пересборку: очередь задач недоступна."

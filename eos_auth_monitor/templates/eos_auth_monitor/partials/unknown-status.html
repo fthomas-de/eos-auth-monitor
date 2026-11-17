@@ -1,0 +1,9 @@
+{% load i18n %}
+{# Why a member has no main: not in Auth (the player registers), in Auth without a main (the player picks one); "-" from a snapshot before 0.0.11. #}
+{% if in_auth is None %}
+    -
+{% elif in_auth %}
+    <span class="badge text-bg-warning eos-auth-monitor-no-main">{% translate "no main" %}</span>
+{% else %}
+    <span class="badge text-bg-secondary eos-auth-monitor-not-in-auth">{% translate "not in Auth" %}</span>
+{% endif %}

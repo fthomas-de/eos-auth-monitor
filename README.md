@@ -62,15 +62,19 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   service icons and Director crown for a viewer without `view_all`), the
   others as a compact list,
   members whose main is in another Corporation under that main, and members
-  unknown to Auth as a compact list
+  unknown to Auth as a compact list. The tile *Registered in Auth* opens every
+  member with its main, those without a main first; the tile *Character
+  Audit* opens every character it rates with its failed checks, failing ones
+  first, then the members unknown to Auth, which count as failing - corptools
+  cannot audit them
 - **Account detail**: the characters with problems, with the details of
   each problem - which scopes are missing (the first two and how many more,
   the whole list as a tooltip), which sections are stale - and
   what to do about it, with a link to
   [aa-charlink](https://github.com/Maestro-Zacht/aa-charlink) where it is
-  installed (otherwise to the app where it is done; a Director token lacking
-  `esi-structures.read_corporation.v1`, which aa-charlink never asks for,
-  links to *Add Token* in the corptools Corporation Audit), the Corporation's own
+  installed (otherwise to the app where it is done); a missing Director token
+  points to the box *Corporation Audit (Sovereignty)* that this app adds to
+  aa-charlink (see below), the Corporation's own
   problems in the header as well; each character's name links to its
   corptools Character Audit; the characters without problems folded away
   below
@@ -141,6 +145,19 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   no pages; the pages work on a phone
 - Checks and services of an app that is not installed are hidden
   automatically
+
+## aa-charlink box
+
+With corptools and [aa-charlink](https://github.com/Maestro-Zacht/aa-charlink)
+installed, this app adds a box **Corporation Audit (Sovereignty)** to
+CharLink's page (CharLink's `charlink` hook). It is CharLink's own *Corporation
+Audit* box plus the scope `esi-structures.read_corporation.v1`: CharLink's box
+takes its scopes from `corptools.views.CORP_REQUIRED_SCOPES`, which lacks it,
+while the *Director token missing* check asks for every scope of
+`corptools.app_settings.CORP_REQUIRED_SCOPES`, which has it. A Director who
+ticks the new box gets a token the check accepts. CharLink's admin lists it
+under this app; it can be hidden there like any other box. Its *added* status
+is CharLink's own for the Corporation Audit: the Corporation is in the audit.
 
 ## How accounts are counted
 

@@ -13,6 +13,16 @@ urlpatterns = [
         views.corporation_service,
         name="corporation_service",
     ),
+    path(
+        "corporation/<int:corporation_id>/registered/",
+        views.corporation_registered,
+        name="corporation_registered",
+    ),
+    path(
+        "corporation/<int:corporation_id>/character-audit/",
+        views.corporation_character_audit,
+        name="corporation_character_audit",
+    ),
     path("account/<int:user_id>/", views.account, name="account"),
     path("account/<int:user_id>/activity/", views.account_activity, name="account_activity"),
     path("account/own/", views.own_account, name="own_account"),

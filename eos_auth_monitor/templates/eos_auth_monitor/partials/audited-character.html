@@ -1,0 +1,26 @@
+{% load i18n %}
+{% load evelinks %}
+{# A line of the Corporation's Character Audit list: `character` of `account`, its failed checks, warnings in their colour. #}
+<tr class="eos-auth-monitor-audited{% if character.problems %} eos-auth-monitor-audit-failed{% endif %}">
+    <td data-order="{{ character.name }}">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <img src="{{ character.id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+            {% include "eos_auth_monitor/partials/character-name.html" %}
+        </div>
+    </td>
+    <td class="text-break" data-order="{{ account.main_name }}">
+        {# a main elsewhere: its account page belongs to its own Corporation's viewers #}
+        {% if account.visiting and not can_view_all %}{{ account.main_name }}{% else %}<a href="{% url 'eos_auth_monitor:account' account.user_id %}">{{ account.main_name }}</a>{% endif %}
+    </td>
+    <td data-order="{% if character.problems %}{{ character.problems|length|add:1 }}{% else %}0{% endif %}">
+        {% for problem in character.problems %}
+            <span class="badge text-bg-danger text-wrap" title="{{ problem.check.description }}">{{ problem.check.label }}</span>
+        {% endfor %}
+        {% for problem in character.warnings %}
+            <span class="badge text-bg-warning text-wrap" title="{{ problem.check.description }}">{{ problem.check.label }}</span>
+        {% endfor %}
+        {% if not character.problems %}
+            <span class="badge text-bg-success eos-auth-monitor-complete">{% translate "No problems" %}</span>
+        {% endif %}
+    </td>
+</tr>

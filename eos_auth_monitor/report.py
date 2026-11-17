@@ -65,15 +65,12 @@ class Problem:
     detail: str
     # the whole detail where `detail` was shortened, for the tooltip; empty otherwise
     full_detail: str = ""
-    # it lacks a scope aa-charlink never asks for: the pages send it to the check's app instead
-    beyond_charlink: bool = False
 
 
 def _problem(item: dict) -> Problem:
     check = CHECKS_BY_KEY[item["check"]]
     detail, full = shorten(item), describe(item)
-    beyond = bool(set(check.beyond_charlink) & set(item["detail"]))
-    return Problem(check, detail, full if full != detail else "", beyond)
+    return Problem(check, detail, full if full != detail else "")
 
 
 def _problems(items) -> list[Problem]:
@@ -330,16 +327,6 @@ class Todo:
     def label(self) -> str:
         return _("%(check)s (warning)") % {"check": self.check.label} if self.warning else str(self.check.label)
 
-    @property
-    def beyond_charlink(self) -> bool:
-        """One of the group's problems needs the check's app; its way does for the others too."""
-        return any(
-            problem.beyond_charlink
-            for account in self.accounts
-            for character in account.characters
-            for problem in (character.warnings if self.warning else character.problems)
-            if problem.check.key == self.check.key
-        )
 
 
 @dataclass
@@ -391,6 +378,21 @@ class UnknownCharacter:
     name: str
     # False: not in Auth; True: in Auth on an account without a main; None: a snapshot from before it was kept
     in_auth: bool | None
+
+
+@dataclass
+class Member:
+    """A member of a Corporation on its Registered in Auth list."""
+
+    id: int
+    name: str
+    # empty for a member without a main
+    main_name: str = ""
+    user_id: int | None = None
+    # the main's Corporation where it is another one: no link, that account belongs to its own Corporation's viewers
+    main_corporation_name: str = ""
+    # without a main, as UnknownCharacter.in_auth
+    in_auth: bool | None = None
 
 
 @dataclass
@@ -638,15 +640,26 @@ class Corporation:
         """The rows of the apps whose checks ran, without the services."""
         rows = []
         if self.member_count is not None:
-            rows.append(Row(_("Registered in Auth"), "fas fa-user-plus", self.registered, self.member_count))
+            rows.append(
+                Row(
+                    _("Registered in Auth"),
+                    "fas fa-user-plus",
+                    self.registered,
+                    self.member_count,
+                    url_name="eos_auth_monitor:corporation_registered",
+                    url_args=(self.id,),
+                )
+            )
         if any(check.scope == CHARACTER for check in self.checks):
-            characters = [character for account in self.evaluated_accounts for character in account.characters]
             rows.append(
                 Row(
                     _("Character Audit"),
                     "fas fa-user-check",
-                    sum(not character.problems for character in characters),
-                    len(characters),
+                    sum(not character.problems for account, character in self.audited_characters),
+                    # members without a main in Auth: corptools cannot audit them, so they count as failing
+                    len(self.audited_characters) + len(self.unregistered),
+                    url_name="eos_auth_monitor:corporation_character_audit",
+                    url_args=(self.id,),
                 )
             )
         for group, label, icon in CORPORATION_GROUPS:
@@ -655,6 +668,32 @@ class Corporation:
                     Row(label, icon, problems=[problem for problem in self.problems if problem.check.group == group])
                 )
         return rows
+
+    @property
+    def members(self) -> list[Member]:
+        """The list behind Registered in Auth: the members without a main first, then the others by name."""
+        registered = [
+            Member(character.id, character.name, account.main_name, account.user_id)
+            for account in self.accounts
+            for character in account.characters
+            # an alt outside the overview counts with its main here, but is no member
+            if character.corporation_id == self.id
+        ]
+        registered += [
+            Member(character["id"], character["name"], other.main_name, other.user_id, other.main_corporation_name)
+            for other in self.other_mains
+            for character in other.characters
+        ]
+        unknown = [Member(entry["id"], entry["name"], in_auth=entry.get("in_auth")) for entry in self.unregistered]
+        return unknown + sorted(registered, key=lambda member: member.name.lower())
+
+    @property
+    def audited_characters(self) -> list[tuple[Account, Character]]:
+        """The characters the Character Audit tile rates, with their accounts: most problems first, then by name."""
+        return sorted(
+            ((account, character) for account in self.evaluated_accounts for character in account.characters),
+            key=lambda pair: (-len(pair[1].problems), pair[1].name.lower()),
+        )
 
     @property
     def has_problems(self) -> bool:
@@ -971,7 +1010,8 @@ class Report:
                     _("Character Audit complete"),
                     "fas fa-user-check",
                     sum(not character.problems for character in characters),
-                    len(characters),
+                    # as on the Corporation tiles: members without a main in Auth count as failing
+                    len(characters) + sum(len(corporation.unregistered) for corporation in self.corporations),
                     url_name="eos_auth_monitor:character_audit",
                 )
             )

@@ -289,6 +289,51 @@ def corporation_service(request, corporation_id, service_key):
     )
 
 
+def _corporation_list(request, corporation_id, template, label, available) -> HttpResponse:
+    """A list behind one of the Corporation page's app tiles; 404 where ``available`` says it has none."""
+    report = _report()
+    corporation = _visible_corporation(request, report, corporation_id)
+    if corporation is None or not available(report, corporation):
+        raise Http404
+    return _render(
+        request,
+        template,
+        {
+            **_state(report),
+            "corporation": corporation,
+            "location": label,
+            # the tile's own count, for the card header
+            "row": next(row for row in corporation.check_rows if str(row.label) == str(label)),
+            "can_view_all": request.user.has_perm(VIEW_ALL),
+        },
+        _corporation_nav(request.user, corporation_id),
+    )
+
+
+@any_permission_required(BASIC_ACCESS, VIEW_ALL)
+def corporation_registered(request, corporation_id):
+    """Every member of the Corporation and its main, those without one first."""
+    return _corporation_list(
+        request,
+        corporation_id,
+        "eos_auth_monitor/corporation_registered.html",
+        _("Registered in Auth"),
+        lambda report, corporation: corporation.member_count is not None,
+    )
+
+
+@any_permission_required(BASIC_ACCESS, VIEW_ALL)
+def corporation_character_audit(request, corporation_id):
+    """Every character the Corporation's Character Audit tile rates, and the members it cannot."""
+    return _corporation_list(
+        request,
+        corporation_id,
+        "eos_auth_monitor/corporation_character_audit.html",
+        _("Character Audit"),
+        lambda report, corporation: report.has_character_checks,
+    )
+
+
 @any_permission_required(VIEW_ALL)
 def service(request, service_key):
     report = _report()

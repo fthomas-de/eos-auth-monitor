@@ -1,0 +1,56 @@
+{% extends "eos_auth_monitor/base.html" %}
+{% load i18n %}
+{% load evelinks %}
+
+{% block details %}
+    {% include "eos_auth_monitor/partials/corporation-header.html" %}
+
+    <div class="card">
+        <div class="card-header d-flex flex-wrap align-items-center gap-2">
+            <div class="card-title mb-0 me-auto"><i class="{{ row.icon }}"></i> {{ row.label }}</div>
+            <span class="small">{% blocktranslate with part=row.part total=row.total %}{{ part }} of {{ total }}{% endblocktranslate %}</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
+                    <thead>
+                        <tr>
+                            <th>{% translate "Character" context "EVE jargon" %}</th>
+                            <th>{% translate "Main" context "EVE jargon" %}</th>
+                            <th>{{ row.label }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in corporation.members %}
+                            <tr class="eos-auth-monitor-member">
+                                <td data-order="{{ member.name }}">
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <img src="{{ member.id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+                                        <span class="text-break">{{ member.name }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-break" data-order="{{ member.main_name }}">
+                                    {# a main elsewhere: its account page belongs to its own Corporation's viewers #}
+                                    {% if not member.main_name %}
+                                        -
+                                    {% elif member.main_corporation_name %}
+                                        {{ member.main_name }} <span class="small text-body-secondary">{{ member.main_corporation_name }}</span>
+                                    {% else %}
+                                        <a href="{% url 'eos_auth_monitor:account' member.user_id %}">{{ member.main_name }}</a>
+                                    {% endif %}
+                                </td>
+                                <td data-order="{% if member.main_name %}1{% else %}0{% endif %}">
+                                    {% if member.main_name %}
+                                        <span class="badge text-bg-success eos-auth-monitor-registered">{% translate "registered" %}</span>
+                                    {% else %}
+                                        {% include "eos_auth_monitor/partials/unknown-status.html" with in_auth=member.in_auth %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -8,6 +8,31 @@ Last updated 2026-11-16 (0.0.27).
 
 ## Release
 
+- **Unreleased** (2026-11-16): **CharLink box for the Director check** (see
+  `CHANGELOG.md` and the decisions of 2026-11-16 (CharLink box) below) -
+  `charlink_hook.py` adds *Corporation Audit (Sovereignty)* to aa-charlink
+  (hook `charlink` in `auth_hooks.py`, only with corptools and charlink);
+  *Director token missing* always links to CharLink and names that box.
+  `Check.beyond_charlink`, `Problem.beyond_charlink` and `Todo.beyond_charlink`
+  are gone. Tests: `TestBeyondCharlink` became `TestDirectorCharlink` (4),
+  new `TestCharlinkBox` (2); 5 sabotages, 5 red; `test_views`, `test_report`,
+  `test_dashboard` green. Two new messages, not yet in the glossary
+  (`/commit`). No migration, no static file. Seen in the browser on 2026-11-17: the box on CharLink's page (unticked by default), the account page's Director hint linking to CharLink.
+- **Unreleased** (2026-11-16, same request): **lists behind the Corporation
+  page's tiles** and **Character Audit counting members without a main as
+  failing** (see the decisions of 2026-11-16 (tile lists) below). Pages
+  `corporation_registered` (`corporation/<id>/registered/`) and
+  `corporation_character_audit` (`corporation/<id>/character-audit/`), one
+  view helper `views._corporation_list`; `Corporation.members` (new
+  `report.Member`), `Corporation.audited_characters`; `Row.url` on both
+  check rows, linked on the Corporation page only; partials
+  `unknown-status.html` (shared with `unknown_characters.html`) and
+  `audited-character.html`. Tests: `TestTileLists` in `test_report`
+  (4) and `test_views` (5); 15 sabotages, all red after one fix (the marker
+  `eos-auth-monitor-failed` sat in `data-eos-auth-monitor-failed` of the
+  progress bar; now `eos-auth-monitor-audit-failed`). One new message
+  (`registered`). Seen in the browser on 2026-11-17 (Corporation 98633815): tiles 4 of 283 and 0 of 283, both linked; 283 members with 4 registered; Character Audit 4 failing, then 279 unknown; no console errors.
+
 - Version **0.0.27** of 2026-11-16: **Active in Mumble day by day** (see
   `CHANGELOG.md` and the decisions of 2026-11-16 (day by day) below) - the
   account page's Mumble tile shows the main's share with its days ("Active
@@ -190,7 +215,8 @@ Last updated 2026-11-16 (0.0.27).
 | Page | Permission | What |
 |---|---|---|
 | Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares; *Members registered* opens the unknown characters), then the Corporations, most accounts with problems first, as a table (the default since 0.0.11) or as tiles (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
-| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth, Character Audit, Corporation Audit, Structures; a Corporation-level one names its failed checks, without a link) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`; a visiting main marked "Main in ...", linked and with its service icons and crown only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
+| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth and Character Audit linked to their lists, Corporation Audit and Structures, which name their failed checks, without a link; Character Audit counts the members without a main as failing) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`; a visiting main marked "Main in ...", linked and with its service icons and crown only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
+| Registered in Auth (`corporation_registered`), Character Audit (`corporation_character_audit`) | as Corporation | Behind the Corporation page's tiles: every member with its main and *registered*, *not in Auth* or *no main*, those without a main first (`Corporation.members`); every character the tile rates with its main and failed checks (warnings yellow, *No problems* green), the failing first, then the members without a main, then the rest (`Corporation.audited_characters`). 404 without a member list / without character checks |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it; Mumble to `account_activity`, with the main's Active in Mumble below *linked*), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
 | eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview cockpit tile (`partials/spy-tile.html`, `Report.spy_characters`: the column's sum, linked to `eos_spy_network:corporations`, since 0.0.16); overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link), one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV) and a cyan tag per kind on the main cards (`Account.spy_markers`, red border); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
@@ -735,6 +761,34 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - Today is never red: a missing Mumble day only lowers the share once the
   day is over.
 
+2026-11-16 (CharLink box):
+
+- **Director token missing to CharLink** ("director token missing linke zu
+  charlink statt corptools"). Neither corptools 3.5.1 (also `master`) nor
+  aa-charlink 1.15.0 puts the sovereignty scope into CharLink's Corporation
+  Audit box. The user chose a **box of the monitor's own** through CharLink's
+  `charlink` hook, under the label `eos_auth_monitor`, over replacing
+  CharLink's corptools entry (a second hook with the label `corptools` would
+  switch both off as duplicates) and over waiting for corptools. The monitor
+  keeps demanding the scope. `charlink_hook.py` copies CharLink's
+  `LoginImport` with `dataclasses.replace`: only label, id and scopes differ.
+
+2026-11-16 (tile lists):
+
+- **Why the totals differ** (the user asked): *Registered in Auth* counts the
+  member list from ESI, *Character Audit* only characters Auth knows. The
+  user chose to count **members without a main as failing** the Character
+  Audit (`unregistered` added to the total), which the overview tiles, table
+  and cockpit follow; the Alliance-wide Character Audit list, sorting, smart
+  filter and dashboard are unchanged. The base is not the member count
+  itself: alts outside the overview rated here and members whose main is
+  elsewhere differ from it.
+- **A page of its own per tile** (the user's choice over two tables or a
+  fold-out), one line per character with its main, negatives first; same
+  access as the Corporation page (`basic_access` for the own one). A main in
+  another Corporation stays unlinked, as on the Corporation page's
+  *Members whose main is in another Corporation*.
+
 ## Pitfalls found
 
 - `eos-test` takes one test label only; a second one fails with
@@ -853,6 +907,9 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 
 - `{% translate "..." as var %}` gives a safe string: `{{ var }}` renders an
   apostrophe as `'`, not `&#x27;` - assert on the plain text.
+- A marker class for a test must not be a substring of another attribute on
+  the page: `eos-auth-monitor-failed` is part of `data-eos-auth-monitor-failed`
+  in `partials/state.html`, so `content.index()` always found it.
 - `assertRegex(text, pattern, re.DOTALL)` passes the flag as the failure
   *message*: compile the pattern (`re.compile(..., re.DOTALL)`).
 - A settings test that posts only some fields leaves a required field out

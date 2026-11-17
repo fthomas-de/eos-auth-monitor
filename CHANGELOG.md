@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.28] - 2026-11-17
+
+### Added
+
+- **aa-charlink box *Corporation Audit (Sovereignty)***, with corptools and
+  aa-charlink installed: CharLink's Corporation Audit plus the sovereignty
+  scope `esi-structures.read_corporation.v1`, which CharLink's own box does
+  not ask for.
+- **Lists behind the Corporation page's tiles**: *Registered in Auth* opens
+  every member with its main, those without a main first; *Character Audit*
+  opens every character it rates with its failed checks, the failing ones
+  first, then the members unknown to Auth, then the rest. Same access as the
+  Corporation page.
+
+### Changed
+
+- **Director token missing** links to aa-charlink in every case and names the
+  new box; before, a token lacking the sovereignty scope linked to *Add Token*
+  in the corptools Corporation Audit. Without aa-charlink it still does.
+- **Character Audit counts members without a main in Auth as failing**:
+  corptools cannot audit them. The share of the Corporation tiles, the
+  overview table and the cockpit drops where a member list was read
+  (for example 0 of 283 instead of 0 of 4).
+
 ## [0.0.27] - 2026-11-16
 
 ### Added

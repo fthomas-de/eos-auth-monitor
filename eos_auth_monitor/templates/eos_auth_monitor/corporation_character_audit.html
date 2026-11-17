@@ -1,0 +1,48 @@
+{% extends "eos_auth_monitor/base.html" %}
+{% load i18n %}
+{% load evelinks %}
+
+{% block details %}
+    {% include "eos_auth_monitor/partials/corporation-header.html" %}
+
+    <div class="card">
+        <div class="card-header d-flex flex-wrap align-items-center gap-2">
+            <div class="card-title mb-0 me-auto"><i class="{{ row.icon }}"></i> {{ row.label }}</div>
+            <span class="small">{% blocktranslate with part=row.part total=row.total %}{{ part }} of {{ total }}{% endblocktranslate %}</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
+                    <thead>
+                        <tr>
+                            <th>{% translate "Character" context "EVE jargon" %}</th>
+                            <th>{% translate "Main" context "EVE jargon" %}</th>
+                            <th>{{ row.label }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {# failing first: the characters with problems, then the members corptools cannot audit, then the rest #}
+                        {% for account, character in corporation.audited_characters %}{% if character.problems %}
+                            {% include "eos_auth_monitor/partials/audited-character.html" %}
+                        {% endif %}{% endfor %}
+                        {% for entry in corporation.unregistered %}
+                            <tr class="eos-auth-monitor-unknown">
+                                <td data-order="{{ entry.name }}">
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <img src="{{ entry.id|character_portrait_url:32 }}" width="32" height="32" class="rounded flex-shrink-0" alt="">
+                                        <span class="text-break">{{ entry.name }}</span>
+                                    </div>
+                                </td>
+                                <td data-order="">-</td>
+                                <td data-order="1">{% include "eos_auth_monitor/partials/unknown-status.html" with in_auth=entry.in_auth %}</td>
+                            </tr>
+                        {% endfor %}
+                        {% for account, character in corporation.audited_characters %}{% if not character.problems %}
+                            {% include "eos_auth_monitor/partials/audited-character.html" %}
+                        {% endif %}{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

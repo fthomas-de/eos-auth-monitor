@@ -790,3 +790,59 @@ class TestScopeWarnings(MonitorTestCase):
         # the problem first, then the warning; nothing left without either
         self.assertEqual([character.id for character in account.listed_characters], [1302, 1301])
         self.assertEqual(account.problem_free_characters, [])
+
+
+class TestTileLists(MonitorTestCase):
+    """The lists behind the Corporation page's tiles Registered in Auth and Character Audit."""
+
+    def found(self):
+        account = account_row(
+            1,
+            101,
+            characters=[
+                character_row(101),
+                character_row(102, [AUDIT_MISSING]),
+                # an alt outside the overview: rated with its main here, but no member
+                character_row(103, corporation_id=9999),
+            ],
+        )
+        corporation = {
+            **corporation_row(2001, [account]),
+            "member_count": 5,
+            "other_mains": [
+                {"user_id": 7, "main_id": 701, "main_name": "Elsewhere", "main_corporation_name": "Corp 2002",
+                 "characters": [{"id": 702, "name": "Beta"}]}
+            ],
+            "unregistered": [{"id": 1, "name": "Zed", "in_auth": False}, {"id": 2, "name": "Abe", "in_auth": True}],
+        }
+        return report([corporation], checks=["char_audit_missing"])
+
+    def test_should_count_members_without_a_main_as_failing_the_character_audit(self):
+        found = self.found()
+
+        rows = {str(row.label): (row.part, row.total) for row in found.corporation(2001).check_rows}
+        cockpit = {str(gauge.label): (gauge.part, gauge.total) for gauge in found.cockpit()}
+
+        self.assertEqual(rows["Character Audit"], (2, 5))
+        self.assertEqual(cockpit["Character Audit complete"], (2, 5))
+
+    def test_should_link_the_tiles_to_their_lists(self):
+        urls = {str(row.label): row.url for row in self.found().corporation(2001).check_rows}
+
+        self.assertEqual(urls["Registered in Auth"], reverse("eos_auth_monitor:corporation_registered", args=[2001]))
+        self.assertEqual(urls["Character Audit"], reverse("eos_auth_monitor:corporation_character_audit", args=[2001]))
+
+    def test_should_list_the_members_without_a_main_first(self):
+        members = self.found().corporation(2001).members
+
+        self.assertEqual(
+            [(member.name, member.main_name, member.main_corporation_name) for member in members],
+            [("Zed", "", ""), ("Abe", "", ""), ("Beta", "Elsewhere", "Corp 2002"),
+             ("Char 101", "Char 101", ""), ("Char 102", "Char 101", "")],
+        )
+        self.assertEqual([member.in_auth for member in members[:2]], [False, True])
+
+    def test_should_rate_the_characters_with_problems_first(self):
+        pairs = self.found().corporation(2001).audited_characters
+
+        self.assertEqual([character.id for _, character in pairs], [102, 101, 103])

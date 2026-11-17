@@ -1192,15 +1192,15 @@ class TestOwnAccount(ViewTestCase):
         self.assertEqual(response.status_code, 302)
 
 
-class TestBeyondCharlink(ViewTestCase):
-    """A Director token without the sovereignty scope: CharLink never asks for it, corptools' Add Token does."""
+class TestDirectorCharlink(ViewTestCase):
+    """A Director token without the sovereignty scope goes to the CharLink box charlink_hook.py adds."""
 
     SOVEREIGNTY = "esi-structures.read_corporation.v1"
     WALLETS = "esi-wallet.read_corporation_wallets.v1"
     ABOUT = "The Director clicks Add Token in the corptools Corporation Audit, ticks every box and logs in with this character."
     TO_MEMBER = "Click Add Token in the corptools Corporation Audit, tick every box and log in with this character."
-    CHARLINK_ABOUT = "The Director ticks Corporation Audit in CharLink and logs in with this character."
-    CHARLINK_TO_MEMBER = "Tick Corporation Audit in CharLink and log in with this character."
+    CHARLINK_ABOUT = "The Director ticks Corporation Audit (Sovereignty) in CharLink and logs in with this character."
+    CHARLINK_TO_MEMBER = "Tick Corporation Audit (Sovereignty) in CharLink and log in with this character."
 
     def setUp(self):
         super().setUp()
@@ -1227,26 +1227,8 @@ class TestBeyondCharlink(ViewTestCase):
         content = response.content.decode()
         return content[content.index("eos-auth-monitor-todos"):content.index("Mains of this Corporation")]
 
-    def test_should_send_the_director_to_corptools_for_the_sovereignty_scope(self):
+    def test_should_send_the_director_to_charlink_for_the_sovereignty_scope(self):
         self.director(self.SOVEREIGNTY, self.WALLETS)
-
-        response = self.get_with_charlink(self.leader, "account", self.member.pk)
-
-        self.assertEqual(self.fix_links(response), [(reverse("corptools:corp_react"), "corptools - Corporation Audit")])
-        self.assertContains(response, self.ABOUT)
-        self.assertNotContains(response, self.CHARLINK_ABOUT)
-
-    def test_should_tell_the_member_to_add_the_token_in_corptools(self):
-        self.director(self.SOVEREIGNTY)
-
-        response = self.get_with_charlink(self.member, "own_account")
-
-        self.assertEqual(self.fix_links(response), [(reverse("corptools:corp_react"), "corptools - Corporation Audit")])
-        self.assertContains(response, self.TO_MEMBER)
-        self.assertNotContains(response, self.CHARLINK_TO_MEMBER)
-
-    def test_should_keep_charlink_for_the_other_scopes(self):
-        self.director(self.WALLETS)
 
         response = self.get_with_charlink(self.leader, "account", self.member.pk)
 
@@ -1254,9 +1236,18 @@ class TestBeyondCharlink(ViewTestCase):
         self.assertContains(response, self.CHARLINK_ABOUT)
         self.assertNotContains(response, self.ABOUT)
 
+    def test_should_tell_the_member_to_tick_the_sovereignty_box(self):
+        self.director(self.SOVEREIGNTY)
+
+        response = self.get_with_charlink(self.member, "own_account")
+
+        self.assertEqual(self.fix_links(response), [("/charlink/", "CharLink")])
+        self.assertContains(response, self.CHARLINK_TO_MEMBER)
+        self.assertNotContains(response, self.TO_MEMBER)
+
     def test_should_name_the_corporation_audit_without_charlink(self):
         # the check belongs to the Character Audit group, its token to the Corporation Audit
-        self.director(self.WALLETS)
+        self.director(self.SOVEREIGNTY)
 
         with patch("eos_auth_monitor.views._charlink_url", return_value=None):
             response = self.get(self.leader, "account", self.member.pk)
@@ -1264,21 +1255,34 @@ class TestBeyondCharlink(ViewTestCase):
         self.assertEqual(self.fix_links(response), [(reverse("corptools:corp_react"), "corptools - Corporation Audit")])
         self.assertContains(response, self.ABOUT)
 
-    def test_should_name_corptools_in_the_to_do_list_for_the_sovereignty_scope(self):
+    def test_should_name_charlink_in_the_to_do_list_for_the_sovereignty_scope(self):
         self.director(self.SOVEREIGNTY)
-
-        todos = self.todos(self.get_with_charlink(self.leader, "corporation", 2002))
-
-        self.assertIn(self.ABOUT, todos)
-        self.assertNotIn(self.CHARLINK_ABOUT, todos)
-
-    def test_should_keep_charlink_in_the_to_do_list_for_the_other_scopes(self):
-        self.director(self.WALLETS)
 
         todos = self.todos(self.get_with_charlink(self.leader, "corporation", 2002))
 
         self.assertIn(self.CHARLINK_ABOUT, todos)
         self.assertNotIn(self.ABOUT, todos)
+
+
+@skipUnless(
+    apps.is_installed("charlink") and apps.is_installed("corptools"), "aa-charlink or corptools is not installed"
+)
+class TestCharlinkBox(MonitorTestCase):
+    """The CharLink box the Director check sends a Director to."""
+
+    def test_should_be_loaded_by_charlink(self):
+        from charlink.app_imports import import_apps
+
+        self.assertIn("eos_auth_monitor", import_apps())
+
+    def test_should_ask_for_every_scope_the_director_check_demands(self):
+        from eos_auth_monitor.charlink_hook import app_import
+        from eos_auth_monitor.sources.corptools import corporation_scopes
+
+        (box,) = app_import.imports
+
+        self.assertEqual(set(corporation_scopes()) - set(box.scopes), set())
+        self.assertEqual(box.field_label, "Corporation Audit (Sovereignty)")
 
 
 class TestBrokerDown(ViewTestCase):
@@ -2082,3 +2086,47 @@ class TestSpyNetwork(ViewTestCase):
 
         self.assertContains(response, "None of your characters has a problem.")
         self.assertNotContains(response, "ISK with hostiles")
+
+
+class TestTileLists(ViewTestCase):
+    """The pages behind the Corporation page's tiles Registered in Auth and Character Audit."""
+
+    def setUp(self):
+        super().setUp()
+        snapshot = Snapshot.objects.get()
+        corporation = snapshot.data["corporations"][0]
+        corporation["member_count"] = 3
+        corporation["unregistered"] = [{"id": 5, "name": "Stranger", "in_auth": False}]
+        corporation["accounts"][0]["characters"].append(character_row(1102, [AUDIT_MISSING]))
+        snapshot.save()
+
+    def rows(self, response):
+        return re.findall(r'<tr class="eos-auth-monitor-(\w+)[^"]*">.*?<span class="text-break">([^<]*)<', response.content.decode(), re.DOTALL)
+
+    def test_should_link_both_tiles_on_the_corporation_page(self):
+        response = self.get(self.ceo, "corporation", 2001)
+
+        for name in ("corporation_registered", "corporation_character_audit"):
+            self.assertContains(response, f'<a href="{reverse(f"eos_auth_monitor:{name}", args=[2001])}" class="stretched-link"')
+
+    def test_should_list_the_members_without_a_main_first(self):
+        response = self.get(self.ceo, "corporation_registered", 2001)
+
+        self.assertEqual(self.rows(response), [("member", "Stranger"), ("member", "Char 1101"), ("member", "Char 1102")])
+        self.assertContains(response, "not in Auth")
+        self.assertContains(response, "eos-auth-monitor-registered", count=2)
+
+    def test_should_list_the_failing_characters_then_the_unknown_then_the_rest(self):
+        response = self.get(self.ceo, "corporation_character_audit", 2001)
+
+        content = response.content.decode()
+        order = [content.index(marker) for marker in ("eos-auth-monitor-audit-failed", "eos-auth-monitor-unknown", "eos-auth-monitor-complete")]
+        self.assertEqual(order, sorted(order))
+        self.assertContains(response, "1 of 3")
+
+    def test_should_keep_another_corporations_lists_from_its_ceo(self):
+        for name in ("corporation_registered", "corporation_character_audit"):
+            self.assertEqual(self.get(self.ceo, name, 2002).status_code, 403)
+
+    def test_should_have_no_member_list_where_none_was_read(self):
+        self.assertEqual(self.get(self.leader, "corporation_registered", 2002).status_code, 404)

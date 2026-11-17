@@ -113,7 +113,12 @@ is no binary log and there are no dumps.
 
 ## Code
 
-- The app only reads other apps' tables and writes nothing but its own. Its
+- The app only reads other apps' tables and writes nothing but its own. The
+  one exception is `charlink_hook.py`: a box on aa-charlink's page, CharLink's
+  corptools *Corporation Audit* plus the sovereignty scope, registered through
+  the `charlink` hook (user's yes of 2026-11-16). It reuses CharLink's own
+  `LoginImport`; check it after every aa-charlink upgrade, and drop it once
+  `corptools.views.CORP_REQUIRED_SCOPES` carries the scope. Its
   ESI calls are the Corporation member list and the Corporation roles
   (`sources/members.py`), with tokens corptools already holds; nothing else
   goes to ESI.
