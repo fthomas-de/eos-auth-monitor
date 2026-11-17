@@ -4,13 +4,26 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-17 (0.0.32).
+Last updated 2026-11-17 (0.0.33).
 
 ## Release
 
-- **Unreleased**: GM transactions and spy markers for the CEO roles of
-  eos-tax and eos-spy-network (own Corporation only) - see the decisions of
-  2026-11-17 (CEO roles) below. Not seen in a browser.
+- Version **0.0.33** of 2026-11-17: **GM transactions and spy markers for
+  the CEO roles** of eos-tax (`eos_tax.basic_access`) and eos-spy-network
+  (`eos_spy_network.view_own_corporation`): a viewer with such a role but
+  without the app's full view sees that app's findings on the own main's
+  Corporation only (tile, to-dos, card tags, CSV, account pages; no cockpit
+  tile or overview column). Each app's own CEO filter decides the
+  characters. See `CHANGELOG.md` and the decisions of 2026-11-17 (CEO roles)
+  below. 12 new tests, 12 sabotages, 12 red; 501 in the suite. No
+  migration, no message, no template, no static file. Not seen in a browser.
+- **Next steps (0.0.33)**: log in as a CEO holding only `basic_access`,
+  `eos_tax.basic_access` and `eos_spy_network.view_own_corporation` and look
+  at *My Corporation* - GM and spy tiles linked to eos-tax's GM page and
+  eos-spy-network's Corporation page, both showing that Corporation only;
+  the Alliance overview (if `view_all`) without GM/spy tiles and columns.
+  Production needs eos-spy-network **0.0.30** for the spy half; an older one
+  shows a CEO no markers (no error).
 - Version **0.0.32** of 2026-11-17: **Director crown per character** on Main
   details and My account (see `CHANGELOG.md` and the decisions of 2026-11-17
   (character crown) below). `Character.is_director`, set in `Report._account` from
@@ -299,7 +312,7 @@ Last updated 2026-11-17 (0.0.32).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 489 tests without the translation tests, 3 translation tests, all green;
+- 501 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -316,7 +329,7 @@ Last updated 2026-11-17 (0.0.32).
   against the old `report.py`; 0.0.24 8 for 8; 0.0.25 not sabotaged; 0.0.26
   18 of 19, the green one strengthened; 0.0.27 13 for 13; 0.0.28 20 for 20
   after one fix: a marker class was part of another attribute; 0.0.30 6 for
-  6 after one fix: the tile's count itself was not asserted; 0.0.31 4 for 4; 0.0.32 4 for 4).
+  6 after one fix: the tile's count itself was not asserted; 0.0.31 4 for 4; 0.0.32 4 for 4; 0.0.33 12 for 12).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -962,7 +975,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   roles**, not `basic_access`: each app keeps deciding who sees its findings,
   and the tiles' links open pages the CEO may open. Not chosen: giving CEOs
   the full permissions (they would see the whole Alliance there).
-- **GM (Unreleased)**: `eos_tax.basic_access` without the full view gives
+- **GM (0.0.33)**: `eos_tax.basic_access` without the full view gives
   `sources.gm_transactions.ceo_corporation_id` (the main's Corporation);
   `character_ids(corporation_id)` takes eos-tax's own CEO rows
   (`get_gm_page(stored, corporation_id=...)`: in the Corporation now, or
@@ -972,7 +985,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   An eos-tax whose `get_gm_page` lacks `corporation_id` gives a CEO nothing.
   Tests: 6 new in `test_gm_transactions` (25 in the module), 6 sabotages, 6
   red. No migration, no message, no template. Not seen in a browser.
-- **Spy (Unreleased)**: the user chose an exact match ("Erst Spy-API
+- **Spy (0.0.33)**: the user chose an exact match ("Erst Spy-API
   erweitern") over filtering by the monitor's own Corporation of a
   character, so eos-spy-network 0.0.30 (released 2026-11-17, tag `v0.0.30`)
   added `api.character_markers(*, corporation_id=None)`: the mains of that
@@ -1299,7 +1312,9 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   and carry "No Director token".
 - `collectstatic` was run after `view.js` and `copy.js` were added.
 - eos-spy-network is installed editable from `~/aa-dev/working/eos-spy-network`
-  (0.0.10, with `eos_spy_network.api`), so the spy tests run here.
+  (0.0.30 on 2026-11-17, `character_markers(corporation_id=...)`), so the spy
+  tests run here; eos-tax likewise (0.4.27, `get_gm_page(corporation_id=...)`).
+- `eos-test` takes one test label per run; several modules need a loop.
 - Installed: allianceauth 5.3.1, allianceauth-corptools 3.5.0, django-solo
   2.5.1, django-esi 9.10.0. Target production per checklist: AA 5.4.0,
   corptools 3.5.0, aa-structures 4.0.1.
