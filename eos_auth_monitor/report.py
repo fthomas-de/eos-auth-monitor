@@ -268,6 +268,8 @@ class Row:
     average: int | None = None
     # on the Mumble tile: Active in Mumble, shown below the linked share
     activity: "Row | None" = None
+    # a count without a total, and why: shown instead of a share
+    note: str = ""
 
     @property
     def percent(self) -> int | None:
@@ -290,6 +292,9 @@ class Row:
             return ""
 
 
+MEMBER_LIST_UNREAD = _(
+    "The member list of this Corporation could not be read: no member has a token with the membership scope."
+)
 MUMBLE = "mumble"
 ACTIVITY_LABEL = _("Active in Mumble")
 ACTIVITY_ICON = "fas fa-microphone-lines"
@@ -432,6 +437,8 @@ class Corporation:
     gm_shown: bool = False
     # set by Report.add_activity
     activity_shown: bool = False
+    # no token could read the member list: the lists hold the characters Auth knows here
+    member_list_unread: bool = False
 
     @property
     def spy_shown(self) -> bool:
@@ -608,7 +615,8 @@ class Corporation:
     @property
     def registered(self) -> int | None:
         if self.member_count is None:
-            return None
+            # without the list: the characters Auth knows here that have a main
+            return len(self.members) - len(self.unregistered) if self.member_list_unread else None
         return self.member_count - len(self.unregistered)
 
     @property
@@ -632,8 +640,12 @@ class Corporation:
 
     @property
     def rows(self) -> list[Row]:
-        """What the tile lists: every app that ran with its share of complete entries, then Active in Mumble."""
-        return self.check_rows + self.service_counts + ([self.activity] if self.activity_shown else [])
+        """What the tile lists: every app that ran with its share of complete entries, then Active in Mumble.
+
+        A row without a share stays on the Corporation's own pages: the overview compares shares.
+        """
+        shares = [row for row in self.check_rows if not row.note]
+        return shares + self.service_counts + ([self.activity] if self.activity_shown else [])
 
     @property
     def check_rows(self) -> list[Row]:
@@ -648,6 +660,17 @@ class Corporation:
                     self.member_count,
                     url_name="eos_auth_monitor:corporation_registered",
                     url_args=(self.id,),
+                )
+            )
+        elif self.member_list_unread:
+            rows.append(
+                Row(
+                    _("Registered in Auth"),
+                    "fas fa-user-plus",
+                    self.registered,
+                    url_name="eos_auth_monitor:corporation_registered",
+                    url_args=(self.id,),
+                    note=MEMBER_LIST_UNREAD,
                 )
             )
         if any(check.scope == CHARACTER for check in self.checks):
@@ -829,6 +852,7 @@ class Report:
             [Director(**director) for director in row.get("directors", [])],
             visiting=visiting,
             alliance_joined=datetime.fromisoformat(row["alliance_joined"]) if row.get("alliance_joined") else None,
+            member_list_unread=row.get("member_list_unread", False),
         )
 
     @property

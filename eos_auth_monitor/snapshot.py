@@ -65,12 +65,22 @@ def _members(corporation_ids, accounts_by_corporation, on_step) -> dict[int, dic
 
     A member that belongs to an account whose main is in another Corporation
     is reduced to that main; a member Auth does not know, or one on an account
-    without a main, is listed as unregistered.
+    without a main, is listed as unregistered. Where no token could read the
+    list, the characters Auth knows in the Corporation stand in for it, and
+    the member count stays unknown.
     """
     member_ids = {}
     for index, corporation_id in enumerate(corporation_ids):
         member_ids[corporation_id] = members_source.corporation_members(corporation_id)
         on_step("members", index + 1, len(corporation_ids) + 1)
+
+    unread = {corporation_id for corporation_id, members in member_ids.items() if members is None}
+    for corporation_id in unread:
+        member_ids[corporation_id] = []
+    for character_id, corporation_id in CharacterOwnership.objects.filter(
+        character__corporation_id__in=unread
+    ).values_list("character__character_id", "character__corporation_id"):
+        member_ids[corporation_id].append(character_id)
 
     everyone = {member for members in member_ids.values() if members for member in members}
     ownerships = {}
@@ -84,10 +94,6 @@ def _members(corporation_ids, accounts_by_corporation, on_step) -> dict[int, dic
 
     result = {}
     for corporation_id, members in member_ids.items():
-        if members is None:
-            result[corporation_id] = NO_MEMBERS
-            continue
-
         own_users = {account["user_id"] for account in accounts_by_corporation.get(corporation_id, [])}
         other_mains = {}
         unregistered = []
@@ -115,7 +121,8 @@ def _members(corporation_ids, accounts_by_corporation, on_step) -> dict[int, dic
             entry["characters"].append({"id": member, "name": ownership.character.character_name})
 
         result[corporation_id] = {
-            "member_count": len(members),
+            "member_count": None if corporation_id in unread else len(members),
+            "member_list_unread": corporation_id in unread,
             "other_mains": sorted(other_mains.values(), key=lambda entry: entry["main_name"].lower()),
             "unregistered": sorted(unregistered, key=lambda entry: entry["name"].lower()),
         }

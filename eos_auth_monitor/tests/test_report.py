@@ -544,6 +544,28 @@ class TestTileRows(MonitorTestCase):
         corporation = report([row], **kwargs).corporations[0]
         return {str(item.label): (item.part, item.total, item.percent) for item in corporation.rows}
 
+    def test_should_count_the_known_registered_characters_without_a_member_list(self):
+        account = account_row(1, 101, characters=[character_row(101), character_row(102)])
+        row = {
+            **corporation_row(2001, [account]),
+            "member_list_unread": True,
+            "unregistered": [{"id": 5, "name": "Mainless", "in_auth": True}],
+        }
+
+        (registered,) = [
+            item for item in report([row]).corporations[0].check_rows if str(item.label) == "Registered in Auth"
+        ]
+
+        self.assertEqual((registered.part, registered.total, registered.percent), (2, None, None))
+        self.assertIn("could not be read", str(registered.note))
+        # the overview compares shares: a count without one stays on the Corporation's pages
+        self.assertNotIn("Registered in Auth", self.rows(row))
+
+    def test_should_have_no_registered_row_with_the_member_lists_off(self):
+        rows = report([corporation_row(2001)]).corporations[0].check_rows
+
+        self.assertNotIn("Registered in Auth", [str(item.label) for item in rows])
+
     def test_should_list_each_app_with_its_share(self):
         account = account_row(
             1, 101, characters=[character_row(101), character_row(102, [AUDIT_MISSING])], services={"discord": True}

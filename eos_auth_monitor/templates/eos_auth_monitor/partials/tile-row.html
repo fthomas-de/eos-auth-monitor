@@ -5,6 +5,6 @@
     title="{% include "eos_auth_monitor/partials/row-title.html" %}">
     <span class="text-truncate"><i class="{{ row.icon }} fa-fw"></i> {{ row.label }}</span>
     <span class="text-nowrap fw-semibold {{ row|row_class }}">
-        {% if row.percent is None %}-{% else %}{{ row.percent }}&nbsp;%{% endif %}
+        {% if row.note %}{{ row.part }}{% elif row.percent is None %}-{% else %}{{ row.percent }}&nbsp;%{% endif %}
     </span>
 </li>

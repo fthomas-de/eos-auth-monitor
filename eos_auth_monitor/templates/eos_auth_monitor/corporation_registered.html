@@ -8,9 +8,13 @@
     <div class="card">
         <div class="card-header d-flex flex-wrap align-items-center gap-2">
             <div class="card-title mb-0 me-auto"><i class="{{ row.icon }}"></i> {{ row.label }}</div>
-            <span class="small">{% blocktranslate with part=row.part total=row.total %}{{ part }} of {{ total }}{% endblocktranslate %}</span>
+            <span class="small">{% if row.note %}{{ row.part }}{% else %}{% blocktranslate with part=row.part total=row.total %}{{ part }} of {{ total }}{% endblocktranslate %}{% endif %}</span>
         </div>
         <div class="card-body">
+            {% if row.note %}
+                {# no member list: only the characters Auth knows in the Corporation #}
+                <div class="alert alert-warning small eos-auth-monitor-note">{{ row.note }}</div>
+            {% endif %}
             <div class="table-responsive">
                 <table class="table table-sm align-middle mb-0 eos-auth-monitor-sortable">
                     <thead>

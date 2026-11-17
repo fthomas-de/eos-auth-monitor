@@ -204,13 +204,13 @@
                 </div>
             {% endif %}
 
-            {% if corporation.member_count is None %}
-                {% if report.members_fetched %}
-                    <div class="alert alert-secondary small">
-                        {% translate "The member list of this Corporation could not be read: no member has a token with the membership scope." %}
-                    </div>
-                {% endif %}
-            {% else %}
+            {% if corporation.member_count is None and report.members_fetched %}
+                <div class="alert alert-secondary small">
+                    {% translate "The member list of this Corporation could not be read: no member has a token with the membership scope." %}
+                </div>
+            {% endif %}
+            {# without the list, the characters Auth knows here on an account without a main #}
+            {% if corporation.member_count is not None or corporation.unregistered %}
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-2" id="eos-auth-monitor-unregistered">
                     <h6 class="mb-0 me-auto">{% translate "Not registered in Auth" %} <span class="badge {% if corporation.unregistered %}text-bg-danger{% else %}text-bg-success{% endif %}">{{ corporation.unregistered|length }}</span></h6>
                     {% if corporation.unregistered %}

@@ -580,6 +580,16 @@ class TestMembers(MonitorTestCase):
         row, _, _ = self.build_with_members(None)
 
         self.assertIsNone(row["member_count"])
+        self.assertTrue(row["member_list_unread"])
+
+    def test_should_take_the_characters_auth_knows_without_a_list(self):
+        add_alt(AuthUtils.create_user("mainless"), 9003, "Mainless", corporation_id=2001)
+
+        row, _, lookup = self.build_with_members(None)
+
+        self.assertEqual([main["main_name"] for main in row["other_mains"]], ["visitor main"])
+        self.assertEqual(row["unregistered"], [{"id": 9003, "name": "Mainless", "in_auth": True}])
+        lookup.assert_not_called()
 
     def test_should_not_ask_esi_when_switched_off(self):
         with patch("eos_auth_monitor.snapshot.members_source.corporation_members") as fetch:
@@ -587,3 +597,4 @@ class TestMembers(MonitorTestCase):
 
         fetch.assert_not_called()
         self.assertIsNone(row["member_count"])
+        self.assertNotIn("member_list_unread", row)

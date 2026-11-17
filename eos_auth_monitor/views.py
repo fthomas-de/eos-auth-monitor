@@ -318,7 +318,7 @@ def corporation_registered(request, corporation_id):
         corporation_id,
         "eos_auth_monitor/corporation_registered.html",
         _("Registered in Auth"),
-        lambda report, corporation: corporation.member_count is not None,
+        lambda report, corporation: corporation.registered is not None,
     )
 
 

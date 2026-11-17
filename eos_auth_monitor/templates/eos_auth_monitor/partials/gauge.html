@@ -5,11 +5,14 @@
     <div class="card-body position-relative">
         <i class="{{ gauge.icon }} fa-lg mb-2"></i>
         <div class="fs-3 fw-bold {{ gauge.percent|percent_class }}">
-            {% if gauge.percent is None %}-{% else %}{{ gauge.percent }}&nbsp;%{% endif %}
+            {% if gauge.note %}{{ gauge.part }}{% elif gauge.percent is None %}-{% else %}{{ gauge.percent }}&nbsp;%{% endif %}
         </div>
         <div class="small">{{ gauge.label }}</div>
         <div class="small text-body-secondary">
-            {% if gauge.problems is None %}
+            {% if gauge.note %}
+                {# a count without a total: why there is no share #}
+                <span class="text-danger eos-auth-monitor-note">{{ gauge.note }}</span>
+            {% elif gauge.problems is None %}
                 {% blocktranslate with part=gauge.part total=gauge.total %}{{ part }} of {{ total }}{% endblocktranslate %}
             {% elif gauge.problems %}
                 {# a Corporation-level check: which of its checks failed #}

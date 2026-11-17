@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.30] - 2026-11-17
+
+### Changed
+
+- **Registered in Auth without a member list**: where no token could read a
+  Corporation's member list, the Corporation page still shows the tile, with
+  the number of its characters Auth knows that have a main and the reason
+  instead of a share. Its list shows those characters with the same notice.
+  Characters known to Auth on an account without a main count as unregistered,
+  as with a member list: they appear in the to-do list and the Character Audit.
+  The Alliance overview keeps leaving the row out. Takes effect with the next
+  snapshot.
+
 ## [0.0.29] - 2026-11-17
 
 ### Changed

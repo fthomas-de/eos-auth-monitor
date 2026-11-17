@@ -2143,3 +2143,27 @@ class TestTileLists(ViewTestCase):
 
     def test_should_have_no_member_list_where_none_was_read(self):
         self.assertEqual(self.get(self.leader, "corporation_registered", 2002).status_code, 404)
+
+    def unread(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][1]["member_list_unread"] = True
+        snapshot.save()
+
+    def test_should_show_the_registered_tile_with_its_note_where_the_list_was_unreadable(self):
+        self.unread()
+
+        response = self.get(self.leader, "corporation", 2002)
+
+        link = reverse("eos_auth_monitor:corporation_registered", args=[2002])
+        self.assertContains(response, f'<a href="{link}" class="stretched-link"')
+        self.assertContains(response, 'class="text-danger eos-auth-monitor-note"')
+        # the count instead of a share: 2002's one known character, registered
+        self.assertRegex(response.content.decode(), r'fs-3 fw-bold[^"]*">\s*1\s*</div>\s*<div class="small">Registered in Auth')
+
+    def test_should_list_the_known_characters_with_the_note_where_the_list_was_unreadable(self):
+        self.unread()
+
+        response = self.get(self.leader, "corporation_registered", 2002)
+
+        self.assertEqual(self.rows(response), [("member", "Char 2201")])
+        self.assertContains(response, 'class="alert alert-warning small eos-auth-monitor-note"')
