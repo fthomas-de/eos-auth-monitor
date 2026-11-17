@@ -622,15 +622,15 @@ TRANSLATIONS = {
         'Обычно это исчезает после следующего обновления corptools; если нет, заново добавь этого Character.',
         '通常下一次 corptools 更新后即可恢复；如果仍然存在，请重新添加该 Character。',
     ),
-    'The Director ticks Corporation Audit (Sovereignty) in CharLink and logs in with this character.': (
-        'Der Director setzt in CharLink den Haken bei Corporation Audit (Sovereignty) und loggt sich mit diesem Character ein.',
-        'Director отмечает Corporation Audit (Sovereignty) в CharLink и входит этим Character.',
-        '该 Director 在 CharLink 中勾选 Corporation Audit (Sovereignty)，并用此 Character 登录。',
+    'The Director ticks Corporation Audit (Full) in CharLink and logs in with this character.': (
+        'Der Director setzt in CharLink den Haken bei Corporation Audit (Full) und loggt sich mit diesem Character ein.',
+        'Director отмечает Corporation Audit (Full) в CharLink и входит этим Character.',
+        '该 Director 在 CharLink 中勾选 Corporation Audit (Full)，并用此 Character 登录。',
     ),
-    'Tick Corporation Audit (Sovereignty) in CharLink and log in with this character.': (
-        'Setze in CharLink den Haken bei Corporation Audit (Sovereignty) und logge dich mit diesem Character ein.',
-        'Отметь Corporation Audit (Sovereignty) в CharLink и войди этим Character.',
-        '请在 CharLink 中勾选 Corporation Audit (Sovereignty)，并用此 Character 登录。',
+    'Tick Corporation Audit (Full) in CharLink and log in with this character.': (
+        'Setze in CharLink den Haken bei Corporation Audit (Full) und logge dich mit diesem Character ein.',
+        'Отметь Corporation Audit (Full) в CharLink и войди этим Character.',
+        '请在 CharLink 中勾选 Corporation Audit (Full)，并用此 Character 登录。',
     ),
     # CharLink hints of the Corporation's own problems (Corporation header); the box names stay as CharLink shows them
     'A Director ticks Corporation Audit in CharLink and logs in with the Director character.': (

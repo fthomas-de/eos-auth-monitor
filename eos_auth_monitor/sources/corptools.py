@@ -175,6 +175,7 @@ def character_problems(
     excluded_corporation_scopes=(),
     esi_directors=(),
     director_ids=None,
+    token_directors=None,
 ) -> dict[int, list[dict]]:
     """Problems per EVE character ID.
 
@@ -189,6 +190,10 @@ def character_problems(
     that may count as Directors at all: those in the Alliance. A Director of
     a Corporation elsewhere owes the Alliance no Corporation token. None
     leaves nobody out.
+
+    ``token_directors``, a set, receives the Directors whose token carries
+    every Corporation-audit scope: they cover the other Directors of their
+    account in the same Corporation (``report._is_warning``).
     """
     from corptools.models import CharacterAudit, CharacterRoles
     from esi.models import Token
@@ -237,8 +242,11 @@ def character_problems(
         tokens = scopes_per_token.get(character_id, {}).values()
         if "char_scopes_missing" in keys and (missing := _missing_scopes(tokens, required)) is not None:
             found.append(problem("char_scopes_missing", missing))
-        if character_id in directors and (missing := _missing_scopes(tokens, required_corporation)) is not None:
-            found.append(problem("char_director_token_missing", missing))
+        if character_id in directors:
+            if (missing := _missing_scopes(tokens, required_corporation)) is not None:
+                found.append(problem("char_director_token_missing", missing))
+            elif token_directors is not None:
+                token_directors.add(character_id)
 
         if found:
             result[character_id] = found

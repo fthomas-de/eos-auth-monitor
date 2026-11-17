@@ -217,6 +217,8 @@ def build(config, on_step=_no_progress) -> dict | None:
 
     on_step("characters")
     character_problems = {}
+    # Directors with a complete Corporation token: the other Directors of their account there only warn
+    token_directors = set()
     character_keys = {key for key in keys if CHECKS_BY_KEY[key].scope == CHARACTER}
     esi_directors = set()
     esi_directors_by_corporation = {}
@@ -259,6 +261,7 @@ def build(config, on_step=_no_progress) -> dict | None:
             director_ids=ownerships.filter(character__alliance_id=alliance_id).values_list(
                 "character__character_id", flat=True
             ),
+            token_directors=token_directors,
         )
 
     on_step("corporations")
@@ -349,6 +352,7 @@ def build(config, on_step=_no_progress) -> dict | None:
                         "corporation_ticker": character.corporation_ticker,
                         "alliance_name": character.alliance_name or "",
                         "problems": character_problems.get(character.character_id, []),
+                        "corporation_token": character.character_id in token_directors,
                     }
                     for character in characters
                 ],

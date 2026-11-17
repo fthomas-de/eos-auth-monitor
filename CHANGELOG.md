@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.31] - 2026-11-17
+
+### Changed
+
+- **Director token missing only warns when the account covers the
+  Corporation**: where another Director of the same account in the same
+  Corporation has a token with every Corporation-audit scope, a Director
+  without one is a warning (yellow card, to-do group *Director token missing
+  (warning)*, complete in the Character Audit share, dashboard widget yellow,
+  passed by the smart filter) instead of a problem. Directors in another
+  Corporation stay problems. Takes effect with the next rebuild.
+- **aa-charlink box renamed to *Corporation Audit (Full)*** (was *Corporation
+  Audit (Sovereignty)*): it carries every scope the Director check asks for,
+  not only the sovereignty one, so CharLink's own *Corporation Audit* box is
+  not needed as well. The hints of *Director token missing* name the new
+  label.
+
 ## [0.0.30] - 2026-11-17
 
 ### Changed

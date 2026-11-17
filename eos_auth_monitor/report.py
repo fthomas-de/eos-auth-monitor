@@ -14,6 +14,8 @@ from django.utils.translation import ngettext, pgettext_lazy
 
 from .checks import CHARACTER, CHECKS_BY_KEY, SERVICES_BY_KEY, WARNING_CHECK, Check, Service
 
+DIRECTOR_CHECK = "char_director_token_missing"
+
 # corporation-level check groups: (group key, label, cockpit icon)
 CORPORATION_GROUPS = (
     ("corptools_corporations", _("Corporation Audit"), "fas fa-building-circle-check"),
@@ -78,8 +80,14 @@ def _problems(items) -> list[Problem]:
     return [_problem(item) for item in items if item["check"] in CHECKS_BY_KEY]
 
 
-def _is_warning(item: dict, critical_scope_count: int) -> bool:
-    """Scopes missing below the setting's number: a to-do on the Corporation and account pages, never a problem."""
+def _is_warning(item: dict, critical_scope_count: int, covered: bool = False) -> bool:
+    """A to-do on the Corporation and account pages, never a problem.
+
+    Scopes missing below the setting's number, and a Director token missing where another Director of the
+    account in the same Corporation has one (`covered`).
+    """
+    if item["check"] == DIRECTOR_CHECK:
+        return covered
     return item["check"] == WARNING_CHECK and len(item["detail"]) < critical_scope_count
 
 
@@ -768,6 +776,10 @@ class Report:
     def _account(self, row, account) -> Account:
         # a snapshot from before the Director lists has none
         director_ids = {director["id"] for director in row.get("directors", [])}
+        # a snapshot from before 0.0.31 has no such flag: every Director without a token stays a problem
+        covered = {
+            character["corporation_id"] for character in account["characters"] if character.get("corporation_token")
+        }
         return Account(
             user_id=account["user_id"],
             main_id=account["main_id"],
@@ -788,10 +800,14 @@ class Report:
                     alliance_name=character["alliance_name"],
                     is_main=character["id"] == account["main_id"],
                     problems=_problems(
-                        item for item in character["problems"] if not _is_warning(item, self.critical_scope_count)
+                        item
+                        for item in character["problems"]
+                        if not _is_warning(item, self.critical_scope_count, character["corporation_id"] in covered)
                     ),
                     warnings=_problems(
-                        item for item in character["problems"] if _is_warning(item, self.critical_scope_count)
+                        item
+                        for item in character["problems"]
+                        if _is_warning(item, self.critical_scope_count, character["corporation_id"] in covered)
                     ),
                 )
                 for character in account["characters"]

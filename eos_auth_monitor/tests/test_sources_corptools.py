@@ -133,6 +133,24 @@ class TestCharacterProblems(MonitorTestCase):
 
         self.assertEqual(self.problems({DIRECTOR_KEY}), [])
 
+    def test_should_name_the_directors_with_a_complete_corporation_token(self, _):
+        self.director()
+        make_token(self.main, corptools.corporation_scopes())
+        holders = set()
+
+        self.problems({DIRECTOR_KEY}, token_directors=holders)
+
+        self.assertEqual(holders, {self.main.character_id})
+
+    def test_should_not_name_a_director_lacking_a_scope(self, _):
+        self.director()
+        make_token(self.main, corptools.corporation_scopes()[:-1])
+        holders = set()
+
+        self.problems({DIRECTOR_KEY}, token_directors=holders)
+
+        self.assertEqual(holders, set())
+
     def test_should_not_ask_a_director_outside_the_alliance_for_a_corporation_token(self, _):
         self.director()
         make_token(self.main, self.scopes)

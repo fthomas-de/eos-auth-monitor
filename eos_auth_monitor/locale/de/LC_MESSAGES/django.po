@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-17 08:29+0000\n"
-"PO-Revision-Date: 2026-11-17 08:29+0000\n"
+"POT-Creation-Date: 2026-11-17 10:31+0000\n"
+"PO-Revision-Date: 2026-11-17 10:31+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: de\n"
 "Language: de\n"
@@ -171,19 +171,18 @@ msgstr ""
 
 #: checks.py:168
 msgid ""
-"The Director ticks Corporation Audit (Sovereignty) in CharLink and logs in "
-"with this character."
+"The Director ticks Corporation Audit (Full) in CharLink and logs in with "
+"this character."
 msgstr ""
-"Der Director setzt in CharLink den Haken bei Corporation Audit (Sovereignty)"
-" und loggt sich mit diesem Character ein."
+"Der Director setzt in CharLink den Haken bei Corporation Audit (Full) und "
+"loggt sich mit diesem Character ein."
 
 #: checks.py:170
 msgid ""
-"Tick Corporation Audit (Sovereignty) in CharLink and log in with this "
-"character."
+"Tick Corporation Audit (Full) in CharLink and log in with this character."
 msgstr ""
-"Setze in CharLink den Haken bei Corporation Audit (Sovereignty) und logge "
-"dich mit diesem Character ein."
+"Setze in CharLink den Haken bei Corporation Audit (Full) und logge dich mit "
+"diesem Character ein."
 
 #: checks.py:172
 msgid ""
@@ -397,7 +396,7 @@ msgstr "Corporation-Audit: benötigte Scopes"
 msgid "One token of a Corporation member must carry all of these."
 msgstr "Ein Token eines Corporation-Mitglieds muss alle diese tragen."
 
-#: forms.py:57 models.py:34 templates/eos_auth_monitor/account.html:70
+#: forms.py:57 models.py:34 templates/eos_auth_monitor/account.html:71
 #: templates/eos_auth_monitor/settings.html:11
 msgctxt "EVE jargon"
 msgid "Alliance"
@@ -497,68 +496,76 @@ msgstr ""
 msgid "Smart Filter: Auth Monitor character problems"
 msgstr "Smart Filter: Auth-Monitor-Character-Probleme"
 
-#: report.py:19
+#: report.py:21
 msgid "Corporation Audit"
 msgstr "Corporation-Audit"
 
-#: report.py:20
+#: report.py:22
 msgctxt "eos-auth-monitor"
 msgid "Structures"
 msgstr "Structures"
 
-#: report.py:26
+#: report.py:28
 msgid "Reading accounts"
 msgstr "Accounts werden gelesen"
 
-#: report.py:27
+#: report.py:29
 msgid "Checking characters"
 msgstr "Characters werden geprüft"
 
-#: report.py:28
+#: report.py:30
 msgid "Checking Corporations"
 msgstr "Corporations werden geprüft"
 
-#: report.py:29
+#: report.py:31
 msgid "Reading member lists"
 msgstr "Mitgliederlisten werden gelesen"
 
-#: report.py:30
+#: report.py:32
 msgid "Reading services"
 msgstr "Dienste werden gelesen"
 
-#: report.py:31
+#: report.py:33
 msgid "Saving"
 msgstr "Speichern"
 
-#: report.py:38
+#: report.py:40
 msgid "never updated"
 msgstr "nie aktualisiert"
 
-#: report.py:52
+#: report.py:54
 #, python-format
 msgid "and %(count)d more"
 msgid_plural "and %(count)d more"
 msgstr[0] "und %(count)d weiterer"
 msgstr[1] "und %(count)d weitere"
 
-#: report.py:294 templates/eos_auth_monitor/corporation_service.html:20
+#: report.py:304 templates/eos_auth_monitor/corporation.html:209
+msgid ""
+"The member list of this Corporation could not be read: no member has a token"
+" with the membership scope."
+msgstr ""
+"Die Mitgliederliste dieser Corporation konnte nicht gelesen werden: Kein "
+"Mitglied hat einen Token mit dem Membership-Scope."
+
+#: report.py:307 templates/eos_auth_monitor/corporation_service.html:20
 #: templates/eos_auth_monitor/service.html:22
 msgid "Active in Mumble"
 msgstr "Aktiv im Mumble"
 
-#: report.py:328
+#: report.py:341
 #, python-format
 msgid "%(check)s (warning)"
 msgstr "%(check)s (Warnung)"
 
-#: report.py:593 templates/eos_auth_monitor/corporation.html:66
+#: report.py:608 templates/eos_auth_monitor/corporation.html:66
 #: templates/eos_auth_monitor/corporation.html:215
 #: templates/eos_auth_monitor/dashboard.corporation.html:33
 msgid "Not registered in Auth"
 msgstr "Nicht in Auth registriert"
 
-#: report.py:600 templates/eos_auth_monitor/account.html:117
-#: templates/eos_auth_monitor/account.html:119
+#: report.py:615 templates/eos_auth_monitor/account.html:120
+#: templates/eos_auth_monitor/account.html:122
 #: templates/eos_auth_monitor/corporation.html:96
 #: templates/eos_auth_monitor/corporation.html:151
 #: templates/eos_auth_monitor/partials/gm-tile.html:7
@@ -566,25 +573,25 @@ msgstr "Nicht in Auth registriert"
 msgid "GM transactions"
 msgstr "GM-Transaktionen"
 
-#: report.py:645 views.py:320
+#: report.py:665 report.py:676 views.py:320
 msgid "Registered in Auth"
 msgstr "In Auth registriert"
 
-#: report.py:656 templates/eos_auth_monitor/character_audit.html:8
+#: report.py:687 templates/eos_auth_monitor/character_audit.html:8
 #: templates/eos_auth_monitor/character_audit.html:20 views.py:332
 #: views.py:369
 msgid "Character Audit"
 msgstr "Character-Audit"
 
-#: report.py:997
+#: report.py:1037
 msgid "Members registered"
 msgstr "Mitglieder registriert"
 
-#: report.py:1010
+#: report.py:1050
 msgid "Character Audit complete"
 msgstr "Character-Audit vollständig"
 
-#: report.py:1023
+#: report.py:1063
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s funktioniert"
@@ -599,7 +606,7 @@ msgstr "Nicht in der Auth-Monitor-Übersicht"
 
 #: smart_filters.py:38
 #: templates/eos_auth_monitor/partials/audited-character.html:23
-#: templates/eos_auth_monitor/partials/gauge.html:18
+#: templates/eos_auth_monitor/partials/gauge.html:21
 #: templates/eos_auth_monitor/partials/problem-count.html:15
 msgid "No problems"
 msgstr "Keine Probleme"
@@ -625,15 +632,15 @@ msgstr "verknüpft"
 msgid "not linked"
 msgstr "nicht verknüpft"
 
-#: templates/eos_auth_monitor/account.html:68
+#: templates/eos_auth_monitor/account.html:69
 #: templates/eos_auth_monitor/corporation_character_audit.html:18
-#: templates/eos_auth_monitor/corporation_registered.html:18
+#: templates/eos_auth_monitor/corporation_registered.html:22
 #: templates/eos_auth_monitor/unknown_characters.html:25
 msgctxt "EVE jargon"
 msgid "Character"
 msgstr "Character"
 
-#: templates/eos_auth_monitor/account.html:69
+#: templates/eos_auth_monitor/account.html:70
 #: templates/eos_auth_monitor/character_audit.html:19
 #: templates/eos_auth_monitor/directors.html:29
 #: templates/eos_auth_monitor/index.html:120
@@ -643,32 +650,32 @@ msgctxt "EVE jargon"
 msgid "Corporation"
 msgstr "Corporation"
 
-#: templates/eos_auth_monitor/account.html:71
-#: templates/eos_auth_monitor/index.html:123
+#: templates/eos_auth_monitor/account.html:72
+#: templates/eos_auth_monitor/index.html:124
 #: templates/eos_auth_monitor/partials/problem-marker.html:3
 msgid "Problems"
 msgstr "Probleme"
 
-#: templates/eos_auth_monitor/account.html:109
+#: templates/eos_auth_monitor/account.html:112
 #: templates/eos_auth_monitor/partials/spy-tile.html:7
 #: templates/eos_auth_monitor/partials/spy-tile.html:10
 msgid "Spy network"
 msgstr "Spy Network"
 
-#: templates/eos_auth_monitor/account.html:118
+#: templates/eos_auth_monitor/account.html:121
 msgid "A GM moved ISK for this character."
 msgstr "Ein GM hat ISK für diesen Character bewegt."
 
-#: templates/eos_auth_monitor/account.html:129
+#: templates/eos_auth_monitor/account.html:132
 msgid "None of your characters has a problem."
 msgstr "Keiner deiner Characters hat ein Problem."
 
-#: templates/eos_auth_monitor/account.html:129
+#: templates/eos_auth_monitor/account.html:132
 #: templates/eos_auth_monitor/dashboard.own.html:39
 msgid "No character of this account has a problem."
 msgstr "Kein Character dieses Accounts hat ein Problem."
 
-#: templates/eos_auth_monitor/account.html:137
+#: templates/eos_auth_monitor/account.html:140
 #, python-format
 msgctxt "EVE jargon"
 msgid "%(counter)s character without problems"
@@ -676,10 +683,10 @@ msgid_plural "%(counter)s characters without problems"
 msgstr[0] "%(counter)s Character ohne Probleme"
 msgstr[1] "%(counter)s Characters ohne Probleme"
 
-#: templates/eos_auth_monitor/account.html:144
+#: templates/eos_auth_monitor/account.html:149
 #: templates/eos_auth_monitor/character_audit.html:18
 #: templates/eos_auth_monitor/corporation_character_audit.html:19
-#: templates/eos_auth_monitor/corporation_registered.html:19
+#: templates/eos_auth_monitor/corporation_registered.html:23
 #: templates/eos_auth_monitor/corporation_service.html:18
 #: templates/eos_auth_monitor/directors.html:30
 #: templates/eos_auth_monitor/partials/character-cell.html:8
@@ -688,7 +695,7 @@ msgctxt "EVE jargon"
 msgid "Main"
 msgstr "Main"
 
-#: templates/eos_auth_monitor/account.html:158
+#: templates/eos_auth_monitor/account.html:163
 #, python-format
 msgctxt "EVE jargon"
 msgid ""
@@ -704,7 +711,7 @@ msgstr[1] ""
 "%(counter)s deiner Characters sind außerhalb der Alliance und werden hier "
 "weder angezeigt noch geprüft."
 
-#: templates/eos_auth_monitor/account.html:160
+#: templates/eos_auth_monitor/account.html:165
 #, python-format
 msgctxt "EVE jargon"
 msgid ""
@@ -832,29 +839,21 @@ msgstr "Kein Main dieser Corporation ist in Auth registriert."
 msgid "Members whose main is in another Corporation"
 msgstr "Mitglieder, deren Main in einer anderen Corporation ist"
 
-#: templates/eos_auth_monitor/corporation.html:210
-msgid ""
-"The member list of this Corporation could not be read: no member has a token"
-" with the membership scope."
-msgstr ""
-"Die Mitgliederliste dieser Corporation konnte nicht gelesen werden: Kein "
-"Mitglied hat einen Token mit dem Membership-Scope."
-
 #: templates/eos_auth_monitor/corporation_character_audit.html:11
 #: templates/eos_auth_monitor/corporation_registered.html:11
-#: templates/eos_auth_monitor/partials/gauge.html:13
+#: templates/eos_auth_monitor/partials/gauge.html:16
 #: templates/eos_auth_monitor/partials/row-title.html:1
 #, python-format
 msgid "%(part)s of %(total)s"
 msgstr "%(part)s von %(total)s"
 
-#: templates/eos_auth_monitor/corporation_registered.html:44
+#: templates/eos_auth_monitor/corporation_registered.html:48
 msgid "registered"
 msgstr "registriert"
 
 #: templates/eos_auth_monitor/dashboard.corporation.html:28
 #: templates/eos_auth_monitor/index.html:91
-#: templates/eos_auth_monitor/index.html:124
+#: templates/eos_auth_monitor/index.html:125
 #: templates/eos_auth_monitor/partials/corporation-header.html:16
 msgctxt "EVE jargon"
 msgid "Mains"
@@ -978,24 +977,24 @@ msgstr "Tabelle"
 msgid "No Corporation of the Alliance is known to Auth."
 msgstr "Auth kennt keine Corporation der Alliance."
 
-#: templates/eos_auth_monitor/index.html:123
+#: templates/eos_auth_monitor/index.html:124
 #: templates/eos_auth_monitor/partials/corporation-header.html:17
 msgid "Accounts with problems"
 msgstr "Accounts mit Problemen"
 
-#: templates/eos_auth_monitor/index.html:130
+#: templates/eos_auth_monitor/index.html:131
 msgid "Characters with markers in eos-spy-network"
 msgstr "Characters mit Markern in eos-spy-network"
 
-#: templates/eos_auth_monitor/index.html:130
+#: templates/eos_auth_monitor/index.html:131
 msgid "Spies"
 msgstr "Spione"
 
-#: templates/eos_auth_monitor/index.html:133
+#: templates/eos_auth_monitor/index.html:134
 msgid "Characters with GM transactions in eos-tax"
 msgstr "Characters mit GM-Transaktionen in eos-tax"
 
-#: templates/eos_auth_monitor/index.html:191
+#: templates/eos_auth_monitor/index.html:192
 msgid "No Corporation matches the filter."
 msgstr "Keine Corporation passt zum Filter."
 

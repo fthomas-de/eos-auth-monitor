@@ -8,6 +8,24 @@ Last updated 2026-11-17 (0.0.30).
 
 ## Release
 
+- **Unreleased** (2026-11-17, not committed): **covered Directors warn,
+  CharLink box *Full*** (see `CHANGELOG.md` and the decisions of 2026-11-17
+  (covered Directors) below).
+  - `sources.corptools.character_problems(..., token_directors=set())` fills
+    the Directors with a complete Corporation token; `snapshot.build` stores
+    `corporation_token` per character. `report._account` collects the
+    Corporations where a character of the account has it; `_is_warning`
+    (third argument `covered`) turns `char_director_token_missing`
+    (`report.DIRECTOR_CHECK`) into a warning there. Everything after that is
+    the scope warnings' machinery; no template change. An older snapshot has
+    no flag: red until rebuilt.
+  - `charlink_hook.FIELD_LABEL` is `Corporation Audit (Full)`, `unique_id`
+    stays `sovereignty`; the two hints in `checks.py` and the glossary keys
+    renamed (translations: Sovereignty -> Full, otherwise unchanged; the
+    `.po` files follow at `/commit`).
+  - Tests: `TestCoveredDirectors` in `test_report` (5), two in
+    `test_sources_corptools`, one in `test_snapshot`; the CharLink texts in
+    `test_views`. 4 sabotages, 4 red. Not seen in a browser.
 - Version **0.0.30** of 2026-11-17: **Registered in Auth without a member
   list** (see `CHANGELOG.md` and the decisions of 2026-11-17 (Registered in
   Auth) below).
@@ -79,7 +97,8 @@ Last updated 2026-11-17 (0.0.30).
     279 unknown; the box on CharLink's page (unticked by default); the
     Director hint linking to CharLink. No console errors.
 - **Next steps**:
-  - Have a Director log in through *Corporation Audit (Sovereignty)*, rebuild,
+  - Have a Director log in through *Corporation Audit (Full)* (named
+    *Sovereignty* until the Unreleased change), rebuild,
     and check that *Director token missing* clears - the CharLink login
     itself was not run.
   - After every aa-charlink upgrade, check `charlink_hook.py` against
@@ -870,6 +889,24 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 - The notice is the existing "no member has a token with the membership
   scope", not the "no Director token" first proposed: reading the list needs
   any member's token, not a Director's.
+
+2026-11-17 (covered Directors):
+
+- **A Director only warns when the account covers the Corporation** ("wenn
+  für einen main / account mindestens ein director der corp vollständige corp
+  tokens abgegeben hat, dann zeige alle weiteren director chars/alts des
+  mains nur als warnung"). The user's answers: **same Corporation only** (a
+  Director of another Corporation stays red); **like the scope warnings**
+  (to-do group, complete in the Character Audit, dashboard yellow, smart
+  filter passes); the **Director lists stay** as they are (token yes/no of
+  the Director himself). The warning shows the check's own hint with the
+  CharLink link, no extra sentence why it is yellow.
+- "Complete" is the Director check's rule: every Corporation-audit scope
+  minus those left out in the settings.
+- **CharLink box *Full*** ("nenne es statt (sov..) beispielsweise (full).
+  sonst nimmt man an, dass es nur sov ist"): checked in the dev instance -
+  the box carries all 17 scopes the check asks for, CharLink's own
+  Corporation Audit all but `esi-structures.read_corporation.v1`.
 
 ## Pitfalls found
 

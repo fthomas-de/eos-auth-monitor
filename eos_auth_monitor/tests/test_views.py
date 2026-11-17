@@ -1212,8 +1212,8 @@ class TestDirectorCharlink(ViewTestCase):
     WALLETS = "esi-wallet.read_corporation_wallets.v1"
     ABOUT = "The Director clicks Add Token in the corptools Corporation Audit, ticks every box and logs in with this character."
     TO_MEMBER = "Click Add Token in the corptools Corporation Audit, tick every box and log in with this character."
-    CHARLINK_ABOUT = "The Director ticks Corporation Audit (Sovereignty) in CharLink and logs in with this character."
-    CHARLINK_TO_MEMBER = "Tick Corporation Audit (Sovereignty) in CharLink and log in with this character."
+    CHARLINK_ABOUT = "The Director ticks Corporation Audit (Full) in CharLink and logs in with this character."
+    CHARLINK_TO_MEMBER = "Tick Corporation Audit (Full) in CharLink and log in with this character."
 
     def setUp(self):
         super().setUp()
@@ -1295,7 +1295,7 @@ class TestCharlinkBox(MonitorTestCase):
         (box,) = app_import.imports
 
         self.assertEqual(set(corporation_scopes()) - set(box.scopes), set())
-        self.assertEqual(box.field_label, "Corporation Audit (Sovereignty)")
+        self.assertEqual(box.field_label, "Corporation Audit (Full)")
 
 
 class TestBrokerDown(ViewTestCase):

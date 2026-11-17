@@ -73,7 +73,7 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   what to do about it, with a link to
   [aa-charlink](https://github.com/Maestro-Zacht/aa-charlink) where it is
   installed (otherwise to the app where it is done); a missing Director token
-  points to the box *Corporation Audit (Sovereignty)* that this app adds to
+  points to the box *Corporation Audit (Full)* that this app adds to
   aa-charlink (see below), the Corporation's own
   problems in the header as well; each character's name links to its
   corptools Character Audit; the characters without problems folded away
@@ -149,13 +149,14 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
 ## aa-charlink box
 
 With corptools and [aa-charlink](https://github.com/Maestro-Zacht/aa-charlink)
-installed, this app adds a box **Corporation Audit (Sovereignty)** to
+installed, this app adds a box **Corporation Audit (Full)** to
 CharLink's page (CharLink's `charlink` hook). It is CharLink's own *Corporation
 Audit* box plus the scope `esi-structures.read_corporation.v1`: CharLink's box
 takes its scopes from `corptools.views.CORP_REQUIRED_SCOPES`, which lacks it,
 while the *Director token missing* check asks for every scope of
 `corptools.app_settings.CORP_REQUIRED_SCOPES`, which has it. A Director who
-ticks the new box gets a token the check accepts. CharLink's admin lists it
+ticks the new box gets a token the check accepts; CharLink's own box is not
+needed as well, hence *Full*. CharLink's admin lists it
 under this app; it can be hidden there like any other box. Its *added* status
 is CharLink's own for the Corporation Audit: the Corporation is in the audit.
 
@@ -206,7 +207,11 @@ widgets (a yellow border while there is nothing worse), but it is no problem
 anywhere: not on the overview, in the cockpit, the percentages, the problem
 counts, the sorting, the Character Audit list or the smart filter. A main with
 a warning and any problem keeps its red card. *Director token missing* stays
-a problem with any number of scopes.
+a problem with any number of scopes - unless another Director of the same
+account in the same Corporation has a token with every Corporation-audit
+scope: then it is a warning in the same way (*Director token missing
+(warning)*), since the Corporation audit runs on that token already. It
+takes a rebuild with 0.0.31 or later; until then it stays a problem.
 
 A Corporation where no Director's token could read the roles (the ESI call in
 [ESI](#esi) found no token, or none worked) carries a small info mark beside

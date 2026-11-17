@@ -814,6 +814,57 @@ class TestScopeWarnings(MonitorTestCase):
         self.assertEqual(account.problem_free_characters, [])
 
 
+class TestCoveredDirectors(MonitorTestCase):
+    """A Director without the token only warns where another Director of the account in its Corporation has it."""
+
+    MISSING = {"check": "char_director_token_missing", "detail": ["a"]}
+
+    @staticmethod
+    def holder(character_id, corporation_id=2001):
+        return {**character_row(character_id, corporation_id=corporation_id), "corporation_token": True}
+
+    def account(self, characters):
+        corporations = [corporation_row(2001, [account_row(11, 1101, characters)]), corporation_row(2002)]
+        return Report(store_snapshot(snapshot_data(corporations))).account(11)[1]
+
+    @staticmethod
+    def rated(account, character_id):
+        character = next(character for character in account.characters if character.id == character_id)
+        return [p.check.key for p in character.problems], [p.check.key for p in character.warnings]
+
+    def test_should_warn_where_another_director_of_the_account_there_has_the_token(self):
+        account = self.account([self.holder(1101), character_row(1102, [self.MISSING])])
+
+        self.assertEqual(self.rated(account, 1102), ([], ["char_director_token_missing"]))
+        self.assertFalse(account.has_problems)
+
+    def test_should_keep_it_a_problem_where_the_holder_is_in_another_corporation(self):
+        account = self.account([self.holder(1101, 2002), character_row(1102, [self.MISSING])])
+
+        self.assertEqual(self.rated(account, 1102), (["char_director_token_missing"], []))
+
+    def test_should_keep_it_a_problem_without_a_holder(self):
+        # a snapshot from before the flag has none either
+        account = self.account([character_row(1101), character_row(1102, [self.MISSING])])
+
+        self.assertEqual(self.rated(account, 1102), (["char_director_token_missing"], []))
+
+    def test_should_leave_the_other_problems_of_a_covered_director_alone(self):
+        account = self.account([self.holder(1101), character_row(1102, [self.MISSING, AUDIT_MISSING])])
+
+        self.assertEqual(self.rated(account, 1102), (["char_audit_missing"], ["char_director_token_missing"]))
+
+    def test_should_list_a_covered_director_as_a_warning_to_do(self):
+        corporations = [corporation_row(2001, [account_row(11, 1101, [self.holder(1101), character_row(1102, [self.MISSING])])])]
+        corporation = Report(store_snapshot(snapshot_data(corporations))).corporation(2001)
+
+        self.assertEqual(
+            [(todo.group, todo.label) for todo in corporation.listed_todos],
+            [("char_director_token_missing_warning", "Director token missing (warning)")],
+        )
+        self.assertEqual([account.user_id for account in corporation.warning_accounts], [11])
+
+
 class TestTileLists(MonitorTestCase):
     """The lists behind the Corporation page's tiles Registered in Auth and Character Audit."""
 

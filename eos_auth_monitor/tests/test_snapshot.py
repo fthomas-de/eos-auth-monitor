@@ -98,6 +98,17 @@ class TestAccounts(MonitorTestCase):
     def test_should_flag_a_director_of_the_alliance_without_a_corporation_token(self):
         self.assertEqual(self.director_problems(self.pilot.profile.main_character), ["char_director_token_missing"])
 
+    def test_should_mark_a_director_with_a_complete_corporation_token(self):
+        main = self.pilot.profile.main_character
+        make_token(main, corptools_source.corporation_scopes())
+
+        self.assertEqual(self.director_problems(main), [])
+        characters = corporation(build(), 2001)["accounts"][0]["characters"]
+        self.assertEqual(
+            {entry["id"]: entry["corporation_token"] for entry in characters},
+            {main.character_id: True, self.alt.character_id: False},
+        )
+
     def test_should_not_flag_a_director_of_a_corporation_outside_the_alliance(self):
         # the alt is checked for everything else, but its Corporation is none of the Alliance's
         self.assertEqual(self.director_problems(self.alt), [])

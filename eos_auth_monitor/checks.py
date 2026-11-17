@@ -165,9 +165,9 @@ CHECKS = (
         fix_group="corptools_corporations",
         # the box charlink_hook.py adds: CharLink's own Corporation Audit lacks the sovereignty scope
         charlink_hint=_(
-            "The Director ticks Corporation Audit (Sovereignty) in CharLink and logs in with this character."
+            "The Director ticks Corporation Audit (Full) in CharLink and logs in with this character."
         ),
-        own_hint=_("Tick Corporation Audit (Sovereignty) in CharLink and log in with this character."),
+        own_hint=_("Tick Corporation Audit (Full) in CharLink and log in with this character."),
         own_app_hint=_(
             "Click Add Token in the corptools Corporation Audit, tick every box and log in with this character."
         ),

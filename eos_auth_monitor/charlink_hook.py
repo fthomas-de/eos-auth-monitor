@@ -12,7 +12,7 @@ from charlink.imports.corptools import app_import as corptools_import
 
 from .checks import SOVEREIGNTY_SCOPE
 
-FIELD_LABEL = "Corporation Audit (Sovereignty)"
+FIELD_LABEL = "Corporation Audit (Full)"
 
 corporation_audit = corptools_import.get("structures")
 
