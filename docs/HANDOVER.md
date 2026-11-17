@@ -4,10 +4,26 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-17 (0.0.33).
+Last updated 2026-11-17 (0.0.34).
 
 ## Release
 
+- Version **0.0.34** of 2026-11-17: **Help mode** (see `CHANGELOG.md` and
+  the decisions of 2026-11-17 (help mode) below). A *Help mode* switch in
+  the navbar (`base.html`, block `header_nav_collapse_right`, checked by
+  default) and a question mark per area (`partials/help.html`, popover with
+  `data-bs-trigger="focus"`); `static/eos_auth_monitor/js/help.js` starts the
+  popovers, shows the switch only where the page has question marks and
+  hides them while it is off. Tile texts on the new field `Row.help`
+  (`report.py`: `SERVICE_HELP`, `ACTIVITY_HELP`, `REGISTERED_HELP`,
+  `COCKPIT_GROUP_HELP`, `CORPORATION_GROUP_HELP` and inline ones); the rest
+  in the templates via `{% translate ... as help_text %}`. On tiles
+  (`gauge.html`, `spy-tile.html`, `gm-tile.html`, the account page's service
+  tiles) `corner=True`, included **last** in the card body so the existing
+  tile regexes in the tests stay untouched. 30 new messages, translated.
+  Tests: `TestHelpMode` (5) in `test_views`; 506 in the suite. Seen in the
+  browser on the overview and the Corporation page (switch, popover, off/on);
+  the account pages only by tests.
 - Version **0.0.33** of 2026-11-17: **GM transactions and spy markers for
   the CEO roles** of eos-tax (`eos_tax.basic_access`) and eos-spy-network
   (`eos_spy_network.view_own_corporation`): a viewer with such a role but
@@ -380,7 +396,9 @@ ESI calls: member list and roles), `snapshot.py` (builds the JSON, run by
 `views.py`, `forms.py`. JS: `tables.js` (DataTables), `progress.js`,
 `searchable.js` (Tom Select), `filter.js` (live filter and problems switch of
 the overview), `view.js` (tiles or table), `copy.js` (copy buttons, with an
-`execCommand` fallback for plain HTTP). Partials: `gauge.html` (a statistic
+`execCommand` fallback for plain HTTP), `help.js` (Help mode switch and
+popovers). Partials: `help.html` (a Help mode question mark, `corner=True`
+on a tile), `gauge.html` (a statistic
 tile), `corporation-rows.html`, `metrics.html`, `problem-count.html`,
 `no-director.html`, `problem-hint.html`, `copy-button.html`, `csv-button.html`,
 `service-icons.html`, `director-icon.html` (the crown, `corner=True` on a card),
@@ -997,7 +1015,34 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   `corporation_id` gives a CEO nothing. Tests: 1 in `test_report`, 3 in
   `test_sources_other`, 2 in `test_views`; 6 sabotages, 6 red.
 
+2026-11-17 (help mode, 0.0.34; "könnte man sowas wie einen hilfe button
+einbauen, der alle bereiche/container mit erklärenden texten versieht"):
+
+- **Info icon with popover** per area, not visible text boxes.
+- **Pages**: Alliance overview, Corporation page, Account and My account;
+  **not** Settings (nor the lists or the dashboard).
+- **All texts written new** for the help mode, not taken from
+  `Check.description`. The user approved the English drafts before they were
+  built; *My account* has its own second-person texts.
+- After seeing the first version: the icon goes into the **top right corner
+  of a tile**, and the navbar button became a **switch named "Help mode",
+  on by default** ("mach aus dem hilfe icon einen schalter, der per default
+  an ist"). Not remembered per browser: on with every page load.
+- The icon stays small (about 12 px): asked whether to enlarge it, the user
+  said no ("passt so").
+- The switch is green while on (`bg-success`, toggled by `help.js`): the
+  theme's primary colour vanished on the primary-coloured navbar. Claude's
+  call, not asked.
+
 ## Pitfalls found
+
+- A new file under `static/` needs `collectstatic` before the tests: the
+  manifest storage of `sri_static` raises "Missing staticfiles manifest
+  entry" and almost every view test errors.
+- The view tests read tiles with regexes (`TestPages.gauge`,
+  `TestOwnAccountServices.tile_colours`) that expect the label `<div>` to
+  hold the bare label right after the icon. Anything new on a tile goes at
+  the end of its card body.
 
 - `eos-test` takes one test label only; a second one fails with
   "unrecognized arguments". Run several modules one after another.
@@ -1153,6 +1198,12 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   `MumbleUser(...).save()`.
 
 ## Open points / next steps
+
+- **Help mode (0.0.34)**: look at *My account* and an account page in the
+  browser (service tiles' corner icon, the question mark in the folded
+  *characters without problems* summary must not fold it). A new area added
+  later needs its own help text, or it simply has none. Production needs
+  `collectstatic` for `help.js`.
 
 - **Registered in Auth without a member list not seen in a browser**
   (0.0.30): after a rebuild with the 0.0.30 code, open a Corporation without
