@@ -4,9 +4,29 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-17 (0.0.28).
+Last updated 2026-11-17 (0.0.29).
 
 ## Release
+
+- Version **0.0.29** of 2026-11-17: **numbered characters on Main details,
+  wider Corporation column in the overview** (see `CHANGELOG.md` and the
+  decisions of 2026-11-17 below). Templates only.
+  - `account.html`: a `#` column (`forloop.counter`, `data-order` the same,
+    class `eos-auth-monitor-number`) in the problem table; the folded
+    *without problems* list goes on from `account.listed_characters|length`
+    (`{% with offset=... %}` and `|add:offset`).
+  - `index.html`: `style="min-width: 14rem"` on the Corporation `<th>` of the
+    overview table.
+  - Tests: one new in `test_views`
+    (`test_should_number_the_characters_on_from_the_table_into_the_folded_list`,
+    sabotaged red), `test_should_shorten_the_heads_of_the_table` now checks
+    the min-width; 472 in the suite. No message, no migration, no static
+    file.
+  - Seen in the browser: the column at 224px in a 1024px window, names on
+    one or two lines; own account 1-4 in the table. The folded list's
+    numbers only by the test - the user's account has no problem-free
+    character.
+- **Next steps**: those of 0.0.28 below are still open.
 
 - Version **0.0.28** of 2026-11-17: **tile lists, Character Audit over all
   members, CharLink sovereignty box** (see `CHANGELOG.md` and the decisions
@@ -800,6 +820,16 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   access as the Corporation page (`basic_access` for the own one). A main in
   another Corporation stays unlinked, as on the Corporation page's
   *Members whose main is in another Corporation*.
+
+2026-11-17 (numbers and column width):
+
+- **Corporation column at least 14rem** (over 18rem or no wrapping at
+  all): long names may still take two lines; narrow screens scroll the
+  table sideways.
+- **Main details numbers both lists running on**, the folded list after the
+  table, so the last number is the count shown. A number **stays with its
+  character** when sorting (over renumbering 1..n after each sort in JS);
+  sorting by `#` restores the server's order.
 
 ## Pitfalls found
 
