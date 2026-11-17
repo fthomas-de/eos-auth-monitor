@@ -4,10 +4,33 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-17 (0.0.29).
+Last updated 2026-11-17 (0.0.30).
 
 ## Release
 
+- Version **0.0.30** of 2026-11-17: **Registered in Auth without a member
+  list** (see `CHANGELOG.md` and the decisions of 2026-11-17 (Registered in
+  Auth) below).
+  - `snapshot._members`: where `corporation_members()` gives `None`, the
+    characters with a `CharacterOwnership` whose `EveCharacter` is in the
+    Corporation stand in for the list and run through the same loop
+    (`other_mains`, `unregistered` with `in_auth: True`); `member_count`
+    stays `None`, the new row key `member_list_unread` is `True`. With the
+    ESI switch off nothing changes (`NO_MEMBERS`, no key).
+  - `report.py`: `Corporation.member_list_unread`; `registered` counts
+    `len(members) - len(unregistered)` then; `check_rows` adds *Registered
+    in Auth* with `part` only and `Row.note` (new field, the message
+    `MEMBER_LIST_UNREAD`, the same msgid as the Corporation page's notice);
+    `Corporation.rows` (overview tiles and table, service pages' header)
+    leaves rows with a `note` out.
+  - Templates: `gauge.html`, `tile-row.html`, `row-title.html` show the
+    count and the note instead of a share; `corporation_registered.html` a
+    warning box; `corporation.html` shows the *Not registered in Auth*
+    section whenever `unregistered` has entries (the to-do's anchor).
+    `views.corporation_registered` opens wherever `registered` is not `None`.
+  - Tests: 5 new (`test_snapshot` 1, `test_report` 2, `test_views` 2) plus
+    two assertions; 477 in the suite. No migration, no static file, no new
+    message. Not seen in a browser: it needs a rebuild with ESI.
 - Version **0.0.29** of 2026-11-17: **numbered characters on Main details,
   wider Corporation column in the overview** (see `CHANGELOG.md` and the
   decisions of 2026-11-17 below). Templates only.
@@ -221,7 +244,7 @@ Last updated 2026-11-17 (0.0.29).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 471 tests without the translation tests, 3 translation tests, all green;
+- 477 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -237,7 +260,8 @@ Last updated 2026-11-17 (0.0.29).
   reasoning against the old sort, no sabotage run; 0.0.23 1 for 1, run
   against the old `report.py`; 0.0.24 8 for 8; 0.0.25 not sabotaged; 0.0.26
   18 of 19, the green one strengthened; 0.0.27 13 for 13; 0.0.28 20 for 20
-  after one fix: a marker class was part of another attribute).
+  after one fix: a marker class was part of another attribute; 0.0.30 6 for
+  6 after one fix: the tile's count itself was not asserted).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -248,7 +272,7 @@ Last updated 2026-11-17 (0.0.29).
 |---|---|---|
 | Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares; *Members registered* opens the unknown characters), then the Corporations, most accounts with problems first, as a table (the default since 0.0.11) or as tiles (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
 | Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth and Character Audit linked to their lists, Corporation Audit and Structures, which name their failed checks, without a link; Character Audit counts the members without a main as failing) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`; a visiting main marked "Main in ...", linked and with its service icons and crown only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
-| Registered in Auth (`corporation_registered`), Character Audit (`corporation_character_audit`) | as Corporation | Behind the Corporation page's tiles: every member with its main and *registered*, *not in Auth* or *no main*, those without a main first (`Corporation.members`); every character the tile rates with its main and failed checks (warnings yellow, *No problems* green), the failing first, then the members without a main, then the rest (`Corporation.audited_characters`). 404 without a member list / without character checks |
+| Registered in Auth (`corporation_registered`), Character Audit (`corporation_character_audit`) | as Corporation | Behind the Corporation page's tiles: every member with its main and *registered*, *not in Auth* or *no main*, those without a main first (`Corporation.members`); every character the tile rates with its main and failed checks (warnings yellow, *No problems* green), the failing first, then the members without a main, then the rest (`Corporation.audited_characters`). Where the member list was unreadable (`member_list_unread`), the characters Auth knows in the Corporation, with the reason as a warning box. 404 with the ESI switch off / without character checks |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it; Mumble to `account_activity`, with the main's Active in Mumble below *linked*), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
 | eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview cockpit tile (`partials/spy-tile.html`, `Report.spy_characters`: the column's sum, linked to `eos_spy_network:corporations`, since 0.0.16); overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link), one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV) and a cyan tag per kind on the main cards (`Account.spy_markers`, red border); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
@@ -831,6 +855,22 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   character** when sorting (over renumbering 1..n after each sort in JS);
   sorting by `#` restores the server's order.
 
+2026-11-17 (Registered in Auth):
+
+- **The tile stays where no member list was read** ("zeige die registered
+  in auth kachel in corporation details auch, wenn kein char registered
+  ist"). The user's answers: **whenever the list is missing**, not only
+  without any main; the tile shows **the number of registered characters
+  Auth knows, no total, no share**, plus the reason; it **links to its
+  list**, which shows those characters with the same notice; **Corporation
+  pages only**, the Alliance overview keeps leaving the row out.
+- **Characters on an account without a main count as unregistered**, as
+  with a read list: to-do entry, failing in Character Audit, the unknown
+  characters list - also on the overview's Character Audit shares.
+- The notice is the existing "no member has a token with the membership
+  scope", not the "no Director token" first proposed: reading the list needs
+  any member's token, not a Director's.
+
 ## Pitfalls found
 
 - `eos-test` takes one test label only; a second one fails with
@@ -988,6 +1028,13 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
 
 ## Open points / next steps
 
+- **Registered in Auth without a member list not seen in a browser**
+  (0.0.30): after a rebuild with the 0.0.30 code, open a Corporation without
+  a membership token (all but Ether Element in dev) and check the tile, its
+  long notice under the gauge, and the list page. Expect new to-dos and
+  lower Character Audit shares where such a Corporation has characters on
+  accounts without a main.
+
 - **Active in Mumble has never seen real data or a browser.** After
   deploying: add the beat entry `eos_auth_monitor_record_activity` (README),
   then look after a few days whether the shares are plausible - above all
@@ -1055,7 +1102,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   with their permissions, without a try/except - an exception there fails
   that page. The contracts are listed at the end of *Checked and fine* in
   `docs/AUDIT.md`; the sibling audit sessions got the same list.
-- Production still runs 0.0.5: 0.0.6 to 0.0.26 are to be deployed, with
+- Production still runs 0.0.5: 0.0.6 to 0.0.30 are to be deployed, with
   migrations 0007 to 0010, `collectstatic` (for the spy markers also
   eos-spy-network 0.0.10) and the new beat entry
   `eos_auth_monitor_record_activity` in `local.py` (README, *Installation*;
