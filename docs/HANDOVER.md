@@ -4,13 +4,13 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-17 (0.0.31).
+Last updated 2026-11-17 (0.0.32).
 
 ## Release
 
-- Version **0.0.32** of 2026-11-17: **Director crown per character** on Main details and My
-  account (decisions of 2026-11-17 (character crown) below).
-  `Character.is_director`, set in `Report._account` from
+- Version **0.0.32** of 2026-11-17: **Director crown per character** on Main
+  details and My account (see `CHANGELOG.md` and the decisions of 2026-11-17
+  (character crown) below). `Character.is_director`, set in `Report._account` from
   `Report._director_ids` (pairs Corporation id, character id of every row's
   `directors`): a Director of its own Corporation, not the main's. A crown
   (`fa-crown text-warning`, class `eos-auth-monitor-character-director`,
@@ -20,7 +20,8 @@ Last updated 2026-11-17 (0.0.31).
   Corporation page's account crown (`Account.directors`, main's Corporation)
   is unchanged. Tests: two in `TestAccountDirectors` (`test_report`),
   `TestCharacterDirectorIcon` (2, `test_views`); 4 sabotages, 4 red. No
-  migration, no snapshot change, no static file. Not seen in a browser.
+  migration, no snapshot change, no static file. 489 tests in the suite.
+  Not seen in a browser.
 - Version **0.0.31** of 2026-11-17: **covered Directors warn, CharLink box
   *Full*** (see `CHANGELOG.md` and the decisions of 2026-11-17 (covered
   Directors) below).
@@ -51,6 +52,9 @@ Last updated 2026-11-17 (0.0.31).
   - Rebuild the dev snapshot and look at a covered Director on the
     Corporation page (yellow card, to-do group *Director token missing
     (warning)*) - nothing of 0.0.31 was seen in a browser.
+  - Same rebuild: open Main details of an account with a Director (Ether
+    Element has 14 by ESI) and My account, and check the per-character crown
+    in the table and the folded list (0.0.32, not seen in a browser).
   - After the next aa-charlink release: check that the box shows as
     *Corporation Audit (Full)* on CharLink's page, and that an existing
     CharLink admin setting for the box (keyed by `unique_id` `sovereignty`)
@@ -292,7 +296,7 @@ Last updated 2026-11-17 (0.0.31).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 485 tests without the translation tests, 3 translation tests, all green;
+- 489 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -309,7 +313,7 @@ Last updated 2026-11-17 (0.0.31).
   against the old `report.py`; 0.0.24 8 for 8; 0.0.25 not sabotaged; 0.0.26
   18 of 19, the green one strengthened; 0.0.27 13 for 13; 0.0.28 20 for 20
   after one fix: a marker class was part of another attribute; 0.0.30 6 for
-  6 after one fix: the tile's count itself was not asserted; 0.0.31 4 for 4).
+  6 after one fix: the tile's count itself was not asserted; 0.0.31 4 for 4; 0.0.32 4 for 4).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
