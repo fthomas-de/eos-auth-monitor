@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.33] - 2026-11-17
+
+### Added
+
+- **GM transactions for eos-tax's CEO role**: a viewer with
+  `eos_tax.basic_access` but neither `eos_tax.admin_view` nor
+  `eos_tax.gm_bots_access` now sees the GM transactions of their main's own
+  Corporation - the Corporation tile (linked to eos-tax's page, which shows
+  that CEO the same Corporation), the pink to-do, the card tags, the CSV
+  group and the markers on the account pages. The characters are the ones
+  eos-tax's page lists for that CEO. No cockpit tile or overview column for
+  them, and nothing with an eos-tax too old to filter by Corporation.
+- **Spy markers for eos-spy-network's CEO role**: the same for
+  `eos_spy_network.view_own_corporation` without `view_suspects` and
+  `view_evidence` - the markers eos-spy-network's own Corporation page shows
+  that CEO, on their main's Corporation only. Needs eos-spy-network 0.0.30
+  or later; an older one shows a CEO nothing.
+
 ## [0.0.32] - 2026-11-17
 
 ### Added

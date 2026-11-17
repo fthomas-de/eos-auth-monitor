@@ -1990,7 +1990,7 @@ class TestSpyNetwork(ViewTestCase):
         snapshot.save()
         markers = patch.object(spy_network, "character_markers", return_value=SPY_MARKERS)
         kinds = patch.object(spy_network, "kinds", return_value=("membership", "corp_changes", "wallet"))
-        markers.start()
+        self.markers = markers.start()
         kinds.start()
         self.addCleanup(markers.stop)
         self.addCleanup(kinds.stop)
@@ -2141,6 +2141,23 @@ class TestSpyNetwork(ViewTestCase):
 
         self.assertContains(response, "None of your characters has a problem.")
         self.assertNotContains(response, "ISK with hostiles")
+
+    def test_should_show_the_spy_ceo_the_own_corporation(self):
+        ceo = make_user("spyownceo", BASIC_ACCESS, "eos_spy_network.view_own_corporation", corporation_id=2002)
+        content = self.get(ceo, "corporation", 2002).content.decode()
+
+        self.markers.assert_called_with(2002)
+        tile = content[content.index("eos-auth-monitor-spy-tile"):content.index("eos-auth-monitor-todos")]
+        self.assertRegex(tile, r'<div class="fs-3 fw-bold text-info-emphasis">2</div>')
+        self.assertIn(f'href="{reverse("eos_spy_network:corporation", args=[2002])}"', tile)
+        self.assertIn("eos-auth-monitor-spy-todo", content)
+
+    def test_should_show_the_spy_ceo_nothing_beyond_the_own_corporation(self):
+        ceo = make_user("spyownleader", VIEW_ALL, "eos_spy_network.view_own_corporation", corporation_id=2002)
+
+        for page, args in (("index", ()), ("corporation", (2001,))):
+            with self.subTest(page):
+                self.assertNotContains(self.get(ceo, page, *args), "eos-auth-monitor-spy-")
 
 
 class TestTileLists(ViewTestCase):

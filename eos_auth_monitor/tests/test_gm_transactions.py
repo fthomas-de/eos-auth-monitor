@@ -17,9 +17,10 @@ from .test_views import ViewTestCase, main_cards
 AUDIT_MISSING = {"check": "char_audit_missing", "detail": []}
 TAX_INSTALLED = apps.is_installed("eos_tax")
 GM_ACCESS = "eos_tax.gm_bots_access"
+CEO_ACCESS = "eos_tax.basic_access"
 
 
-def found(character_ids=None):
+def found(character_ids=None, corporation_id=None):
     """2001 with an account whose alts are in 2002 and outside the Alliance (3001); 2002 with its own account."""
     report = Report(
         store_snapshot(
@@ -47,7 +48,7 @@ def found(character_ids=None):
         )
     )
     if character_ids is not None:
-        report.add_gm_transactions(character_ids)
+        report.add_gm_transactions(character_ids, corporation_id)
     return report
 
 
@@ -94,6 +95,15 @@ class TestReport(MonitorTestCase):
         self.assertEqual([c.id for c in account.listed_characters], [1101, 1102])
         self.assertNotIn(1102, [c.id for c in account.problem_free_characters])
 
+    def test_should_show_a_ceo_their_own_corporation_only(self):
+        report = found({1103, 2201}, corporation_id=2002)
+
+        self.assertTrue(report.corporation(2002).gm_shown)
+        self.assertFalse(report.corporation(2001).gm_shown)
+        # the cockpit tile and the overview column count the whole Alliance
+        self.assertFalse(report.gm_shown)
+        self.assertEqual(sorted(c.id for c in report.corporation(2002).gm_characters), [1103, 2201])
+
 
 @skipUnless(TAX_INSTALLED, "eos-tax is not installed")
 class TestSource(MonitorTestCase):
@@ -129,7 +139,25 @@ class TestSource(MonitorTestCase):
     def test_should_show_nothing_without_the_app(self):
         with patch.object(gm_transactions, "is_installed", return_value=False):
             self.assertFalse(gm_transactions.can_view(make_user("gm", GM_ACCESS)))
+            self.assertIsNone(gm_transactions.ceo_corporation_id(make_user("ceo", CEO_ACCESS)))
             self.assertEqual(gm_transactions.character_ids(), set())
+
+    def test_should_give_eos_taxs_ceo_role_the_own_corporation(self):
+        self.assertEqual(gm_transactions.ceo_corporation_id(make_user("ceo", CEO_ACCESS, corporation_id=2002)), 2002)
+        # the full view wins; no role, no Corporation
+        self.assertIsNone(gm_transactions.ceo_corporation_id(make_user("gm", GM_ACCESS, CEO_ACCESS)))
+        self.assertIsNone(gm_transactions.ceo_corporation_id(make_user("member", BASIC_ACCESS)))
+
+    def test_should_give_no_ceo_view_with_an_eos_tax_that_cannot_filter(self):
+        with patch("eos_tax.db.gm_transactions.get_gm_page", lambda stored: {"rows": []}):
+            self.assertIsNone(gm_transactions.ceo_corporation_id(make_user("ceo", CEO_ACCESS)))
+
+    def test_should_ask_eos_tax_for_the_ceos_rows(self):
+        self.store([self.row(9001, 1, "GM X")])
+        with patch("eos_tax.db.gm_transactions.get_gm_page", return_value={"rows": []}) as page:
+            gm_transactions.character_ids(2002)
+
+        self.assertEqual(page.call_args.kwargs, {"corporation_id": 2002})
 
 
 @skipUnless(TAX_INSTALLED, "eos-tax is not installed")
@@ -142,7 +170,7 @@ class TestViews(ViewTestCase):
         snapshot.data["corporations"][0]["accounts"][0]["characters"].append(character_row(1102, corporation_id=2002))
         snapshot.save()
         reader = patch.object(gm_transactions, "character_ids", return_value={1102, 2201})
-        reader.start()
+        self.reader = reader.start()
         self.addCleanup(reader.stop)
         self.gm_leader = make_user("gmleader", VIEW_ALL, GM_ACCESS, corporation_id=2001)
         self.gm_ceo = make_user("gmceo", BASIC_ACCESS, GM_ACCESS, corporation_id=2002)
@@ -220,3 +248,20 @@ class TestViews(ViewTestCase):
         self.assertIn("eos-auth-monitor-gm-marker", table)
         # eos-tax opens its page searched for the main's name, as a phrase
         self.assertIn(f'href="{self.gm_page}?search=%22Char%201101%22"', table)
+
+    def test_should_show_eos_taxs_ceo_the_own_corporation(self):
+        ceo = make_user("taxceo", BASIC_ACCESS, CEO_ACCESS, corporation_id=2002)
+        content = self.get(ceo, "corporation", 2002).content.decode()
+
+        self.reader.assert_called_with(2002)
+        tile = content[content.index("eos-auth-monitor-gm-tile"):content.index("eos-auth-monitor-todos")]
+        self.assertIn('style="color: var(--bs-pink)">2</div>', tile)
+        self.assertIn(f'href="{self.gm_page}"', tile)
+        self.assertIn("eos-auth-monitor-gm-todo", content)
+
+    def test_should_show_eos_taxs_ceo_nothing_beyond_the_own_corporation(self):
+        ceo = make_user("taxceoleader", VIEW_ALL, CEO_ACCESS, corporation_id=2002)
+
+        for page, args in (("index", ()), ("corporation", (2001,))):
+            with self.subTest(page):
+                self.assertNotContains(self.get(ceo, page, *args), "eos-auth-monitor-gm-")

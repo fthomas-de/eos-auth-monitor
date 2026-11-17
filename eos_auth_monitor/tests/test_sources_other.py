@@ -125,6 +125,7 @@ class TestServices(SimpleTestCase):
 SPY_INSTALLED = apps.is_installed("eos_spy_network")
 VIEW_SUSPECTS = "eos_spy_network.view_suspects"
 VIEW_EVIDENCE = "eos_spy_network.view_evidence"
+SPY_CEO = "eos_spy_network.view_own_corporation"
 
 
 def fake_spy_api(found):
@@ -158,6 +159,18 @@ class TestSpyNetworkReader(SimpleTestCase):
             },
         )
 
+    def test_should_ask_the_api_for_the_ceos_markers(self):
+        asked = []
+        api = fake_spy_api({})
+        api.character_markers = lambda corporation_id=None: asked.append(corporation_id) or {9001: ["wallet"]}
+        with patch.object(spy_network, "is_installed", return_value=True), patch.object(
+            spy_network, "_api", return_value=api
+        ):
+            found = spy_network.character_markers(2002)
+
+        self.assertEqual(asked, [2002])
+        self.assertEqual(found, {9001: [spy_network.SpyMarker("wallet", "Label wallet", "Description wallet")]})
+
     def test_should_read_nothing_without_the_app(self):
         with patch.object(spy_network, "is_installed", return_value=False), patch.object(
             spy_network, "_api", side_effect=AssertionError("imported")
@@ -171,6 +184,20 @@ class TestSpyNetworkPermissions(MonitorTestCase):
         user = make_user("nobody")
         with patch.object(spy_network, "is_installed", return_value=False):
             self.assertFalse(spy_network.can_view(user))
+            self.assertIsNone(spy_network.ceo_corporation_id(make_user("ceo", SPY_CEO)))
+
+    @skipUnless(SPY_INSTALLED, "eos-spy-network is not installed")
+    def test_should_give_the_ceo_role_the_own_corporation(self):
+        self.assertEqual(spy_network.ceo_corporation_id(make_user("ceo", SPY_CEO, corporation_id=2002)), 2002)
+        # the full view wins; no role, no Corporation
+        self.assertIsNone(spy_network.ceo_corporation_id(make_user("spy", VIEW_SUSPECTS, VIEW_EVIDENCE, SPY_CEO)))
+        self.assertIsNone(spy_network.ceo_corporation_id(make_user("half", VIEW_SUSPECTS)))
+
+    @skipUnless(SPY_INSTALLED, "eos-spy-network is not installed")
+    def test_should_give_no_ceo_view_with_an_api_that_cannot_filter(self):
+        # before 0.0.30: character_markers() without corporation_id
+        with patch.object(spy_network, "_api", return_value=fake_spy_api({})):
+            self.assertIsNone(spy_network.ceo_corporation_id(make_user("ceo", SPY_CEO)))
 
     @skipUnless(SPY_INSTALLED, "eos-spy-network is not installed")
     def test_should_ignore_a_release_without_the_read_api(self):

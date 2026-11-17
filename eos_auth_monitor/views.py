@@ -88,8 +88,12 @@ def _report(user=None) -> Report | None:
     report.add_activity(activity.rates(MonitorConfiguration.get_solo().activity_days))
     if user is not None and spy_network.can_view(user):
         report.add_spy_markers(spy_network.character_markers(), spy_network.kinds())
+    elif user is not None and (corporation_id := spy_network.ceo_corporation_id(user)):
+        report.add_spy_markers(spy_network.character_markers(corporation_id), spy_network.kinds(), corporation_id)
     if user is not None and gm_transactions.can_view(user):
         report.add_gm_transactions(gm_transactions.character_ids())
+    elif user is not None and (corporation_id := gm_transactions.ceo_corporation_id(user)):
+        report.add_gm_transactions(gm_transactions.character_ids(corporation_id), corporation_id)
     return report
 
 

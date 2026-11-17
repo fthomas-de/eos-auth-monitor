@@ -130,7 +130,8 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
 - **eos-tax GM transactions** where
   [eos-tax](https://github.com/fthomas-de/eos-tax) is installed, for viewers
   holding `eos_tax.admin_view` or `eos_tax.gm_bots_access` (eos-tax's own
-  rule for its *GM Transactions* tab): the characters its GM Transactions
+  rule for its *GM Transactions* tab; its CEO role `eos_tax.basic_access`
+  for the own Corporation only, see the permissions below): the characters its GM Transactions
   page lists against "GM X" and that are still in a Corporation of the
   Alliance - a cockpit tile with their number, a column in the overview
   table, a tile on the Corporation page (both open eos-tax's page), an
@@ -440,11 +441,18 @@ leadership with `view_all` alone sees no widget.
 eos-spy-network's markers (overview column, Corporation tile and to-dos,
 account page, their CSV export) need both of its permissions
 `eos_spy_network.view_suspects` and `eos_spy_network.view_evidence` on top
-of the page's own; without them nothing of eos-spy-network shows.
+of the page's own; without them nothing of eos-spy-network shows. Its CEO
+role `eos_spy_network.view_own_corporation` alone (eos-spy-network 0.0.30 or
+later) shows them for the Corporation of the viewer's main only - its tile,
+to-dos, card tags, CSV export and account pages, no cockpit tile or overview
+column - and only the markers eos-spy-network's own page shows that CEO.
 
 eos-tax's GM transactions need `eos_tax.admin_view` or
 `eos_tax.gm_bots_access` on top of the page's own; without either nothing of
-eos-tax shows.
+eos-tax shows. eos-tax's CEO role `eos_tax.basic_access` alone shows them for
+the Corporation of the viewer's main only - its tile, to-dos, card tags, CSV
+export and account pages, no cockpit tile or overview column - and only the
+characters eos-tax's own page lists for that CEO.
 
 ## Settings
 

@@ -8,6 +8,9 @@ Last updated 2026-11-17 (0.0.32).
 
 ## Release
 
+- **Unreleased**: GM transactions and spy markers for the CEO roles of
+  eos-tax and eos-spy-network (own Corporation only) - see the decisions of
+  2026-11-17 (CEO roles) below. Not seen in a browser.
 - Version **0.0.32** of 2026-11-17: **Director crown per character** on Main
   details and My account (see `CHANGELOG.md` and the decisions of 2026-11-17
   (character crown) below). `Character.is_director`, set in `Report._account` from
@@ -949,6 +952,37 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   Corporation**, any of the Alliance's (not the crown's main-Corporation
   rule); the crown sits **at each character** (problem table and folded
   list), no extra crown in the card header. Display only.
+
+2026-11-17 (CEO roles of eos-tax and eos-spy-network):
+
+- **The other apps' CEO roles open their markers for the own Corporation**
+  ("es gibt neuerdings eine ceo rolle im spy network und in eos tax ...
+  entweder nutzen wir diese beiden für unsere marker oder wir knüpfen es an
+  die ceo rechte von auth monitor"). The user chose **the apps' own CEO
+  roles**, not `basic_access`: each app keeps deciding who sees its findings,
+  and the tiles' links open pages the CEO may open. Not chosen: giving CEOs
+  the full permissions (they would see the whole Alliance there).
+- **GM (Unreleased)**: `eos_tax.basic_access` without the full view gives
+  `sources.gm_transactions.ceo_corporation_id` (the main's Corporation);
+  `character_ids(corporation_id)` takes eos-tax's own CEO rows
+  (`get_gm_page(stored, corporation_id=...)`: in the Corporation now, or
+  booked while in it). `Report.add_gm_transactions(..., corporation_id)`
+  sets `gm_shown` on that Corporation only and leaves `Report.gm_shown`
+  off (no cockpit tile, no overview column, which would read 0 elsewhere).
+  An eos-tax whose `get_gm_page` lacks `corporation_id` gives a CEO nothing.
+  Tests: 6 new in `test_gm_transactions` (25 in the module), 6 sabotages, 6
+  red. No migration, no message, no template. Not seen in a browser.
+- **Spy (Unreleased)**: the user chose an exact match ("Erst Spy-API
+  erweitern") over filtering by the monitor's own Corporation of a
+  character, so eos-spy-network 0.0.30 (released 2026-11-17, tag `v0.0.30`)
+  added `api.character_markers(*, corporation_id=None)`: the mains of that
+  Corporation with all their characters, as its Corporation page. Here
+  `view_own_corporation` without `view_suspects` + `view_evidence` gives
+  `sources.spy_network.ceo_corporation_id`; `character_markers(corporation_id)`
+  and `Report.add_spy_markers(..., corporation_id)` work as for GM (only
+  that Corporation's `spy_kinds`, `Report.spy_shown` off). An API without
+  `corporation_id` gives a CEO nothing. Tests: 1 in `test_report`, 3 in
+  `test_sources_other`, 2 in `test_views`; 6 sabotages, 6 red.
 
 ## Pitfalls found
 

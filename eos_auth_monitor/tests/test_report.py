@@ -616,7 +616,7 @@ SPY_KINDS = ("membership", "corp_changes", "wallet")
 class TestSpyMarkers(MonitorTestCase):
     """eos-spy-network's markers per character: shown where the character counts, never a problem."""
 
-    def found(self, markers=None):
+    def found(self, markers=None, corporation_id=None):
         found = report(
             [
                 corporation_row(
@@ -639,8 +639,17 @@ class TestSpyMarkers(MonitorTestCase):
             checks=["char_audit_missing"],
         )
         if markers is not None:
-            found.add_spy_markers(markers, SPY_KINDS)
+            found.add_spy_markers(markers, SPY_KINDS, corporation_id)
         return found
+
+    def test_should_show_a_ceo_their_own_corporation_only(self):
+        found = self.found({1103: [WALLET], 2201: [WALLET]}, corporation_id=2002)
+
+        self.assertTrue(found.corporation(2002).spy_shown)
+        self.assertFalse(found.corporation(2001).spy_shown)
+        # the cockpit tile and the overview column count the whole Alliance
+        self.assertFalse(found.spy_shown)
+        self.assertEqual([character.id for character in found.corporation(2002).spy_characters], [1103, 2201])
 
     def test_should_show_nothing_until_added(self):
         found = self.found()

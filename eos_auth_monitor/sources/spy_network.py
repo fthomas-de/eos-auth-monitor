@@ -7,13 +7,18 @@ permissions could reach it. The pages only show them - they are no problems
 here and change no count, order or colour of the checks.
 """
 
+import inspect
 from dataclasses import dataclass
 
 from django.apps import apps
 
+from ..permissions import own_corporation_id
+
 APP = "eos_spy_network"
 # eos-spy-network shows the counterparts of mails, ISK and contracts only with both
 PERMISSIONS = ("eos_spy_network.view_suspects", "eos_spy_network.view_evidence")
+# eos-spy-network's CEO role: suspects and evidence of the main's own Corporation
+CEO_PERMISSION = "eos_spy_network.view_own_corporation"
 
 
 @dataclass(frozen=True)
@@ -30,6 +35,16 @@ def is_installed() -> bool:
 
 def can_view(user) -> bool:
     return is_installed() and all(user.has_perm(perm) for perm in PERMISSIONS)
+
+
+def ceo_corporation_id(user) -> int | None:
+    """The Corporation eos-spy-network's CEO role shows this viewer; None with the full view, without the role
+    or with an eos-spy-network before 0.0.30, whose API cannot filter by Corporation."""
+    if can_view(user) or not (is_installed() and user.has_perm(CEO_PERMISSION)):
+        return None
+    if "corporation_id" not in inspect.signature(_api().character_markers).parameters:
+        return None
+    return own_corporation_id(user)
 
 
 def _api():
@@ -54,13 +69,18 @@ def kinds() -> tuple[str, ...]:
     return tuple(_api().KINDS)
 
 
-def character_markers() -> dict[int, list[SpyMarker]]:
-    """EVE character ID -> its markers, in eos-spy-network's order; {} without the app or a result."""
+def character_markers(corporation_id: int | None = None) -> dict[int, list[SpyMarker]]:
+    """EVE character ID -> its markers, in eos-spy-network's order; {} without the app or a result.
+
+    With ``corporation_id``, only what eos-spy-network shows that Corporation's CEO.
+    """
     if not is_installed():
         return {}
     api = _api()
     markers = {kind: SpyMarker(kind, api.label(kind), api.description(kind)) for kind in api.KINDS}
+    # an older API lacks corporation_id; ceo_corporation_id() never hands one out then
+    found = api.character_markers(corporation_id=corporation_id) if corporation_id else api.character_markers()
     return {
-        character_id: [markers[kind] for kind in found if kind in markers]
-        for character_id, found in api.character_markers().items()
+        character_id: [markers[kind] for kind in kinds if kind in markers]
+        for character_id, kinds in found.items()
     }

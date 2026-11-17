@@ -903,31 +903,35 @@ class Report:
             return None, None
         return self._corporations_by_id[account.corporation_id], account
 
-    def add_spy_markers(self, markers: dict, kinds: tuple) -> None:
+    def add_spy_markers(self, markers: dict, kinds: tuple, corporation_id: int | None = None) -> None:
         """Give each character its eos-spy-network markers (EVE ID -> SpyMarkers), for a viewer who may see them.
 
         The Corporations share the characters with the whole accounts, so each
-        page sees them wherever the character counts.
+        page sees them wherever the character counts. With ``corporation_id``
+        (eos-spy-network's CEO role) only that Corporation shows them, as
+        ``add_gm_transactions`` does.
         """
         for account in self._accounts.values():
             for character in account.characters:
                 character.spy = markers.get(character.id, [])
         for corporation in self.corporations:
-            corporation.spy_kinds = tuple(kinds)
-        self.spy_shown = True
+            corporation.spy_kinds = tuple(kinds) if corporation_id in (None, corporation.id) else None
+        self.spy_shown = corporation_id is None
 
-    def add_gm_transactions(self, character_ids: set[int]) -> None:
+    def add_gm_transactions(self, character_ids: set[int], corporation_id: int | None = None) -> None:
         """Mark the characters with an eos-tax GM transaction, for a viewer who may see them.
 
         Only characters still in a Corporation of the overview: an alt
-        elsewhere has left the Alliance, whatever its main does.
+        elsewhere has left the Alliance, whatever its main does. With
+        ``corporation_id`` (eos-tax's CEO role) only that Corporation shows
+        them: the Alliance-wide tile and column would read 0 everywhere else.
         """
         for account in self._accounts.values():
             for character in account.characters:
                 character.gm = character.id in character_ids and character.corporation_id in self._corporations_by_id
         for corporation in self.corporations:
-            corporation.gm_shown = True
-        self.gm_shown = True
+            corporation.gm_shown = corporation_id in (None, corporation.id)
+        self.gm_shown = corporation_id is None
 
     def add_activity(self, rates: dict[int, tuple[int, int]]) -> None:
         """Give each main with Mumble linked its Active in Mumble: user ID -> (days with Mumble, days in EVE).
