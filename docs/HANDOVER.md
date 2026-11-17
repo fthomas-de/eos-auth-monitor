@@ -4,13 +4,13 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-17 (0.0.30).
+Last updated 2026-11-17 (0.0.31).
 
 ## Release
 
-- **Unreleased** (2026-11-17, not committed): **covered Directors warn,
-  CharLink box *Full*** (see `CHANGELOG.md` and the decisions of 2026-11-17
-  (covered Directors) below).
+- Version **0.0.31** of 2026-11-17: **covered Directors warn, CharLink box
+  *Full*** (see `CHANGELOG.md` and the decisions of 2026-11-17 (covered
+  Directors) below).
   - `sources.corptools.character_problems(..., token_directors=set())` fills
     the Directors with a complete Corporation token; `snapshot.build` stores
     `corporation_token` per character. `report._account` collects the
@@ -21,11 +21,28 @@ Last updated 2026-11-17 (0.0.30).
     no flag: red until rebuilt.
   - `charlink_hook.FIELD_LABEL` is `Corporation Audit (Full)`, `unique_id`
     stays `sovereignty`; the two hints in `checks.py` and the glossary keys
-    renamed (translations: Sovereignty -> Full, otherwise unchanged; the
-    `.po` files follow at `/commit`).
+    renamed (translations: Sovereignty -> Full, otherwise unchanged).
   - Tests: `TestCoveredDirectors` in `test_report` (5), two in
     `test_sources_corptools`, one in `test_snapshot`; the CharLink texts in
-    `test_views`. 4 sabotages, 4 red. Not seen in a browser.
+    `test_views`; 485 in the suite. 4 sabotages, 4 red
+    (`test_should_not_name_a_director_lacking_a_scope` not sabotaged). No
+    migration, no static file. Not seen in a browser.
+  - Where a covered Director's warning shows and where it no longer counts
+    (explained to the user): the Character Audit shares (Corporation tile,
+    cockpit tile, overview column and tile row) count him complete; the
+    Corporation's Character Audit list shows him with a yellow tag among the
+    fine ones; the Alliance-wide Character Audit list gives a main with this
+    warning alone no tag; account page and My account show it yellow with
+    the CharLink hint.
+- **Next steps**:
+  - Rebuild the dev snapshot and look at a covered Director on the
+    Corporation page (yellow card, to-do group *Director token missing
+    (warning)*) - nothing of 0.0.31 was seen in a browser.
+  - After the next aa-charlink release: check that the box shows as
+    *Corporation Audit (Full)* on CharLink's page, and that an existing
+    CharLink admin setting for the box (keyed by `unique_id` `sovereignty`)
+    still applies.
+  - Those of 0.0.28 below are still open.
 - Version **0.0.30** of 2026-11-17: **Registered in Auth without a member
   list** (see `CHANGELOG.md` and the decisions of 2026-11-17 (Registered in
   Auth) below).
@@ -67,7 +84,6 @@ Last updated 2026-11-17 (0.0.30).
     one or two lines; own account 1-4 in the table. The folded list's
     numbers only by the test - the user's account has no problem-free
     character.
-- **Next steps**: those of 0.0.28 below are still open.
 
 - Version **0.0.28** of 2026-11-17: **tile lists, Character Audit over all
   members, CharLink sovereignty box** (see `CHANGELOG.md` and the decisions
@@ -263,7 +279,7 @@ Last updated 2026-11-17 (0.0.30).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 477 tests without the translation tests, 3 translation tests, all green;
+- 485 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -280,7 +296,7 @@ Last updated 2026-11-17 (0.0.30).
   against the old `report.py`; 0.0.24 8 for 8; 0.0.25 not sabotaged; 0.0.26
   18 of 19, the green one strengthened; 0.0.27 13 for 13; 0.0.28 20 for 20
   after one fix: a marker class was part of another attribute; 0.0.30 6 for
-  6 after one fix: the tile's count itself was not asserted).
+  6 after one fix: the tile's count itself was not asserted; 0.0.31 4 for 4).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
