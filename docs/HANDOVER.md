@@ -4,34 +4,49 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-16 (0.0.27).
+Last updated 2026-11-17 (0.0.28).
 
 ## Release
 
-- **Unreleased** (2026-11-16): **CharLink box for the Director check** (see
-  `CHANGELOG.md` and the decisions of 2026-11-16 (CharLink box) below) -
-  `charlink_hook.py` adds *Corporation Audit (Sovereignty)* to aa-charlink
-  (hook `charlink` in `auth_hooks.py`, only with corptools and charlink);
-  *Director token missing* always links to CharLink and names that box.
-  `Check.beyond_charlink`, `Problem.beyond_charlink` and `Todo.beyond_charlink`
-  are gone. Tests: `TestBeyondCharlink` became `TestDirectorCharlink` (4),
-  new `TestCharlinkBox` (2); 5 sabotages, 5 red; `test_views`, `test_report`,
-  `test_dashboard` green. Two new messages, not yet in the glossary
-  (`/commit`). No migration, no static file. Seen in the browser on 2026-11-17: the box on CharLink's page (unticked by default), the account page's Director hint linking to CharLink.
-- **Unreleased** (2026-11-16, same request): **lists behind the Corporation
-  page's tiles** and **Character Audit counting members without a main as
-  failing** (see the decisions of 2026-11-16 (tile lists) below). Pages
-  `corporation_registered` (`corporation/<id>/registered/`) and
-  `corporation_character_audit` (`corporation/<id>/character-audit/`), one
-  view helper `views._corporation_list`; `Corporation.members` (new
-  `report.Member`), `Corporation.audited_characters`; `Row.url` on both
-  check rows, linked on the Corporation page only; partials
-  `unknown-status.html` (shared with `unknown_characters.html`) and
-  `audited-character.html`. Tests: `TestTileLists` in `test_report`
-  (4) and `test_views` (5); 15 sabotages, all red after one fix (the marker
-  `eos-auth-monitor-failed` sat in `data-eos-auth-monitor-failed` of the
-  progress bar; now `eos-auth-monitor-audit-failed`). One new message
-  (`registered`). Seen in the browser on 2026-11-17 (Corporation 98633815): tiles 4 of 283 and 0 of 283, both linked; 283 members with 4 registered; Character Audit 4 failing, then 279 unknown; no console errors.
+- Version **0.0.28** of 2026-11-17: **tile lists, Character Audit over all
+  members, CharLink sovereignty box** (see `CHANGELOG.md` and the decisions
+  of 2026-11-16 (CharLink box) and (tile lists) below).
+  - The Corporation page's tiles *Registered in Auth* and *Character Audit*
+    open pages of their own: `corporation_registered`
+    (`corporation/<id>/registered/`) and `corporation_character_audit`
+    (`corporation/<id>/character-audit/`), one view helper
+    `views._corporation_list`; `Corporation.members` (new `report.Member`),
+    `Corporation.audited_characters`; `Row.url` on both check rows, linked
+    on the Corporation page only; partials `unknown-status.html` (shared
+    with `unknown_characters.html`) and `audited-character.html`.
+  - *Character Audit* counts members without a main as failing (`+
+    len(unregistered)`), on the Corporation tiles, the overview and the
+    cockpit. **Behaviour change**: shares drop where a member list was read.
+  - `charlink_hook.py` adds *Corporation Audit (Sovereignty)* to aa-charlink
+    (hook `charlink` in `auth_hooks.py`, only with corptools and charlink):
+    CharLink's own Corporation Audit `LoginImport` with the sovereignty
+    scope added. *Director token missing* always links to CharLink and names
+    that box; `beyond_charlink` (check, problem, to-do) is gone.
+  - Tests: `TestDirectorCharlink` (4, was `TestBeyondCharlink`),
+    `TestCharlinkBox` (2), `TestTileLists` in `test_report` (4) and
+    `test_views` (5); 20 sabotages, all red after one test fix. Three new
+    messages, translated. No migration, no static file.
+  - Seen in the browser (Corporation 98633815): tiles 4 of 283 and 0 of 283,
+    both linked; 283 members, 4 registered; Character Audit 4 failing, then
+    279 unknown; the box on CharLink's page (unticked by default); the
+    Director hint linking to CharLink. No console errors.
+- **Next steps**:
+  - Have a Director log in through *Corporation Audit (Sovereignty)*, rebuild,
+    and check that *Director token missing* clears - the CharLink login
+    itself was not run.
+  - After every aa-charlink upgrade, check `charlink_hook.py` against
+    `charlink/imports/corptools.py` (it copies that `LoginImport`); drop the
+    box once corptools' `views.CORP_REQUIRED_SCOPES` carries
+    `esi-structures.read_corporation.v1`.
+  - From 0.0.27: the account page's Mumble tile and `account_activity` not
+    seen with real Mumble accounts; whether production writes
+    `MumbleUser.last_disconnect` is unchecked (decisions of 2026-11-16
+    (Active in Mumble)).
 
 - Version **0.0.27** of 2026-11-16: **Active in Mumble day by day** (see
   `CHANGELOG.md` and the decisions of 2026-11-16 (day by day) below) - the
@@ -45,10 +60,6 @@ Last updated 2026-11-16 (0.0.27).
   clashed in ru and zh_Hans). No migration, no static file. Not seen in a
   browser: `aa_dev` has no Mumble account, so it would show only the
   "not linked" notice.
-- **Next steps**: look at the account page and the new page in a browser
-  on an instance with Mumble accounts; whether production writes
-  `MumbleUser.last_disconnect` is still unchecked (see the decisions of
-  2026-11-16 (Active in Mumble)).
 - Version **0.0.26** of 2026-11-16: **Active in Mumble** (see
   `CHANGELOG.md` and the decisions of 2026-11-16 (Active in Mumble) below) -
   of the days a main played EVE, the share it was in Mumble too.
@@ -190,7 +201,7 @@ Last updated 2026-11-16 (0.0.27).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 462 tests without the translation tests, 3 translation tests, all green;
+- 471 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -205,7 +216,8 @@ Last updated 2026-11-16 (0.0.27).
   0.0.18 5 for 5; 0.0.19 24 for 24; 0.0.20 8 for 8; 0.0.21 6 for 6; 0.0.22's two order tests checked by
   reasoning against the old sort, no sabotage run; 0.0.23 1 for 1, run
   against the old `report.py`; 0.0.24 8 for 8; 0.0.25 not sabotaged; 0.0.26
-  18 of 19, the green one strengthened; 0.0.27 13 for 13).
+  18 of 19, the green one strengthened; 0.0.27 13 for 13; 0.0.28 20 for 20
+  after one fix: a marker class was part of another attribute).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
