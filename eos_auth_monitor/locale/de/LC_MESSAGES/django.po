@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-17 10:31+0000\n"
-"PO-Revision-Date: 2026-11-17 10:31+0000\n"
+"POT-Creation-Date: 2026-11-17 11:00+0000\n"
+"PO-Revision-Date: 2026-11-17 11:00+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: de\n"
 "Language: de\n"
@@ -540,7 +540,7 @@ msgid_plural "and %(count)d more"
 msgstr[0] "und %(count)d weiterer"
 msgstr[1] "und %(count)d weitere"
 
-#: report.py:304 templates/eos_auth_monitor/corporation.html:209
+#: report.py:306 templates/eos_auth_monitor/corporation.html:209
 msgid ""
 "The member list of this Corporation could not be read: no member has a token"
 " with the membership scope."
@@ -548,23 +548,23 @@ msgstr ""
 "Die Mitgliederliste dieser Corporation konnte nicht gelesen werden: Kein "
 "Mitglied hat einen Token mit dem Membership-Scope."
 
-#: report.py:307 templates/eos_auth_monitor/corporation_service.html:20
+#: report.py:309 templates/eos_auth_monitor/corporation_service.html:20
 #: templates/eos_auth_monitor/service.html:22
 msgid "Active in Mumble"
 msgstr "Aktiv im Mumble"
 
-#: report.py:341
+#: report.py:343
 #, python-format
 msgid "%(check)s (warning)"
 msgstr "%(check)s (Warnung)"
 
-#: report.py:608 templates/eos_auth_monitor/corporation.html:66
+#: report.py:610 templates/eos_auth_monitor/corporation.html:66
 #: templates/eos_auth_monitor/corporation.html:215
 #: templates/eos_auth_monitor/dashboard.corporation.html:33
 msgid "Not registered in Auth"
 msgstr "Nicht in Auth registriert"
 
-#: report.py:615 templates/eos_auth_monitor/account.html:120
+#: report.py:617 templates/eos_auth_monitor/account.html:120
 #: templates/eos_auth_monitor/account.html:122
 #: templates/eos_auth_monitor/corporation.html:96
 #: templates/eos_auth_monitor/corporation.html:151
@@ -573,25 +573,25 @@ msgstr "Nicht in Auth registriert"
 msgid "GM transactions"
 msgstr "GM-Transaktionen"
 
-#: report.py:665 report.py:676 views.py:320
+#: report.py:667 report.py:678 views.py:320
 msgid "Registered in Auth"
 msgstr "In Auth registriert"
 
-#: report.py:687 templates/eos_auth_monitor/character_audit.html:8
+#: report.py:689 templates/eos_auth_monitor/character_audit.html:8
 #: templates/eos_auth_monitor/character_audit.html:20 views.py:332
 #: views.py:369
 msgid "Character Audit"
 msgstr "Character-Audit"
 
-#: report.py:1037
+#: report.py:1042
 msgid "Members registered"
 msgstr "Mitglieder registriert"
 
-#: report.py:1050
+#: report.py:1055
 msgid "Character Audit complete"
 msgstr "Character-Audit vollständig"
 
-#: report.py:1063
+#: report.py:1068
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s funktioniert"
@@ -695,7 +695,14 @@ msgctxt "EVE jargon"
 msgid "Main"
 msgstr "Main"
 
-#: templates/eos_auth_monitor/account.html:163
+#: templates/eos_auth_monitor/account.html:150
+#: templates/eos_auth_monitor/directors.html:28
+#: templates/eos_auth_monitor/partials/character-cell.html:9
+msgctxt "EVE jargon"
+msgid "Director"
+msgstr "Director"
+
+#: templates/eos_auth_monitor/account.html:164
 #, python-format
 msgctxt "EVE jargon"
 msgid ""
@@ -711,7 +718,7 @@ msgstr[1] ""
 "%(counter)s deiner Characters sind außerhalb der Alliance und werden hier "
 "weder angezeigt noch geprüft."
 
-#: templates/eos_auth_monitor/account.html:165
+#: templates/eos_auth_monitor/account.html:166
 #, python-format
 msgctxt "EVE jargon"
 msgid ""
@@ -912,11 +919,6 @@ msgstr "Director"
 msgctxt "EVE jargon"
 msgid "%(part)s of %(total)s Directors with a token"
 msgstr "%(part)s von %(total)s Director mit Token"
-
-#: templates/eos_auth_monitor/directors.html:28
-msgctxt "EVE jargon"
-msgid "Director"
-msgstr "Director"
 
 #: templates/eos_auth_monitor/directors.html:31
 msgid "Token"

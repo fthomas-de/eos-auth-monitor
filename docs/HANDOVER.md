@@ -8,6 +8,19 @@ Last updated 2026-11-17 (0.0.31).
 
 ## Release
 
+- Version **0.0.32** of 2026-11-17: **Director crown per character** on Main details and My
+  account (decisions of 2026-11-17 (character crown) below).
+  `Character.is_director`, set in `Report._account` from
+  `Report._director_ids` (pairs Corporation id, character id of every row's
+  `directors`): a Director of its own Corporation, not the main's. A crown
+  (`fa-crown text-warning`, class `eos-auth-monitor-character-director`,
+  tooltip the existing msgid "Director", context `EVE jargon`, so nothing new
+  to translate) after the Main badge in `partials/character-cell.html` (only
+  `account.html` uses it) and in the folded list of `account.html`. The
+  Corporation page's account crown (`Account.directors`, main's Corporation)
+  is unchanged. Tests: two in `TestAccountDirectors` (`test_report`),
+  `TestCharacterDirectorIcon` (2, `test_views`); 4 sabotages, 4 red. No
+  migration, no snapshot change, no static file. Not seen in a browser.
 - Version **0.0.31** of 2026-11-17: **covered Directors warn, CharLink box
   *Full*** (see `CHANGELOG.md` and the decisions of 2026-11-17 (covered
   Directors) below).
@@ -923,6 +936,15 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   sonst nimmt man an, dass es nur sov ist"): checked in the dev instance -
   the box carries all 17 scopes the check asks for, CharLink's own
   Corporation Audit all but `esi-structures.read_corporation.v1`.
+
+2026-11-17 (character crown):
+
+- **Director crown per character on the account pages** ("zeige in der my
+  account und main details sicht per icon an, welche chars director rechte
+  haben"). The user's answers: a character counts as Director of **its own
+  Corporation**, any of the Alliance's (not the crown's main-Corporation
+  rule); the crown sits **at each character** (problem table and folded
+  list), no extra crown in the card header. Display only.
 
 ## Pitfalls found
 

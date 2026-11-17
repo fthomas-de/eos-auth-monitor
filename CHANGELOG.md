@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.32] - 2026-11-17
+
+### Added
+
+- **Director crown per character on the account pages**: *Main details* and
+  *My account* show a crown beside each character that is a Director of its
+  own Corporation (any of the Alliance's), in the problem table and in the
+  folded list of characters without problems. Display only. The Directors
+  come from the snapshot, so they only appear while the Corporation Audit or
+  Structures checks run and the roles could be read.
+
 ## [0.0.31] - 2026-11-17
 
 ### Changed

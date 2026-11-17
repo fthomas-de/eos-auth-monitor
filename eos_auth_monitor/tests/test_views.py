@@ -1702,6 +1702,48 @@ class TestDirectorIcon(ViewTestCase):
         self.assertNotContains(self.get(self.leader, "corporation", 2002), "eos-auth-monitor-director")
 
 
+class TestCharacterDirectorIcon(ViewTestCase):
+    """A crown beside each character on the account pages that directs its own Corporation."""
+
+    def setUp(self):
+        super().setUp()
+        self.member = make_user("member", VIEW_OWN, corporation_id=2002)
+        self.main_id = self.member.profile.main_character.character_id
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][1]["accounts"].append(
+            account_row(
+                self.member.pk,
+                self.main_id,
+                [character_row(self.main_id, corporation_id=2002), character_row(9901, corporation_id=2002)],
+                {},
+            )
+        )
+        for row, director_id in zip(snapshot.data["corporations"], [9901, 2201]):
+            row["directors"] = [{"id": director_id, "name": f"Char {director_id}", "in_auth": True,
+                                 "user_id": None, "main_name": None, "tokens": {}}]
+        snapshot.save()
+
+    def test_should_crown_a_director_in_the_problem_table(self):
+        content = self.get(self.leader, "account", 22).content.decode()
+
+        row = content[content.index("<tbody>"):content.index("</tbody>")]
+        self.assertIn('eos-auth-monitor-character-director" role="img" title="Director"', row)
+
+    def test_should_crown_only_the_director_in_the_folded_list(self):
+        content = self.get(self.member, "own_account").content.decode()
+
+        folded = content[content.index("eos-auth-monitor-problem-free"):content.index("</details>")]
+        # 9901 is listed as a Director of 2001, not of its own 2002; 2201 of 2002 is not this account's
+        self.assertEqual(folded.count("eos-auth-monitor-character-director"), 0)
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][1]["directors"][0]["id"] = 9901
+        snapshot.save()
+        folded = self.get(self.member, "own_account").content.decode()
+        folded = folded[folded.index("eos-auth-monitor-problem-free"):folded.index("</details>")]
+        self.assertEqual(folded.count("eos-auth-monitor-character-director"), 1)
+        self.assertLess(folded.index("Char 9901"), folded.index("eos-auth-monitor-character-director"))
+
+
 class TestCharacterAuditList(ViewTestCase):
     """Behind the Character Audit tile: every main with the checks its account fails."""
 

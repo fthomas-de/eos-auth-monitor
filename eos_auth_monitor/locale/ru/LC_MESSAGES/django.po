@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-17 10:31+0000\n"
-"PO-Revision-Date: 2026-11-17 10:31+0000\n"
+"POT-Creation-Date: 2026-11-17 11:00+0000\n"
+"PO-Revision-Date: 2026-11-17 11:00+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: ru\n"
 "Language: ru\n"
@@ -531,7 +531,7 @@ msgstr[0] "и ещё %(count)d"
 msgstr[1] "и ещё %(count)d"
 msgstr[2] "и ещё %(count)d"
 
-#: report.py:304 templates/eos_auth_monitor/corporation.html:209
+#: report.py:306 templates/eos_auth_monitor/corporation.html:209
 msgid ""
 "The member list of this Corporation could not be read: no member has a token"
 " with the membership scope."
@@ -539,23 +539,23 @@ msgstr ""
 "Не удалось прочитать список участников этой Corporation: ни у одного "
 "участника нет токена со скоупом членства."
 
-#: report.py:307 templates/eos_auth_monitor/corporation_service.html:20
+#: report.py:309 templates/eos_auth_monitor/corporation_service.html:20
 #: templates/eos_auth_monitor/service.html:22
 msgid "Active in Mumble"
 msgstr "Активен в Mumble"
 
-#: report.py:341
+#: report.py:343
 #, python-format
 msgid "%(check)s (warning)"
 msgstr "%(check)s (предупреждение)"
 
-#: report.py:608 templates/eos_auth_monitor/corporation.html:66
+#: report.py:610 templates/eos_auth_monitor/corporation.html:66
 #: templates/eos_auth_monitor/corporation.html:215
 #: templates/eos_auth_monitor/dashboard.corporation.html:33
 msgid "Not registered in Auth"
 msgstr "Не зарегистрированы в Auth"
 
-#: report.py:615 templates/eos_auth_monitor/account.html:120
+#: report.py:617 templates/eos_auth_monitor/account.html:120
 #: templates/eos_auth_monitor/account.html:122
 #: templates/eos_auth_monitor/corporation.html:96
 #: templates/eos_auth_monitor/corporation.html:151
@@ -564,25 +564,25 @@ msgstr "Не зарегистрированы в Auth"
 msgid "GM transactions"
 msgstr "GM-транзакции"
 
-#: report.py:665 report.py:676 views.py:320
+#: report.py:667 report.py:678 views.py:320
 msgid "Registered in Auth"
 msgstr "Зарегистрированы в Auth"
 
-#: report.py:687 templates/eos_auth_monitor/character_audit.html:8
+#: report.py:689 templates/eos_auth_monitor/character_audit.html:8
 #: templates/eos_auth_monitor/character_audit.html:20 views.py:332
 #: views.py:369
 msgid "Character Audit"
 msgstr "Аудит Character"
 
-#: report.py:1037
+#: report.py:1042
 msgid "Members registered"
 msgstr "Участники зарегистрированы"
 
-#: report.py:1050
+#: report.py:1055
 msgid "Character Audit complete"
 msgstr "Аудит Character завершён"
 
-#: report.py:1063
+#: report.py:1068
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s работает"
@@ -686,7 +686,14 @@ msgctxt "EVE jargon"
 msgid "Main"
 msgstr "Main"
 
-#: templates/eos_auth_monitor/account.html:163
+#: templates/eos_auth_monitor/account.html:150
+#: templates/eos_auth_monitor/directors.html:28
+#: templates/eos_auth_monitor/partials/character-cell.html:9
+msgctxt "EVE jargon"
+msgid "Director"
+msgstr "Director"
+
+#: templates/eos_auth_monitor/account.html:164
 #, python-format
 msgctxt "EVE jargon"
 msgid ""
@@ -705,7 +712,7 @@ msgstr[2] ""
 "%(counter)s из твоих Character вне Alliance и здесь не показываются и не "
 "проверяются."
 
-#: templates/eos_auth_monitor/account.html:165
+#: templates/eos_auth_monitor/account.html:166
 #, python-format
 msgctxt "EVE jargon"
 msgid ""
@@ -909,11 +916,6 @@ msgstr "Director"
 msgctxt "EVE jargon"
 msgid "%(part)s of %(total)s Directors with a token"
 msgstr "С токеном Director: %(part)s из %(total)s"
-
-#: templates/eos_auth_monitor/directors.html:28
-msgctxt "EVE jargon"
-msgid "Director"
-msgstr "Director"
 
 #: templates/eos_auth_monitor/directors.html:31
 msgid "Token"

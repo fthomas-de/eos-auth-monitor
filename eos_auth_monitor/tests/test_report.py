@@ -172,6 +172,17 @@ class TestAccountDirectors(MonitorTestCase):
     def test_should_name_none_from_a_snapshot_without_directors(self):
         self.assertEqual(report([corporation_row(2001, [account_row(11, 1101)])]).account(11)[1].directors, [])
 
+    def test_should_mark_each_character_directing_its_own_corporation(self):
+        characters = self.found().account(11)[1].characters
+
+        # 1102 directs the main's Corporation from outside it: no Director of its own
+        self.assertEqual([character.id for character in characters if character.is_director], [1101, 1103])
+
+    def test_should_mark_nobody_from_a_snapshot_without_directors(self):
+        account = report([corporation_row(2001, [account_row(11, 1101)])]).account(11)[1]
+
+        self.assertFalse(account.characters[0].is_director)
+
 
 class TestCorporationLists(MonitorTestCase):
     def corporation(self):

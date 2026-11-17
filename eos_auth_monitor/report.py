@@ -107,6 +107,8 @@ class Character:
     spy: list = field(default_factory=list)
     # a GM transaction against "GM X" in eos-tax, filled for its viewers only; never a problem
     gm: bool = False
+    # a Director of its own Corporation, any of the Alliance's; the crown on the account pages
+    is_director: bool = False
 
 
 @dataclass
@@ -750,6 +752,8 @@ class Report:
         # set by add_activity
         self.activity_shown = False
         rows = data["corporations"]
+        # (Corporation, character) of every Director the snapshot knows; one from before the Director lists has none
+        self._director_ids = {(row["id"], director["id"]) for row in rows for director in row.get("directors", [])}
         # the whole accounts, by the Corporation of their main: the account pages and the Alliance-wide lists
         self._accounts = {
             account["user_id"]: self._account(row, account) for row in rows for account in row["accounts"]
@@ -809,6 +813,7 @@ class Report:
                         for item in character["problems"]
                         if _is_warning(item, self.critical_scope_count, character["corporation_id"] in covered)
                     ),
+                    is_director=(character["corporation_id"], character["id"]) in self._director_ids,
                 )
                 for character in account["characters"]
             ],

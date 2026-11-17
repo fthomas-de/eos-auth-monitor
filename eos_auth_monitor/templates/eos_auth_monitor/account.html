@@ -147,6 +147,7 @@
                                     <img src="{{ character.id|character_portrait_url:32 }}" width="24" height="24" class="rounded flex-shrink-0" alt="">
                                     {% include "eos_auth_monitor/partials/character-name.html" %}
                                     {% if character.is_main %}<span class="badge text-bg-primary">{% translate "Main" context "EVE jargon" %}</span>{% endif %}
+                                    {% if character.is_director %}{% translate "Director" context "EVE jargon" as director_label %}<i class="fas fa-crown text-warning eos-auth-monitor-character-director" role="img" title="{{ director_label }}" aria-label="{{ director_label }}"></i>{% endif %}
                                     <span class="text-body-secondary text-break">{{ character.corporation_name }} [{{ character.corporation_ticker }}]</span>
                                 </div>
                             {% endfor %}{% endwith %}
