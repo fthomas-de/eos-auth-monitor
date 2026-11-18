@@ -4,11 +4,11 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-17 (0.0.34).
+Last updated 2026-11-18 (0.0.35).
 
 ## Release
 
-- **Unreleased** (2026-11-18): **Help mode remembered per user**. Model
+- Version **0.0.35** of 2026-11-18: **Help mode remembered per user**. Model
   `HelpMode` (user as primary key, `on`; migration `0011`, applied to
   `aa_dev`), no row = on. `help.js` POSTs each change to `help_mode`
   (`help-mode/`, any app permission, POST only, 204); `_render` passes
@@ -1208,13 +1208,19 @@ einbauen, der alle bereiche/container mit erklärenden texten versieht"):
   sets a password, not model fields. A test row goes in with
   `MumbleUser(...).save()`.
 
+- The Claude app's built-in browser pane has no session at the dev
+  instance, and the EVE SSO login there did not arrive (2026-11-18). Check
+  pages in Chrome (Claude in Chrome), where the user is logged in.
+
 ## Open points / next steps
 
 - **Help mode (0.0.34)**: look at *My account* and an account page in the
   browser (service tiles' corner icon, the question mark in the folded
   *characters without problems* summary must not fold it). A new area added
   later needs its own help text, or it simply has none. Production needs
-  `collectstatic` for `help.js`.
+  `migrate` (0011, `HelpMode`) and `collectstatic` for `help.js`. *My
+  account* was seen in Chrome on 2026-11-18 only for the switch (off/on
+  kept), not for its icons.
 
 - **Registered in Auth without a member list not seen in a browser**
   (0.0.30): after a rebuild with the 0.0.30 code, open a Corporation without
@@ -1372,7 +1378,9 @@ einbauen, der alle bereiche/container mit erklärenden texten versieht"):
   290 in Auth's count, 14 Directors named by ESI; Nah vi is one of them and
   is flagged. The other Corporations have no token with the membership scope
   and carry "No Director token".
-- `collectstatic` was run after `view.js` and `copy.js` were added.
+- `collectstatic` was run after `view.js` and `copy.js` were added, and
+  again after the `help.js` change of 0.0.35. All migrations up to 0011
+  (`HelpMode`) are applied to `aa_dev`; the user's own `HelpMode` row is on.
 - eos-spy-network is installed editable from `~/aa-dev/working/eos-spy-network`
   (0.0.30 on 2026-11-17, `character_markers(corporation_id=...)`), so the spy
   tests run here; eos-tax likewise (0.4.27, `get_gm_page(corporation_id=...)`).
