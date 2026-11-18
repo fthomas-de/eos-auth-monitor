@@ -33,12 +33,13 @@
 {% endblock %}
 
 {% block header_nav_collapse_right %}
-    {# on by default; help.js shows it where the page has help texts and hides the texts when switched off #}
+    {# on until the user switches it off, remembered per user (HelpMode); help.js shows it where the page has help texts, hides the texts when switched off and saves the switch #}
     <li class="nav-item d-none eos-auth-monitor-help-mode">
         <div class="nav-link">
             <div class="form-check form-switch mb-0">
                 {# green while on: the theme's primary colour would vanish on the primary-coloured navbar #}
-                <input class="form-check-input bg-success border-success" type="checkbox" role="switch" id="eos-auth-monitor-help-mode" checked data-eos-auth-monitor-help-toggle>
+                <input class="form-check-input bg-success border-success" type="checkbox" role="switch" id="eos-auth-monitor-help-mode"{% if help_mode %} checked{% endif %} data-eos-auth-monitor-help-toggle
+                       data-eos-auth-monitor-help-url="{% url 'eos_auth_monitor:help_mode' %}" data-eos-auth-monitor-csrf="{{ csrf_token }}">
                 <label class="form-check-label" for="eos-auth-monitor-help-mode">{% translate "Help mode" %}</label>
             </div>
         </div>

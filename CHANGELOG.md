@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.35] - 2026-11-18
+
+### Changed
+
+- **Help mode remembered per user**: the switch keeps its state across
+  pages, sessions and devices; on until the user switches it off. Saved in
+  the new model `HelpMode` (migration `0011`), one row per user who used the
+  switch.
+
 ## [0.0.34] - 2026-11-17
 
 ### Added

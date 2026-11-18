@@ -16,7 +16,7 @@ from eos_auth_monitor import progress
 from eos_auth_monitor.auth_hooks import AuthMonitorMenuItem
 from eos_auth_monitor.checks import is_app_installed
 from eos_auth_monitor.forms import MonitorConfigurationForm
-from eos_auth_monitor.models import MonitorConfiguration, Snapshot
+from eos_auth_monitor.models import HelpMode, MonitorConfiguration, Snapshot
 from eos_auth_monitor.permissions import APP_PERMISSIONS, BASIC_ACCESS, MANAGE_SETTINGS, VIEW_ALL, VIEW_OWN
 from eos_auth_monitor.sources import spy_network
 from eos_auth_monitor.templatetags.eos_auth_monitor import abbreviate
@@ -2230,16 +2230,42 @@ class TestTileLists(ViewTestCase):
 
 
 class TestHelpMode(ViewTestCase):
-    """The navbar's Help mode switch, on by default, and the question marks it hides (help.js)."""
+    """The navbar's Help mode switch, on by default and remembered per user, and the question marks it hides (help.js)."""
+
+    def save(self, user, on):
+        self.client.force_login(user)
+        return self.client.post(reverse("eos_auth_monitor:help_mode"), {"on": on})
 
     def test_should_render_the_switch_on_for_help_js(self):
         content = self.get(self.leader, "index").content.decode()
 
         self.assertRegex(content, r'<li class="nav-item d-none eos-auth-monitor-help-mode">')
-        self.assertRegex(content, r'id="eos-auth-monitor-help-mode" checked data-eos-auth-monitor-help-toggle>')
+        self.assertRegex(content, r'id="eos-auth-monitor-help-mode" checked data-eos-auth-monitor-help-toggle')
+        self.assertIn(f'data-eos-auth-monitor-help-url="{reverse("eos_auth_monitor:help_mode")}"', content)
         self.assertIn("Help mode", content)
         # the manifest storage adds a hash to the name
         self.assertIn("eos_auth_monitor/js/help.", content)
+
+    def test_should_remember_the_switch_for_the_user(self):
+        self.assertEqual(self.save(self.leader, "0").status_code, 204)
+        off = self.get(self.leader, "index").content.decode()
+        self.save(self.leader, "1")
+        on = self.get(self.leader, "index").content.decode()
+
+        self.assertRegex(off, r'id="eos-auth-monitor-help-mode" data-eos-auth-monitor-help-toggle')
+        self.assertRegex(on, r'id="eos-auth-monitor-help-mode" checked data-eos-auth-monitor-help-toggle')
+
+    def test_should_keep_the_switch_of_other_users(self):
+        self.save(self.leader, "0")
+
+        self.assertEqual(list(HelpMode.objects.values_list("user", "on")), [(self.leader.pk, False)])
+        self.assertTrue(self.get(self.admin, "settings").context["help_mode"])
+
+    def test_should_save_only_by_post_with_an_app_permission(self):
+        self.client.force_login(self.leader)
+        self.assertEqual(self.client.get(reverse("eos_auth_monitor:help_mode")).status_code, 405)
+        self.assertEqual(self.save(make_user("nobody"), "0").status_code, 302)
+        self.assertFalse(HelpMode.objects.exists())
 
     def test_should_explain_the_overview(self):
         response = self.get(self.leader, "index")

@@ -1,8 +1,9 @@
 /*
  * Help mode: the navbar's switch marked data-eos-auth-monitor-help-toggle
  * shows or hides the question marks of partials/help.html, each a Bootstrap
- * popover with its text. On with every page load; the switch stays hidden on
- * a page without help texts.
+ * popover with its text. Each change is saved for the user (views.help_mode),
+ * so the next page starts as it was left; the switch stays hidden on a page
+ * without help texts.
  */
 document.addEventListener("DOMContentLoaded", () => {
     "use strict";
@@ -32,6 +33,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     toggle.closest(".eos-auth-monitor-help-mode").classList.remove("d-none");
     toggle.addEventListener("change", apply);
+    toggle.addEventListener("change", () => {
+        fetch(toggle.dataset.eosAuthMonitorHelpUrl, {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "X-CSRFToken": toggle.dataset.eosAuthMonitorCsrf },
+            body: new URLSearchParams({ on: toggle.checked ? "1" : "0" }),
+        });
+    });
     // the browser may restore an unticked switch when going back to the page
     apply();
 });

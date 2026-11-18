@@ -122,6 +122,19 @@ class ActivityDay(models.Model):
         return f"{self.user_id} {self.day}"
 
 
+class HelpMode(models.Model):
+    """A user's Help mode switch; without a row it is on."""
+
+    user = models.OneToOneField("auth.User", on_delete=models.CASCADE, primary_key=True, related_name="+")
+    on = models.BooleanField(default=True)
+
+    class Meta:
+        default_permissions = ()
+
+    def __str__(self):
+        return f"{self.user_id} {self.on}"
+
+
 class Snapshot(models.Model):
     """The last result of the periodic task; one row, overwritten each run.
 

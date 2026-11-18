@@ -33,4 +33,5 @@ urlpatterns = [
     path("settings/", views.settings, name="settings"),
     path("rebuild/", views.rebuild, name="rebuild"),
     path("rebuild/progress/", views.rebuild_progress, name="rebuild_progress"),
+    path("help-mode/", views.help_mode, name="help_mode"),
 ]

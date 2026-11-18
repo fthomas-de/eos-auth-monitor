@@ -8,6 +8,14 @@ Last updated 2026-11-17 (0.0.34).
 
 ## Release
 
+- **Unreleased** (2026-11-18): **Help mode remembered per user**. Model
+  `HelpMode` (user as primary key, `on`; migration `0011`, applied to
+  `aa_dev`), no row = on. `help.js` POSTs each change to `help_mode`
+  (`help-mode/`, any app permission, POST only, 204); `_render` passes
+  `help_mode`, `base.html` sets `checked` from it and carries the URL and the
+  CSRF token as `data-*`. Tests: `TestHelpMode` 5 -> 8, three sabotages red.
+  Seen in Chrome: off survives a reload and a switch to *My account*,
+  back on likewise.
 - Version **0.0.34** of 2026-11-17: **Help mode** (see `CHANGELOG.md` and
   the decisions of 2026-11-17 (help mode) below). A *Help mode* switch in
   the navbar (`base.html`, block `header_nav_collapse_right`, checked by
@@ -1027,7 +1035,10 @@ einbauen, der alle bereiche/container mit erklärenden texten versieht"):
 - After seeing the first version: the icon goes into the **top right corner
   of a tile**, and the navbar button became a **switch named "Help mode",
   on by default** ("mach aus dem hilfe icon einen schalter, der per default
-  an ist"). Not remembered per browser: on with every page load.
+  an ist"). First not remembered at all; on 2026-11-18 changed to
+  **remembered per user on the server** ("speichert sich der help status
+  session übergreifend nicht?"): offered per browser (localStorage) or per
+  user, the user chose per user, so it follows them across devices.
 - The icon stays small (about 12 px): asked whether to enlarge it, the user
   said no ("passt so").
 - The switch is green while on (`bg-success`, toggled by `help.js`): the

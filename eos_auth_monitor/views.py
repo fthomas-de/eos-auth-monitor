@@ -17,7 +17,7 @@ from kombu.exceptions import OperationalError
 from . import __version__, activity, progress
 from . import snapshot as snapshots
 from .forms import MonitorConfigurationForm
-from .models import MonitorConfiguration
+from .models import HelpMode, MonitorConfiguration
 from .permissions import (
     APP_PERMISSIONS,
     BASIC_ACCESS,
@@ -67,6 +67,7 @@ def _render(request, template, context=None, nav=NAV_ALLIANCE):
             ),
             # problems link to aa-charlink, where a player adds a character to every app at once
             "charlink_url": _charlink_url(),
+            "help_mode": not HelpMode.objects.filter(user=user, on=False).exists(),
             **(context or {}),
         },
     )
@@ -465,6 +466,14 @@ def rebuild(request):
     if not url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}):
         target = "eos_auth_monitor:index"
     return redirect(target)
+
+
+@any_permission_required(*APP_PERMISSIONS)
+@require_POST
+def help_mode(request):
+    """Remember the Help mode switch for the next page (help.js)."""
+    HelpMode.objects.update_or_create(user=request.user, defaults={"on": request.POST.get("on") == "1"})
+    return HttpResponse(status=204)
 
 
 @any_permission_required(*APP_PERMISSIONS)
