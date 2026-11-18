@@ -1,6 +1,7 @@
 """Who may use the app and which Corporations they see."""
 
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.exceptions import PermissionDenied
 
 BASIC_ACCESS = "eos_auth_monitor.basic_access"
 VIEW_ALL = "eos_auth_monitor.view_all"
@@ -16,10 +17,15 @@ def has_app_access(user) -> bool:
 
 
 def any_permission_required(*perms):
-    """login_required plus at least one of ``perms``."""
+    """login_required plus at least one of ``perms``: a logged-in user without any gets a 403, not the login page."""
+
+    def check(user) -> bool:
+        if any(user.has_perm(perm) for perm in perms):
+            return True
+        raise PermissionDenied
 
     def decorator(view):
-        return login_required(user_passes_test(lambda user: any(user.has_perm(perm) for perm in perms))(view))
+        return login_required(user_passes_test(check)(view))
 
     return decorator
 

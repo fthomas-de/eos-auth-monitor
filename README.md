@@ -418,7 +418,8 @@ by itself.
 | `eos_auth_monitor.manage_settings` | Admins | The settings page: Alliance, checks, services, corptools sections and scopes; *Rebuild now* |
 | `eos_auth_monitor.view_own` | Members (a state is fine) | *My account* and its widget on the dashboard: their own account - characters, problems, what to do, which services are linked. Nothing about other accounts or the Corporation's figures |
 
-The menu entry shows for anyone holding one of them. Only the **main
+The menu entry shows for anyone holding one of them; a logged-in user
+without the permission a page needs gets "403 Forbidden". Only the **main
 character** counts for `basic_access`, and like every Alliance Auth app page,
 the app needs a main character. Superusers hold every permission and see
 everything.

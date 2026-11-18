@@ -265,3 +265,13 @@ class TestViews(ViewTestCase):
         for page, args in (("index", ()), ("corporation", (2001,))):
             with self.subTest(page):
                 self.assertNotContains(self.get(ceo, page, *args), "eos-auth-monitor-gm-")
+
+    def test_should_show_eos_taxs_ceo_nothing_on_another_corporation_page(self):
+        # what eos-tax shows 2001's CEO includes 1102, an alt of 2001's account that counts in 2002
+        ceo = make_user("taxceoelsewhere", VIEW_ALL, CEO_ACCESS, corporation_id=2001)
+
+        self.assertNotContains(self.get(ceo, "corporation", 2002), "eos-auth-monitor-gm-")
+        url = reverse("eos_auth_monitor:corporation_export", args=[2002])
+        self.assertEqual(self.client.get(url, {"group": "gm_transactions"}).status_code, 404)
+        # the account page of 2001's main keeps the alt's marker, as eos-tax's own page does
+        self.assertContains(self.get(ceo, "account", 11), "eos-auth-monitor-gm-marker")

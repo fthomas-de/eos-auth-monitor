@@ -101,7 +101,7 @@ class TestAccess(ViewTestCase):
         ]
         for name, *args in pages:
             with self.subTest(name):
-                self.assertEqual(self.get(nobody, name, *args).status_code, 302)
+                self.assertEqual(self.get(nobody, name, *args).status_code, 403)
 
     def test_should_send_a_ceo_to_the_own_corporation(self):
         response = self.get(self.ceo, "index")
@@ -121,8 +121,8 @@ class TestAccess(ViewTestCase):
         self.assertEqual(self.get(self.ceo, "corporation_service", 2002, "discord").status_code, 403)
 
     def test_should_keep_a_ceo_out_of_the_alliance_wide_pages(self):
-        self.assertEqual(self.get(self.ceo, "service", "discord").status_code, 302)
-        self.assertEqual(self.get(self.ceo, "settings").status_code, 302)
+        self.assertEqual(self.get(self.ceo, "service", "discord").status_code, 403)
+        self.assertEqual(self.get(self.ceo, "settings").status_code, 403)
 
     def test_should_show_leadership_every_corporation(self):
         for name, *args in [("index",), ("corporation", 2002), ("account", 22), ("service", "discord")]:
@@ -130,7 +130,7 @@ class TestAccess(ViewTestCase):
                 self.assertEqual(self.get(self.leader, name, *args).status_code, 200)
 
     def test_should_keep_leadership_out_of_the_settings(self):
-        self.assertEqual(self.get(self.leader, "settings").status_code, 302)
+        self.assertEqual(self.get(self.leader, "settings").status_code, 403)
 
     def test_should_not_find_what_the_snapshot_does_not_have(self):
         self.assertEqual(self.get(self.leader, "account", 99).status_code, 404)
@@ -1180,8 +1180,7 @@ class TestOwnAccount(ViewTestCase):
         for name, *args in pages:
             with self.subTest(name):
                 response = self.get(self.member, name, *args)
-                self.assertEqual(response.status_code, 302)
-                self.assertIn("login", response.url)
+                self.assertEqual(response.status_code, 403)
 
     def test_should_say_when_the_own_account_is_not_in_the_overview(self):
         outsider = make_user("outsider", VIEW_OWN, corporation_id=2999)
@@ -1203,7 +1202,7 @@ class TestOwnAccount(ViewTestCase):
     def test_should_keep_the_own_account_to_holders_of_view_own(self):
         response = self.get(self.ceo, "own_account")
 
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
 
 
 class TestDirectorCharlink(ViewTestCase):
@@ -1372,7 +1371,7 @@ class TestRebuild(ViewTestCase):
         self.assertEqual(data, {"state": progress.RUNNING, "percent": 75, "phase": "Reading member lists"})
 
     def test_should_keep_users_without_permission_away_from_the_progress(self):
-        self.assertEqual(self.get(make_user("nobody"), "rebuild_progress").status_code, 302)
+        self.assertEqual(self.get(make_user("nobody"), "rebuild_progress").status_code, 403)
 
     def test_should_start_the_task(self):
         response, task = self.post(self.leader)
@@ -1383,7 +1382,7 @@ class TestRebuild(ViewTestCase):
     def test_should_not_let_a_ceo_start_it(self):
         response, task = self.post(self.ceo)
 
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
         task.delay.assert_not_called()
 
     def test_should_only_start_it_on_post(self):
@@ -1582,8 +1581,8 @@ class TestCorporationExport(ViewTestCase):
 
     def test_should_export_only_what_the_viewer_may_see(self):
         self.assertEqual(self.export(self.ceo).status_code, 403)
-        self.assertEqual(self.export(make_user("nobody")).status_code, 302)
-        self.assertEqual(self.export(make_user("member", VIEW_OWN, corporation_id=2002)).status_code, 302)
+        self.assertEqual(self.export(make_user("nobody")).status_code, 403)
+        self.assertEqual(self.export(make_user("member", VIEW_OWN, corporation_id=2002)).status_code, 403)
 
     def test_should_let_the_ceo_export_the_own_corporation(self):
         ceo = make_user("ceo2", BASIC_ACCESS, corporation_id=2002)
@@ -1775,7 +1774,7 @@ class TestCharacterAuditList(ViewTestCase):
         self.assertEqual(self.get(self.leader, "character_audit").status_code, 404)
 
     def test_should_keep_everyone_but_leadership_out(self):
-        self.assertEqual(self.get(self.ceo, "character_audit").status_code, 302)
+        self.assertEqual(self.get(self.ceo, "character_audit").status_code, 403)
         self.assertEqual(self.get(self.leader, "character_audit").status_code, 200)
 
 
@@ -1858,7 +1857,7 @@ class TestDirectorList(ViewTestCase):
         self.assertNotContains(without, "No Director token could read the roles")
 
     def test_should_keep_everyone_but_leadership_out(self):
-        self.assertEqual(self.get(self.ceo, "directors", "corptools_corporations").status_code, 302)
+        self.assertEqual(self.get(self.ceo, "directors", "corptools_corporations").status_code, 403)
         self.assertEqual(self.get(self.leader, "directors", "corptools_corporations").status_code, 200)
 
 
@@ -1910,7 +1909,7 @@ class TestUnknownCharacterList(ViewTestCase):
         self.assertEqual(self.get(self.leader, "unknown_characters").status_code, 404)
 
     def test_should_keep_everyone_but_leadership_out(self):
-        self.assertEqual(self.get(self.ceo, "unknown_characters").status_code, 302)
+        self.assertEqual(self.get(self.ceo, "unknown_characters").status_code, 403)
         self.assertEqual(self.get(self.leader, "unknown_characters").status_code, 200)
 
 
@@ -2160,6 +2159,14 @@ class TestSpyNetwork(ViewTestCase):
             with self.subTest(page):
                 self.assertNotContains(self.get(ceo, page, *args), "eos-auth-monitor-spy-")
 
+    def test_should_show_the_spy_ceo_nothing_on_another_corporation_page(self):
+        # what eos-spy-network shows 2001's CEO includes 1102, an alt of 2001's account that counts in 2002
+        ceo = make_user("spyownelsewhere", VIEW_ALL, "eos_spy_network.view_own_corporation", corporation_id=2001)
+
+        self.assertNotContains(self.get(ceo, "corporation", 2002), "eos-auth-monitor-spy-")
+        # the account page of 2001's main keeps the alt's marker, as eos-spy-network's own page does
+        self.assertContains(self.get(ceo, "account", 11), "ISK with hostiles")
+
 
 class TestTileLists(ViewTestCase):
     """The pages behind the Corporation page's tiles Registered in Auth and Character Audit."""
@@ -2264,7 +2271,7 @@ class TestHelpMode(ViewTestCase):
     def test_should_save_only_by_post_with_an_app_permission(self):
         self.client.force_login(self.leader)
         self.assertEqual(self.client.get(reverse("eos_auth_monitor:help_mode")).status_code, 405)
-        self.assertEqual(self.save(make_user("nobody"), "0").status_code, 302)
+        self.assertEqual(self.save(make_user("nobody"), "0").status_code, 403)
         self.assertFalse(HelpMode.objects.exists())
 
     def test_should_explain_the_overview(self):

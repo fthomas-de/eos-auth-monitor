@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.36] - 2026-11-18
+
+### Changed
+
+- **403 instead of the login page**: a logged-in user without the page's
+  permission now gets "403 Forbidden"; before, they were sent to the login
+  page as if logged out. Users who are not logged in still go to the login.
+
+### Fixed
+
+- **CEO roles of eos-tax and eos-spy-network kept to their Corporation**: a
+  viewer with `view_all` and only eos-tax's `basic_access` or
+  eos-spy-network's `view_own_corporation` saw GM transactions and spy
+  markers of their own Corporation's characters on the page of another
+  Corporation, where such a character now is or counts - card tags, red
+  border, the GM to-do and its CSV group. They show on the own Corporation's
+  page and the account pages only, as the README says.
+
 ## [0.0.35] - 2026-11-18
 
 ### Changed

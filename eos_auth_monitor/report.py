@@ -171,6 +171,9 @@ class Account:
     directors: list[str] = field(default_factory=list)
     # Active in Mumble (Report.add_activity): its days with Mumble of its days in EVE; None without Mumble linked
     activity: "Row | None" = None
+    # off on the copy of a Corporation that may not show the viewer's eos-spy-network / eos-tax findings (CEO roles)
+    spy_shown: bool = True
+    gm_shown: bool = True
 
     @property
     def problem_characters(self) -> list[Character]:
@@ -195,11 +198,13 @@ class Account:
     @property
     def spy_markers(self) -> list:
         """The eos-spy-network markers of the characters counted here, each kind once, as first met."""
+        if not self.spy_shown:
+            return []
         return list({marker.kind: marker for character in self.characters for marker in character.spy}.values())
 
     @property
     def has_gm(self) -> bool:
-        return any(character.gm for character in self.characters)
+        return self.gm_shown and any(character.gm for character in self.characters)
 
     @property
     def has_markers(self) -> bool:
@@ -494,7 +499,7 @@ class Corporation:
     def gm_accounts(self) -> list[Account]:
         """The mains whose characters counted here have a GM transaction, by name - whom to look at."""
         return sorted(
-            (account for account in self.evaluated_accounts if any(character.gm for character in account.characters)),
+            (account for account in self.evaluated_accounts if account.has_gm),
             key=lambda account: account.main_name.lower(),
         )
 
@@ -954,7 +959,11 @@ class Report:
             for character in account.characters:
                 character.spy = markers.get(character.id, [])
         for corporation in self.corporations:
-            corporation.spy_kinds = tuple(kinds) if corporation_id in (None, corporation.id) else None
+            shown = corporation_id in (None, corporation.id)
+            corporation.spy_kinds = tuple(kinds) if shown else None
+            # the cards' tags: an alt of the CEO's mains counted elsewhere stays off that Corporation's page
+            for account in corporation.evaluated_accounts:
+                account.spy_shown = shown
         self.spy_shown = corporation_id is None
 
     def add_gm_transactions(self, character_ids: set[int], corporation_id: int | None = None) -> None:
@@ -970,6 +979,9 @@ class Report:
                 character.gm = character.id in character_ids and character.corporation_id in self._corporations_by_id
         for corporation in self.corporations:
             corporation.gm_shown = corporation_id in (None, corporation.id)
+            # cards, to-do and CSV: a character booked while in the CEO's Corporation stays off its new one's page
+            for account in corporation.evaluated_accounts:
+                account.gm_shown = corporation.gm_shown
         self.gm_shown = corporation_id is None
 
     def add_activity(self, rates: dict[int, tuple[int, int]]) -> None:
