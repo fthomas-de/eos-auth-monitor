@@ -1150,6 +1150,26 @@ coordination session merges them):
   shows them to the CEO of the alt's Corporation. The user chose **card,
   to-do and tile** (also CSV and the overview column), not the card alone.
 
+2026-11-19 (GM by whole accounts, Unreleased; after eos-tax's CEO view of GM
+transactions turned to whole accounts, decided through the coordination
+session):
+
+- **GM of mains outside the Alliance "wie Spy"**: their card in *Alts of
+  mains in other Corporations* is marked by a GM transaction of an alt here
+  or of the main (`OtherMain.has_gm`; `OtherMain.alts` are now built in
+  `Report.__init__` for spy and GM alike).
+- **A card marks the whole account** ("Ja, Konto markieren"): `Account.
+  account_gm` (any character of the whole account), `has_gm = gm_shown and
+  account_gm` - for **every viewer** (full GM view and CEO role), on **own
+  and visiting cards** alike.
+- **The rule of 0.0.15 is gone** ("Generell"): characters outside the
+  Alliance get their GM marker too (account page, and they mark the card).
+- **Counting by mains** ("Mains mit GM im Konto"): the Corporation tile and
+  the *GM* column count `Corporation.gm_accounts` (= the GM to-do), the
+  cockpit `Report.gm_count` sums the Corporations like the spy tile - an
+  account with cards in two Corporations counts twice there (told, kept).
+  `gm_characters` is gone.
+
 ## Pitfalls found
 
 - A new file under `static/` needs `collectstatic` before the tests: the
@@ -1340,6 +1360,13 @@ coordination session merges them):
 - **Deploy 0.0.37 together with eos-spy-network 0.0.31** (and its
   recalculation): with an older eos-spy-network a holder of `view_suspects`
   alone would see markers here that eos-spy-network still holds back.
+- **GM by whole accounts (Unreleased, not committed)**: deploy together with
+  or after the next eos-tax release (CEO view by whole accounts); with the
+  current eos-tax a CEO's alt elsewhere marks nothing, nothing breaks.
+  Tests in `test_gm_transactions` only (33, 9 sabotages red after one
+  strengthened test); not seen in a browser. A GM to-do of a main outside
+  the Alliance has no link; such a main's other characters elsewhere are
+  unknown here (only its alts in the member list and its main ID).
 - **The new section not seen in a browser** (0.0.37): check a Corporation
   with visiting mains (red, yellow and plain cards, the alts line) and, with
   eos-spy-network 0.0.31's visitors, an unrated main's red card and its

@@ -134,12 +134,16 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   holding `eos_tax.admin_view` or `eos_tax.gm_bots_access` (eos-tax's own
   rule for its *GM Transactions* tab; its CEO role `eos_tax.basic_access`
   for the own Corporation only, see the permissions below): the characters its GM Transactions
-  page lists against "GM X" and that are still in a Corporation of the
-  Alliance - a cockpit tile with their number, a column in the overview
-  table, a tile on the Corporation page (both open eos-tax's page), an
-  pink to-do entry with the mains concerned, a pink tag on their cards on the
-  Corporation page (like the spy tags) and a pink marker beside
-  each such character on the account page. Only shown, like the spy markers
+  page lists against "GM X", alts outside the Alliance included. A card
+  stands for the whole account: a main is marked wherever it has a card
+  (own main, main elsewhere with alts here, main outside the Alliance named
+  by the member list) when any character of its account has one. The
+  Corporation tile and the overview column count those mains, the cockpit
+  tile sums the Corporations (an account with cards in two Corporations
+  counts twice); the tiles open eos-tax's page. A pink to-do entry with the
+  mains concerned, a pink tag on their cards on the Corporation page (like
+  the spy tags) and a pink marker beside each such character on the account
+  page. Only shown, like the spy markers
 - **Smart filter** for
   [allianceauth-securegroups](https://github.com/Solar-Helix-Independent-Transport/allianceauth-secure-groups),
   see [Smart filter](#smart-filter)

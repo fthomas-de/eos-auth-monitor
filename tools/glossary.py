@@ -752,15 +752,15 @@ TRANSLATIONS = {
     'Spies': ('Spione', 'Шпионы', '间谍'),
     # eos-tax's GM transactions: cockpit and Corporation tile, overview column, to-do, account marker
     'GM transactions': ('GM-Transaktionen', 'GM-транзакции', 'GM 交易'),
-    'Characters with GM transactions': (
-        'Characters mit GM-Transaktionen',
-        'Character с GM-транзакциями',
-        '有 GM 交易的 Character',
+    'Mains with GM transactions in the account': (
+        'Mains mit GM-Transaktionen im Account',
+        'Main с GM-транзакциями в аккаунте',
+        '账号中有 GM 交易的 Main',
     ),
-    'Characters with GM transactions in eos-tax': (
-        'Characters mit GM-Transaktionen in eos-tax',
-        'Character с GM-транзакциями в eos-tax',
-        '在 eos-tax 中有 GM 交易的 Character',
+    'Mains with GM transactions in eos-tax in the account': (
+        'Mains mit GM-Transaktionen in eos-tax im Account',
+        'Main с GM-транзакциями в eos-tax в аккаунте',
+        '账号中在 eos-tax 有 GM 交易的 Main',
     ),
     'A GM moved ISK for a character of these mains.': (
         'Ein GM hat ISK für einen Character dieser Mains bewegt.',
@@ -825,10 +825,10 @@ TRANSLATIONS = {
         "Character с маркерами в eos-spy-network. Видно только его зрителям.",
         "在 eos-spy-network 中有标记的 Character。仅对其查看者显示。",
     ),
-    "Characters with GM transactions in eos-tax. Only shown to its viewers.": (
-        "Characters mit GM-Transaktionen in eos-tax. Nur für dessen Betrachter sichtbar.",
-        "Character с GM-транзакциями в eos-tax. Видно только его зрителям.",
-        "在 eos-tax 中有 GM 交易的 Character。仅对其查看者显示。",
+    "Mains with a GM transaction in eos-tax anywhere in their account, alts in other Corporations included. Only shown to its viewers.": (
+        "Mains mit einer GM-Transaktion in eos-tax irgendwo in ihrem Account, Alts in anderen Corporations eingeschlossen. Nur für dessen Betrachter sichtbar.",
+        "Main с GM-транзакцией в eos-tax где-либо в их аккаунте, включая альтов в других Corporation. Видно только его зрителям.",
+        "在 eos-tax 中账号任意处（包括其他 Corporation 中的小号）有 GM 交易的 Main。仅对其查看者显示。",
     ),
     "The Alliance at a glance: who is registered and audited, and whether the Corporation apps work. Click a tile for the list behind it.": (
         "Die Alliance auf einen Blick: wer registriert und geprüft ist und ob die Corporation-Apps funktionieren. Klick auf eine Kachel für die Liste dahinter.",

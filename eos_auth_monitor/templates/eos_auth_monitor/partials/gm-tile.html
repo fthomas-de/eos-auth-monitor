@@ -5,9 +5,9 @@
         <i class="fas fa-sack-dollar fa-lg mb-2"></i>
         <div class="fs-3 fw-bold{% if not gm_count %} text-success{% endif %}"{% if gm_count %} style="color: var(--bs-pink)"{% endif %}>{{ gm_count }}</div>
         <div class="small">{% translate "GM transactions" %}</div>
-        <div class="small text-body-secondary">{% translate "Characters with GM transactions" %}</div>
+        <div class="small text-body-secondary">{% translate "Mains with GM transactions in the account" %}</div>
         <a href="{% url 'eos_tax:gm_transactions' %}" class="stretched-link" aria-label="{% translate 'GM transactions' %}"></a>
-        {% translate "Characters with GM transactions in eos-tax. Only shown to its viewers." as help_text %}
+        {% translate "Mains with a GM transaction in eos-tax anywhere in their account, alts in other Corporations included. Only shown to its viewers." as help_text %}
         {% include "eos_auth_monitor/partials/help.html" with corner=True %}
     </div>
 </div>

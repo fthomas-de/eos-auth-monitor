@@ -174,6 +174,8 @@ class Account:
     # off on the copy of a Corporation that may not show the viewer's eos-spy-network / eos-tax findings (CEO roles)
     spy_shown: bool = True
     gm_shown: bool = True
+    # a GM transaction anywhere in the whole account, alts elsewhere included (Report.add_gm_transactions)
+    account_gm: bool = False
 
     @property
     def problem_characters(self) -> list[Character]:
@@ -204,7 +206,9 @@ class Account:
 
     @property
     def has_gm(self) -> bool:
-        return self.gm_shown and any(character.gm for character in self.characters)
+        """A GM transaction in the whole account, on a page that may show it - the card is the account's, the user's
+        choice, not only of the characters counted here."""
+        return self.gm_shown and self.account_gm
 
     @property
     def has_markers(self) -> bool:
@@ -458,12 +462,18 @@ class OtherMain:
     main_name: str
     main_corporation_name: str
     characters: list[dict]
-    # its characters here with eos-spy-network markers, set by Report.add_spy_markers where the viewer may see them
-    # here; only for a main the overview does not rate (outside the Alliance), whose alts are no Character otherwise
-    spy_alts: list[Character] = field(default_factory=list)
+    # its characters here as Characters, for a main the overview does not rate (outside the Alliance), built by
+    # Report; eos-spy-network's markers and eos-tax's GM transactions set on them where the viewer may see them here
+    alts: list[Character] = field(default_factory=list)
+    # a GM transaction of its alts here or of its main, where the viewer may see it here (Report.add_gm_transactions)
+    has_gm: bool = False
 
     # no account page: the overview does not rate this account (the to-do leaves its alts unlinked)
     unrated = True
+
+    @property
+    def spy_alts(self) -> list[Character]:
+        return [character for character in self.alts if character.spy]
 
     @property
     def spy_markers(self) -> list:
@@ -509,15 +519,14 @@ class Corporation:
         return _mean_activity(self.accounts)
 
     @property
-    def gm_characters(self) -> list[Character]:
-        """The characters counted here with a GM transaction."""
-        return [character for account in self.evaluated_accounts for character in account.characters if character.gm]
-
-    @property
-    def gm_accounts(self) -> list[Account]:
-        """The mains whose characters counted here have a GM transaction, by name - whom to look at."""
+    def gm_accounts(self) -> list:
+        """The mains with a card here whose account has a GM transaction, by name - whom to look at; also what the
+        GM tile and column count. Accounts or OtherMains (outside the Alliance)."""
         return sorted(
-            (account for account in self.evaluated_accounts if account.has_gm),
+            [
+                *(account for account in self.evaluated_accounts if account.has_gm),
+                *(other for other in self.unrated_other_mains if other.has_gm),
+            ],
             key=lambda account: account.main_name.lower(),
         )
 
@@ -605,10 +614,13 @@ class Corporation:
     def unrated_other_mains(self) -> list[OtherMain]:
         """The member list's mains elsewhere whose account the overview does not rate: mains outside the Alliance.
 
-        Those with eos-spy-network markers first, then by name as the member list has them.
+        Those with eos-spy-network markers or a GM transaction first, then by name as the member list has them.
         """
         rated = {account.user_id for account in self.visiting}
-        return sorted((other for other in self.other_mains if other.user_id not in rated), key=lambda o: not o.spy_alts)
+        return sorted(
+            (other for other in self.other_mains if other.user_id not in rated),
+            key=lambda other: not (other.spy_alts or other.has_gm),
+        )
 
     @property
     def other_main_count(self) -> int:
@@ -830,6 +842,22 @@ class Report:
         names = {row["id"]: row["name"] for row in rows}
         self.corporations = [self._corporation(row, names) for row in rows]
         self._corporations_by_id = {corporation.id: corporation for corporation in self.corporations}
+        # alts of mains outside the Alliance: eos-spy-network and eos-tax check them, this overview does not
+        for corporation in self.corporations:
+            for other in corporation.unrated_other_mains:
+                other.alts = [
+                    Character(
+                        character["id"],
+                        character["name"],
+                        corporation.id,
+                        corporation.name,
+                        corporation.ticker,
+                        "",
+                        is_main=False,
+                        problems=[],
+                    )
+                    for character in other.characters
+                ]
         self.metrics = self._metrics(data.get("metrics"))
 
     @staticmethod
@@ -988,41 +1016,33 @@ class Report:
             # the cards' tags: an alt of the CEO's mains counted elsewhere stays off that Corporation's page
             for account in corporation.evaluated_accounts:
                 account.spy_shown = shown
-            # alts of mains outside the Alliance: eos-spy-network checks them, this overview does not
             for other in corporation.unrated_other_mains:
-                other.spy_alts = [
-                    Character(
-                        character["id"],
-                        character["name"],
-                        corporation.id,
-                        corporation.name,
-                        corporation.ticker,
-                        "",
-                        is_main=False,
-                        problems=[],
-                        spy=markers[character["id"]],
-                    )
-                    for character in other.characters
-                    if shown and markers.get(character["id"])
-                ]
+                for character in other.alts:
+                    character.spy = markers.get(character.id, []) if shown else []
         self.spy_shown = corporation_id is None
 
     def add_gm_transactions(self, character_ids: set[int], corporation_id: int | None = None) -> None:
         """Mark the characters with an eos-tax GM transaction, for a viewer who may see them.
 
-        Only characters still in a Corporation of the overview: an alt
-        elsewhere has left the Alliance, whatever its main does. With
+        Every character of an account, alts outside the Alliance included (the
+        user's choice of 2026-11-19), and a card marks the whole account. With
         ``corporation_id`` (eos-tax's CEO role) only that Corporation shows
         them: the Alliance-wide tile and column would read 0 everywhere else.
         """
         for account in self._accounts.values():
             for character in account.characters:
-                character.gm = character.id in character_ids and character.corporation_id in self._corporations_by_id
+                character.gm = character.id in character_ids
         for corporation in self.corporations:
-            corporation.gm_shown = corporation_id in (None, corporation.id)
-            # cards, to-do and CSV: a character booked while in the CEO's Corporation stays off its new one's page
+            shown = corporation.gm_shown = corporation_id in (None, corporation.id)
+            # cards, to-do and CSV: another Corporation's findings stay off the CEO's view of this page
             for account in corporation.evaluated_accounts:
-                account.gm_shown = corporation.gm_shown
+                account.gm_shown = shown
+                account.account_gm = any(character.gm for character in self._accounts[account.user_id].characters)
+            # a main outside the Alliance: its alts here and its main, all this app knows of the account
+            for other in corporation.unrated_other_mains:
+                for character in other.alts:
+                    character.gm = shown and character.id in character_ids
+                other.has_gm = shown and (other.main_id in character_ids or any(c.gm for c in other.alts))
         self.gm_shown = corporation_id is None
 
     def add_activity(self, rates: dict[int, tuple[int, int]]) -> None:
@@ -1041,9 +1061,10 @@ class Report:
         self.activity_shown = True
 
     @property
-    def gm_characters(self) -> list[Character]:
-        """Every character of the Alliance with a GM transaction."""
-        return [character for account in self.accounts for character in account.characters if character.gm]
+    def gm_count(self) -> int:
+        """The cockpit tile: the sum of the Corporations' GM counts, as the spy tile sums its column - an account with
+        cards in two Corporations counts in both."""
+        return sum(len(corporation.gm_accounts) for corporation in self.corporations)
 
     @property
     def spy_characters(self) -> list[Character]:

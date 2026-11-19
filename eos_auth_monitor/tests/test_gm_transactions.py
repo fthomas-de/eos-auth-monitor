@@ -20,7 +20,17 @@ GM_ACCESS = "eos_tax.gm_bots_access"
 CEO_ACCESS = "eos_tax.basic_access"
 
 
-def found(character_ids=None, corporation_id=None):
+# a main outside the Alliance with an alt in 2002, from 2002's member list
+OUTSIDE = {
+    "user_id": 99,
+    "main_id": 9900,
+    "main_name": "Outside main",
+    "main_corporation_name": "Corp 5005",
+    "characters": [{"id": 9002, "name": "Outside alt"}],
+}
+
+
+def found(character_ids=None, corporation_id=None, other_mains=()):
     """2001 with an account whose alts are in 2002 and outside the Alliance (3001); 2002 with its own account."""
     report = Report(
         store_snapshot(
@@ -41,7 +51,10 @@ def found(character_ids=None, corporation_id=None):
                             )
                         ],
                     ),
-                    corporation_row(2002, [account_row(22, 2201, corporation_id=2002)]),
+                    {
+                        **corporation_row(2002, [account_row(22, 2201, corporation_id=2002)]),
+                        "other_mains": list(other_mains),
+                    },
                 ],
                 checks=["char_audit_missing"],
             )
@@ -60,18 +73,47 @@ class TestReport(MonitorTestCase):
         self.assertFalse(report.corporation(2001).gm_shown)
         self.assertEqual(report.corporation(2001).gm_accounts, [])
 
-    def test_should_count_each_character_in_its_own_corporation(self):
+    def test_should_count_the_mains_whose_account_has_one(self):
         report = found({1102, 1103, 2201})
 
-        self.assertEqual([c.id for c in report.corporation(2001).gm_characters], [1102])
-        self.assertEqual(sorted(c.id for c in report.corporation(2002).gm_characters), [1103, 2201])
-        self.assertEqual(len(report.gm_characters), 3)
+        # 11's whole account counts in 2001 and, by its card there (1103), in 2002 as well
+        self.assertEqual([account.user_id for account in report.corporation(2001).gm_accounts], [11])
+        self.assertEqual([account.user_id for account in report.corporation(2002).gm_accounts], [11, 22])
+        # the cockpit sums the Corporations, as the spy tile does
+        self.assertEqual(report.gm_count, 3)
 
-    def test_should_skip_a_character_outside_the_alliance(self):
+    def test_should_mark_the_main_by_an_alt_in_another_corporation(self):
+        report = found({1103})
+
+        self.assertEqual([account.user_id for account in report.corporation(2001).gm_accounts], [11])
+
+    def test_should_mark_a_visiting_main_by_its_main(self):
+        # 1103, its alt in 2002, has none; the main in 2001 has
+        report = found({1101})
+
+        self.assertEqual([account.user_id for account in report.corporation(2002).gm_accounts], [11])
+
+    def test_should_mark_a_character_outside_the_alliance(self):
         report = found({1104})
 
-        self.assertEqual(report.gm_characters, [])
-        self.assertEqual(report.corporation(2001).gm_accounts, [])
+        _corporation, account = report.account(11)
+        self.assertIn(1104, [character.id for character in account.listed_characters])
+        self.assertEqual([account.user_id for account in report.corporation(2001).gm_accounts], [11])
+
+    def test_should_mark_a_main_outside_the_alliance_by_its_alt_or_its_main(self):
+        for ids in ({9002}, {9900}):
+            with self.subTest(ids=ids):
+                corporation = found(ids, other_mains=[OUTSIDE]).corporation(2002)
+
+                self.assertEqual([other.main_name for other in corporation.gm_accounts], ["Outside main"])
+                self.assertTrue(corporation.unrated_other_mains[0].has_gm)
+
+    def test_should_keep_a_main_outside_the_alliance_off_another_corporations_page(self):
+        # its alt and its main: either would mark it, but not on a page the CEO of 2001 is not shown
+        corporation = found({9002, 9900}, corporation_id=2001, other_mains=[OUTSIDE]).corporation(2002)
+
+        self.assertEqual(corporation.gm_accounts, [])
+        self.assertFalse(corporation.unrated_other_mains[0].alts[0].gm)
 
     def test_should_name_the_mains_in_the_todo_and_export(self):
         corporation = found({1103, 2201}).corporation(2002)
@@ -102,7 +144,8 @@ class TestReport(MonitorTestCase):
         self.assertFalse(report.corporation(2001).gm_shown)
         # the cockpit tile and the overview column count the whole Alliance
         self.assertFalse(report.gm_shown)
-        self.assertEqual(sorted(c.id for c in report.corporation(2002).gm_characters), [1103, 2201])
+        self.assertEqual([account.user_id for account in report.corporation(2002).gm_accounts], [11, 22])
+        self.assertEqual(report.corporation(2001).gm_accounts, [])
 
 
 @skipUnless(TAX_INSTALLED, "eos-tax is not installed")
@@ -180,7 +223,8 @@ class TestViews(ViewTestCase):
         content = self.get(self.gm_leader, "index").content.decode()
         tile = content[content.index("eos-auth-monitor-gm-tile"):content.index("eos-auth-monitor-view-pane")]
 
-        self.assertRegex(tile, r'<div class="fs-3 fw-bold" style="color: var\(--bs-pink\)">2</div>')
+        # the sum of the Corporations: 11 in 2001 and, by 1102, in 2002; 22 in 2002
+        self.assertRegex(tile, r'<div class="fs-3 fw-bold" style="color: var\(--bs-pink\)">3</div>')
         self.assertIn(f'href="{self.gm_page}"', tile)
 
     def test_should_add_the_column_to_the_overview_table(self):
@@ -190,7 +234,7 @@ class TestViews(ViewTestCase):
         self.assertIn("</i> GM</th>", table)
         counts = re.findall(r'<td data-order="(\d+)" class="[^"]*eos-auth-monitor-gm-count[^>]*>(\d+)</td>', table)
         # no link: the cockpit tile above opens eos-tax
-        self.assertEqual(sorted(counts), [("0", "0"), ("2", "2")])
+        self.assertEqual(sorted(counts), [("1", "1"), ("2", "2")])
         self.assertNotIn(self.gm_page, table[:table.index("</table>")])
 
     def test_should_hide_everything_without_the_permission(self):
@@ -208,6 +252,7 @@ class TestViews(ViewTestCase):
         self.assertIn(f'href="{self.gm_page}"', tile)
 
     def test_should_show_a_clean_corporation_with_a_green_zero(self):
+        self.reader.return_value = {2201}
         content = self.get(self.gm_leader, "corporation", 2001).content.decode()
 
         self.assertRegex(content, r'eos-auth-monitor-gm-tile[\s\S]*?<div class="fs-3 fw-bold text-success">0</div>')
@@ -275,3 +320,51 @@ class TestViews(ViewTestCase):
         self.assertEqual(self.client.get(url, {"group": "gm_transactions"}).status_code, 404)
         # the account page of 2001's main keeps the alt's marker, as eos-tax's own page does
         self.assertContains(self.get(ceo, "account", 11), "eos-auth-monitor-gm-marker")
+
+    def test_should_mark_the_main_by_its_alt_in_another_corporation(self):
+        content = self.get(self.gm_leader, "corporation", 2001).content.decode()
+
+        tile = content[content.index("eos-auth-monitor-gm-tile"):content.index("eos-auth-monitor-todos")]
+        self.assertIn('style="color: var(--bs-pink)">1</div>', tile)
+        self.assertIn("eos-auth-monitor-gm-todo", content)
+        card = main_cards(content)["Char 1101"]
+        self.assertIn("eos-auth-monitor-gm-tag", card)
+        self.assertTrue(card.startswith('border-danger"'))
+
+    def outside_main(self):
+        snapshot = Snapshot.objects.get()
+        row = next(row for row in snapshot.data["corporations"] if row["id"] == 2002)
+        row["other_mains"] = [OUTSIDE]
+        snapshot.save()
+        # its alt in 2002 and its main outside
+        self.reader.return_value = {9002, 9900}
+
+    def test_should_mark_a_main_outside_the_alliance(self):
+        self.outside_main()
+        content = self.get(self.gm_leader, "corporation", 2002).content.decode()
+
+        section = content[content.index("eos-auth-monitor-other-mains"):]
+        card = section[section.rindex('<div class="card h-100', 0, section.index("Outside main")):]
+        card = card.split('<div class="col">')[0]
+        self.assertTrue(card.startswith('<div class="card h-100 border-danger">'))
+        self.assertIn("eos-auth-monitor-gm-tag", card)
+        # the to-do names the main without a link: there is no account page for it
+        todo = content[content.index("eos-auth-monitor-gm-todo"):content.index("Mains of this Corporation")]
+        self.assertIn("Outside main", todo)
+        self.assertNotIn(reverse("eos_auth_monitor:account", args=[99]), content)
+        tile = content[content.index("eos-auth-monitor-gm-tile"):content.index("eos-auth-monitor-todos")]
+        self.assertIn('style="color: var(--bs-pink)">1</div>', tile)
+
+        url = reverse("eos_auth_monitor:corporation_export", args=[2002])
+        response = self.client.get(url, {"group": "gm_transactions"})
+        self.assertEqual(response.content.decode("utf-8-sig").split(), ["Name", "Outside", "main"])
+
+    def test_should_show_a_main_outside_the_alliance_only_to_its_viewers(self):
+        self.outside_main()
+        ceo_elsewhere = make_user("taxceooutside", VIEW_ALL, CEO_ACCESS, corporation_id=2001)
+
+        for user in (self.leader, ceo_elsewhere):
+            with self.subTest(user.username):
+                response = self.get(user, "corporation", 2002)
+                self.assertContains(response, "Outside main")
+                self.assertNotContains(response, "eos-auth-monitor-gm-")

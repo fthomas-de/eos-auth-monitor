@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.38] - 2026-11-19
+
+### Changed
+
+- **eos-tax GM transactions mark the whole account**: a main's card on the
+  Corporation page turns pink and red, and the main joins the GM to-do and
+  its CSV, when any character of its account has a GM transaction - also an
+  alt in another Corporation, before only the characters counted on that
+  page. The same for the cards of mains elsewhere in *Alts of mains in other
+  Corporations*. One rule for every viewer, the full GM view and eos-tax's
+  CEO role alike; the CEO still sees findings on the own Corporation's page
+  only.
+- **GM transactions of characters outside the Alliance count too**: the
+  rule of 0.0.15 (only characters still in a Corporation of the Alliance)
+  is gone; such an alt shows its marker on the account page and marks its
+  main's card.
+- **The GM tile and the overview's *GM* column count mains**, the number in
+  the GM to-do, instead of characters; the cockpit tile sums the
+  Corporations, as the spy tile does - an account with cards in two
+  Corporations counts in both.
+- Deploy together with or after the next eos-tax release (its CEO view of
+  GM transactions by whole accounts): with an older eos-tax a CEO sees only
+  the characters in the own Corporation or booked while in it, so an alt
+  elsewhere marks nothing for him. Nothing breaks with either version.
+
+### Added
+
+- **GM transactions of mains outside the Alliance**: as the spy markers of
+  0.0.37, a main outside the Alliance named in *Alts of mains in other
+  Corporations* gets a pink tag and a red border when its alt here or its
+  main has a GM transaction, and joins the GM to-do (unlinked) and its CSV.
+
 ## [0.0.37] - 2026-11-19
 
 ### Changed

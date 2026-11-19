@@ -24,7 +24,7 @@
                         <div class="col">{% include "eos_auth_monitor/partials/spy-tile.html" with spy_count=corporation.spy_characters|length %}</div>
                     {% endif %}
                     {% if corporation.gm_shown %}
-                        <div class="col">{% include "eos_auth_monitor/partials/gm-tile.html" with gm_count=corporation.gm_characters|length %}</div>
+                        <div class="col">{% include "eos_auth_monitor/partials/gm-tile.html" with gm_count=corporation.gm_accounts|length %}</div>
                     {% endif %}
                     {% for gauge in corporation.service_counts %}
                         <div class="col">
@@ -92,7 +92,7 @@
                             </li>
                         {% endfor %}
                         {% if corporation.gm_accounts %}
-                            {# eos-tax's GM transactions, per main whose characters here have one; only for its viewers #}
+                            {# eos-tax's GM transactions, per main whose account has one; only for its viewers #}
                             <li class="list-group-item eos-auth-monitor-gm-todo">
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                                     <span class="badge text-wrap text-white" style="background-color: var(--bs-pink)"><i class="fas fa-sack-dollar"></i> {% translate "GM transactions" %}</span>
@@ -102,7 +102,7 @@
                                     {% include "eos_auth_monitor/partials/csv-button.html" with group="gm_transactions" %}
                                 </div>
                                 <div class="small text-break">
-                                    {% for account in corporation.gm_accounts %}{% if account.visiting and not can_view_all %}{{ account.main_name }}{% else %}<a href="{% url 'eos_auth_monitor:account' account.user_id %}">{{ account.main_name }}</a>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                    {% for account in corporation.gm_accounts %}{% if account.visiting and not can_view_all or account.unrated %}{{ account.main_name }}{% else %}<a href="{% url 'eos_auth_monitor:account' account.user_id %}">{{ account.main_name }}</a>{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}
                                 </div>
                             </li>
                         {% endif %}
@@ -154,8 +154,8 @@
                     {# from the member list: mains the overview does not rate, outside the Alliance #}
                     {% for other in corporation.unrated_other_mains %}
                         <div class="col">
-                            {# not checked here; eos-spy-network checks it, and its markers make the card red #}
-                            <div class="card h-100{% if other.spy_alts %} border-danger{% endif %}">
+                            {# not checked here; eos-spy-network and eos-tax check it, and their findings make the card red #}
+                            <div class="card h-100{% if other.spy_alts or other.has_gm %} border-danger{% endif %}">
                                 <div class="card-body d-flex align-items-start gap-3">
                                     <img src="{{ other.main_id|character_portrait_url:64 }}" width="48" height="48" class="rounded flex-shrink-0" alt="">
                                     <div class="flex-grow-1 overflow-hidden">
@@ -164,11 +164,14 @@
                                         <div class="small text-break">
                                             {% for character in other.characters %}{{ character.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
                                         </div>
-                                        {% if other.spy_markers %}
+                                        {% if other.spy_markers or other.has_gm %}
                                             <div class="d-flex flex-wrap gap-1 mt-1">
                                                 {% for marker in other.spy_markers %}
                                                     <span class="badge text-bg-info text-wrap eos-auth-monitor-spy-tag"><i class="fas fa-user-secret"></i> {{ marker.label }}</span>
                                                 {% endfor %}
+                                                {% if other.has_gm %}
+                                                    <span class="badge text-wrap text-white eos-auth-monitor-gm-tag" style="background-color: var(--bs-pink)"><i class="fas fa-sack-dollar"></i> {% translate "GM transactions" %}</span>
+                                                {% endif %}
                                             </div>
                                         {% endif %}
                                     </div>

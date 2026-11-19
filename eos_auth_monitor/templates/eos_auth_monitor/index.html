@@ -40,7 +40,7 @@
                     <div class="col">{% include "eos_auth_monitor/partials/spy-tile.html" with spy_count=report.spy_characters|length %}</div>
                 {% endif %}
                 {% if report.gm_shown %}
-                    <div class="col">{% include "eos_auth_monitor/partials/gm-tile.html" with gm_count=report.gm_characters|length %}</div>
+                    <div class="col">{% include "eos_auth_monitor/partials/gm-tile.html" with gm_count=report.gm_count %}</div>
                 {% endif %}
             </div>
         {% endif %}
@@ -139,7 +139,7 @@
                                         <th title="{% translate 'Characters with markers in eos-spy-network' %}"><i class="fas fa-user-secret fa-fw"></i> {% translate "Spies" %}</th>
                                     {% endif %}
                                     {% if report.gm_shown %}
-                                        <th title="{% translate 'Characters with GM transactions in eos-tax' %}"><i class="fas fa-sack-dollar fa-fw"></i> GM</th>
+                                        <th title="{% translate 'Mains with GM transactions in eos-tax in the account' %}"><i class="fas fa-sack-dollar fa-fw"></i> GM</th>
                                     {% endif %}
                                 </tr>
                             </thead>
@@ -185,7 +185,7 @@
                                             {% endwith %}
                                         {% endif %}
                                         {% if report.gm_shown %}
-                                            {% with gm_count=corporation.gm_characters|length %}
+                                            {% with gm_count=corporation.gm_accounts|length %}
                                                 <td data-order="{{ gm_count }}" class="fw-semibold eos-auth-monitor-gm-count{% if not gm_count %} text-success{% endif %}"{% if gm_count %} style="color: var(--bs-pink)"{% endif %}>{{ gm_count }}</td>
                                             {% endwith %}
                                         {% endif %}
