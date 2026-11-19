@@ -4,10 +4,35 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-18 (0.0.35).
+Last updated 2026-11-19 (0.0.36).
 
 ## Release
 
+- Version **0.0.36** of 2026-11-18: **fixes from the permission review**
+  (see `CHANGELOG.md` and the decisions of 2026-11-18 (permission review)
+  below).
+  - `permissions.any_permission_required` raises `PermissionDenied`: a
+    logged-in user without any of the view's permissions gets 403 instead
+    of the login redirect; anonymous users still go to the login. 14
+    assertions in `test_views` changed from 302 to 403.
+  - The CEO roles of eos-tax (`eos_tax.basic_access`) and eos-spy-network
+    (`view_own_corporation`) show their findings on the own Corporation's
+    page only: `Account.spy_shown`/`gm_shown` (default on, switched off on
+    the account copies of every other Corporation by
+    `Report.add_spy_markers`/`add_gm_transactions`) empty
+    `Account.spy_markers` and `has_gm`, and `Corporation.gm_accounts` now
+    reads `has_gm` - card tags, red border, card order, GM to-do and its CSV
+    group. The account pages (whole accounts) are unchanged. Before, a viewer
+    with `view_all` and only a CEO role saw them on the page of the
+    Corporation where such a character now is or counts. Two new tests
+    (`test_should_show_eos_taxs_ceo_nothing_on_another_corporation_page`,
+    `test_should_show_the_spy_ceo_nothing_on_another_corporation_page`).
+  - All 16 new or changed assertions were red against the old code. No
+    migration, no message, no template, no static file. Not seen in a
+    browser.
+  - The full analysis (rights table, findings, interfaces) is in the shared
+    notes of the permission sessions, not in the repo; the coordination
+    session holds it.
 - Version **0.0.35** of 2026-11-18: **Help mode remembered per user**. Model
   `HelpMode` (user as primary key, `on`; migration `0011`, applied to
   `aa_dev`), no row = on. `help.js` POSTs each change to `help_mode`
@@ -336,7 +361,7 @@ Last updated 2026-11-18 (0.0.35).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 501 tests without the translation tests, 3 translation tests, all green;
+- 511 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -353,7 +378,7 @@ Last updated 2026-11-18 (0.0.35).
   against the old `report.py`; 0.0.24 8 for 8; 0.0.25 not sabotaged; 0.0.26
   18 of 19, the green one strengthened; 0.0.27 13 for 13; 0.0.28 20 for 20
   after one fix: a marker class was part of another attribute; 0.0.30 6 for
-  6 after one fix: the tile's count itself was not asserted; 0.0.31 4 for 4; 0.0.32 4 for 4; 0.0.33 12 for 12).
+  6 after one fix: the tile's count itself was not asserted; 0.0.31 4 for 4; 0.0.32 4 for 4; 0.0.33 12 for 12; 0.0.36 16 for 16, tests first against the old code).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -380,6 +405,10 @@ Last updated 2026-11-18 (0.0.35).
 | Dashboard widgets (`views.dashboard_own`, `views.dashboard_corporation`) | `view_own` / `basic_access` | On Alliance Auth's dashboard, order 4 like eos-invoices, own before Corporation (registration order). Own: failed checks with the number of characters (`Account.keyword_counts`), service icons, link to My account. Corporation: its own problems, each to-do group with the number of mains, the unregistered count, link to the Corporation page. Red border with anything to do, green without. `""` without the permission or when the snapshot has nothing about the viewer |
 | Settings | `manage_settings` | Alliance (Tom Select), stale limit, scope threshold (*Scopes missing: a problem from*), ESI member lists on/off (also switches the roles call), only characters in the Alliance on/off, check and service switches, corptools sections and scopes, the notice to members (saving only a changed notice starts no rebuild: `form.changed_data`) |
 | Rebuild (POST) / progress (JSON) | `view_all` or `manage_settings` / any app permission | Start the task / state for the progress bar |
+
+A logged-in user without the permission of a page gets 403 (since 0.0.36);
+the 403 of a Corporation or account page outside the viewer's reach is the
+object check of `can_view_corporation`, the same answer.
 
 Every page has a footer with the cost of the last rebuild (`view_all` or
 `manage_settings` only). The header reads "Auth Monitor (version)" with the
@@ -1045,6 +1074,35 @@ einbauen, der alle bereiche/container mit erklärenden texten versieht"):
   theme's primary colour vanished on the primary-coloured navbar. Claude's
   call, not asked.
 
+2026-11-18 (permission review, 0.0.36; one session per eos app, a
+coordination session merges them):
+
+- **Director crown of alts in other Corporations stays** on the account
+  pages: a CEO sees that an alt of their member is a Director of another
+  Corporation of the Alliance - although the visiting card on that other
+  Corporation's page hides the crown from its CEO (AM-05). Asked, kept as it
+  is.
+- **CEO roles' findings only on the own Corporation's page** (fixed in
+  0.0.36), the README's promise; the account pages keep showing them for
+  alts elsewhere, as the source apps do.
+- **Mains of visiting accounts stay named** for a CEO without `view_all`
+  (visiting cards and to-dos, *Members whose main is in another
+  Corporation*, the *Registered in Auth* list): asked, kept.
+- **corptools-derived data for `basic_access`** (audit state, missing
+  scopes, EVE login days, Director roles) without corptools' own
+  permissions: asked, fine as it is.
+- **403 instead of the login redirect, in every eos app alike** (0.0.36
+  here); the other apps follow in their own sessions.
+- Checked and fine in the review: every URL with login and permission plus
+  AA's `main_character_required`; every ID from URL or GET checked against
+  the viewer; POST + CSRF for rebuild, help mode and settings; the `next` of
+  rebuild limited to the own host; CSV formula cells escaped; menu, navbar
+  and widgets by permission; admin only `CharacterProblemsFilter`; no
+  management command, no notification. Left as information: a CEO can tell
+  "not in the overview" (404) from "another Corporation" (403) by user ID,
+  and the CEO's live main Corporation is compared with the snapshot's (up to
+  one rebuild late).
+
 ## Pitfalls found
 
 - A new file under `static/` needs `collectstatic` before the tests: the
@@ -1211,8 +1269,19 @@ einbauen, der alle bereiche/container mit erklärenden texten versieht"):
 - The Claude app's built-in browser pane has no session at the dev
   instance, and the EVE SSO login there did not arrive (2026-11-18). Check
   pages in Chrome (Claude in Chrome), where the user is logged in.
+- A test of a CEO role must open a page where that CEO's characters
+  actually count: the old "nothing beyond the own Corporation" tests looked
+  at Corporation 2001 from a CEO of 2002, where no marked character counts,
+  and stayed green while 2002's alts leaked onto other pages. 0.0.36 tests
+  the other direction.
 
 ## Open points / next steps
+
+- **403 in the other eos apps**: eos-spy-network, eos-sig-checker, eos-tax
+  and eos-invoices still redirect a logged-in user without permission to the
+  login (eos-spy-network's `permissions.any_permission_required` is a copy
+  of this app's old one); the user chose 403 everywhere - in their own
+  sessions. Production needs 0.0.36 deployed for the change here.
 
 - **Help mode (0.0.34)**: look at *My account* and an account page in the
   browser (service tiles' corner icon, the question mark in the folded
