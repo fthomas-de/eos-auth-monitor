@@ -4,12 +4,12 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-19 (0.0.38).
+Last updated 2026-11-19 (0.0.39).
 
 ## Release
 
-- **Unreleased** (after 0.0.38, nothing committed): three changes, see
-  `CHANGELOG.md`.
+- Version **0.0.39** of 2026-11-19: **Mumble start date, "Alts in ...", capital-contract tests** (see
+  `CHANGELOG.md`).
   - **Mumble activity: from**: `MonitorConfiguration.activity_start` (migration
     `0012`, applied to `aa_dev`), form field with a date widget,
     `activity.first_day()` used by `rates`, `breakdown` and `record` (which
@@ -29,13 +29,13 @@ Last updated 2026-11-19 (0.0.38).
     `activity.py`, the settings condition, `alt_corporations`, its filter, both
     templates, the test's kinds), all red, files restored; the guarded
     `test_sources_other` test cannot be sabotaged from here.
-  - **New msgids for `/commit`** (glossary, de/ru/zh_Hans): "Mumble activity:
+  - **New msgids** (translated at the commit): "Mumble activity:
     from" and its help text ("Active in Mumble counts no day before this date.
     Empty: no limit."); "Alts in %(corporations)s" (context `EVE jargon`); the
     extended card help text on the Corporation page (the old msgid "A card per
     main with something open. ..." is replaced by one with the added sentence
     about "Alts in").
-  - Not seen in a browser.
+  - Migrations **0001-0012** are applied in `aa_dev` (0012 adds `activity_start`); 537 tests in the suite. Not seen in a browser.
 - Version **0.0.38** of 2026-11-19: **GM transactions by whole accounts**
   (see `CHANGELOG.md` and the decisions of 2026-11-19 (GM by whole accounts)
   below). **Deploy together with or after eos-tax 0.4.30** (released and
