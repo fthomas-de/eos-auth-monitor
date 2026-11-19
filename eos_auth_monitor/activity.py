@@ -44,13 +44,22 @@ def _login_days(login, logoff, read) -> set:
     return days
 
 
+def first_day(days: int, today):
+    """The first day counted: `days` back, but not before the setting's start date."""
+    first = today - timedelta(days=days)
+    start = MonitorConfiguration.get_solo().activity_start
+    return max(first, start) if start else first
+
+
 def record(now=None) -> None:
     """Note the days the stored timestamps tell of, and drop the days older than the setting keeps."""
     snapshot = snapshots.current()
     if snapshot is None or not (is_app_installed("mumble") and is_app_installed("corptools")):
         return
     now = now or timezone.now()
-    first = now.date() - timedelta(days=MonitorConfiguration.get_solo().activity_days)
+    days = MonitorConfiguration.get_solo().activity_days
+    keep = now.date() - timedelta(days=days)
+    first = first_day(days, now.date())
 
     # the snapshot's accounts: the mains of the Alliance, with the characters the settings count
     accounts = [account for corporation in snapshot.data["corporations"] for account in corporation["accounts"]]
@@ -80,7 +89,8 @@ def record(now=None) -> None:
             ActivityDay.objects.filter(
                 day=day, user_id__in=[user_id for user_id, marked in pairs if marked == day]
             ).update(**{flag: True})
-    ActivityDay.objects.filter(day__lt=first).delete()
+    # the start date hides days, it deletes none
+    ActivityDay.objects.filter(day__lt=keep).delete()
 
 
 def rates(days: int) -> dict[int, tuple[int, int]]:
@@ -91,7 +101,7 @@ def rates(days: int) -> dict[int, tuple[int, int]]:
     today = timezone.now().date()
     return {
         row["user_id"]: (row["both"], row["logins"])
-        for row in ActivityDay.objects.filter(eve_login=True, day__gte=today - timedelta(days=days), day__lt=today)
+        for row in ActivityDay.objects.filter(eve_login=True, day__gte=first_day(days, today), day__lt=today)
         .values("user_id")
         .annotate(logins=Count("pk"), both=Count("pk", filter=Q(mumble=True)))
     }
@@ -103,6 +113,7 @@ def breakdown(user_id: int, days: int) -> list[ActivityDay]:
     A day nothing was noted on comes as an unsaved ActivityDay with both flags off.
     """
     today = timezone.now().date()
-    noted = {row.day: row for row in ActivityDay.objects.filter(user_id=user_id, day__gte=today - timedelta(days=days))}
-    dates = [today - timedelta(days=back) for back in range(days + 1)]
+    first = min(first_day(days, today), today)  # a start date in the future leaves today alone
+    noted = {row.day: row for row in ActivityDay.objects.filter(user_id=user_id, day__gte=first)}
+    dates = [today - timedelta(days=back) for back in range((today - first).days + 1)]
     return [noted.get(date) or ActivityDay(user_id=user_id, day=date) for date in dates]

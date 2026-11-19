@@ -70,10 +70,14 @@ class MonitorConfigurationForm(forms.ModelForm):
             "fetch_members",
             "alliance_characters_only",
             "activity_days",
+            "activity_start",
             "member_notice",
         ]
         # the form field strips the text, so a notice of blanks is stored empty and shows no box
-        widgets = {"member_notice": forms.Textarea(attrs={"rows": 3})}
+        widgets = {
+            "member_notice": forms.Textarea(attrs={"rows": 3}),
+            "activity_start": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

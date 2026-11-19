@@ -219,6 +219,12 @@ TRANSLATIONS = {
     ),
     "In the Alliance since": ("In der Alliance seit", "В Alliance с", "加入 Alliance 时间"),
     "Active in Mumble": ("Aktiv im Mumble", "Активен в Mumble", "Mumble 活跃度"),
+    "Mumble activity: from": ("Mumble-Aktivität: ab", "Активность в Mumble: с", "Mumble 活跃度：起始"),
+    "Active in Mumble counts no day before this date. Empty: no limit.": (
+        "Active in Mumble zählt keinen Tag vor diesem Datum. Leer: keine Grenze.",
+        "Active in Mumble не учитывает дни до этой даты. Пусто: без ограничения.",
+        "Active in Mumble 不统计此日期之前的任何一天。留空：不限制。",
+    ),
     "Mumble activity: days": ("Mumble-Aktivität: Tage", "Активность в Mumble: дней", "Mumble 活跃度：天数"),
     "Active in Mumble compares, over this many past days, the days a main played EVE with the days it was also connected to Mumble. Older days are deleted.": (
         "Aktiv im Mumble vergleicht über so viele vergangene Tage die Tage, an denen ein Main EVE gespielt hat, mit den Tagen, an denen er zusätzlich im Mumble verbunden war. Ältere Tage werden gelöscht.",
@@ -698,6 +704,7 @@ TRANSLATIONS = {
         '已完成 %(part)s / %(total)s 个 Main',
     ),
     'complete': ('vollständig', 'завершён', '已完成'),
+    'Alts in %(corporations)s': ('Alts in %(corporations)s', 'Альты в %(corporations)s', 'Alt 在 %(corporations)s'),
     'Main in %(corporation)s': ('Main in %(corporation)s', 'Main в %(corporation)s', 'Main 在 %(corporation)s'),
     # the crown on a main's card: a character of the account directs the main's Corporation
     "Director of the main's Corporation": (
@@ -860,10 +867,10 @@ TRANSLATIONS = {
         "Всё, чего нужно добиться, по группам проблем. Скопируйте имена группы для одного письма в EVE или скачайте список как CSV.",
         "所有需要跟进的事项，按问题分组。复制一组的名字发一封 EVE 邮件，或将列表下载为 CSV。",
     ),
-    "A card per main with something open. A red border means a problem, a spy marker or a GM transaction; a warning alone stays open without counting as a problem. The crown marks a Director among the account's characters.": (
-        "Eine Karte je Main mit offenen Punkten. Ein roter Rahmen bedeutet ein Problem, einen Spy-Marker oder eine GM-Transaktion; eine Warnung allein bleibt offen, ohne als Problem zu zählen. Die Krone markiert einen Director unter den Characters des Accounts.",
-        "Карточка на каждый Main с незакрытыми пунктами. Красная рамка означает проблему, маркер шпиона или GM-транзакцию; одно предупреждение остаётся открытым, не считаясь проблемой. Корона отмечает Director среди Character аккаунта.",
-        "每个有待处理事项的 Main 一张卡片。红色边框表示有问题、间谍标记或 GM 交易；仅有警告时保持待处理，但不计为问题。皇冠标记账号 Character 中的 Director。",
+    "A card per main with something open. A red border means a problem, a spy marker or a GM transaction; a warning alone stays open without counting as a problem. The crown marks a Director among the account's characters. 'Alts in' names the other Corporations of the Alliance where the main's alts are; it only shows, nothing is rated by it.": (
+        "Eine Karte je Main mit offenen Punkten. Ein roter Rahmen bedeutet ein Problem, einen Spy-Marker oder eine GM-Transaktion; eine Warnung allein bleibt offen, ohne als Problem zu zählen. Die Krone markiert einen Director unter den Characters des Accounts. „Alts in“ nennt die anderen Corporations der Alliance, in denen die Alts des Mains sind; es wird nur angezeigt, nichts wird danach bewertet.",
+        "Карточка на каждый Main с незакрытыми пунктами. Красная рамка означает проблему, маркер шпиона или GM-транзакцию; одно предупреждение остаётся открытым, не считаясь проблемой. Корона отмечает Director среди Character аккаунта. «Alts in» называет другие Corporation Alliance, где находятся альты Main; это только отображается и ничем не оценивается.",
+        "每个有待处理事项的 Main 一张卡片。红色边框表示有问题、间谍标记或 GM 交易；仅有警告时保持待处理，但不计为问题。皇冠标记账号 Character 中的 Director。“Alts in”列出该 Main 的 Alt 所在的 Alliance 内其他 Corporation；仅作显示，不据此评级。",
     ),
     "Mains whose characters here have nothing open.": (
         "Mains, deren Characters hier nichts offen haben.",

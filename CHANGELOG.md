@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.39] - 2026-11-19
+
+### Added
+
+- **Mumble activity: from**: a start date for Active in Mumble. No day before
+  it counts, on top of the window of *Mumble activity: days*; days noted
+  earlier are hidden, not deleted. Saving it alone starts no rebuild.
+  Migration `0012`.
+- **Alts in ...** on a main's card on the Corporation page, and an icon with
+  the same text in the list *Without problems*: the other Corporations of the
+  Alliance where the main's alts are. Display only.
+
+### Tests
+
+- eos-spy-network's marker `capital_contracts` is covered like the other
+  kinds (card tag, to-do, CSV group; the app offers the kind).
+
 ## [0.0.38] - 2026-11-19
 
 ### Changed

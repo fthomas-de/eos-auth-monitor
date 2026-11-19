@@ -94,6 +94,12 @@ class MonitorConfiguration(SingletonModel):
             "with the days it was also connected to Mumble. Older days are deleted."
         ),
     )
+    activity_start = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Mumble activity: from"),
+        help_text=_("Active in Mumble counts no day before this date. Empty: no limit."),
+    )
 
     class Meta:
         default_permissions = ()

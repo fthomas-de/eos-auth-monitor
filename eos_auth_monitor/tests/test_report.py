@@ -184,6 +184,24 @@ class TestAccountDirectors(MonitorTestCase):
         self.assertFalse(account.characters[0].is_director)
 
 
+class TestAltCorporations(MonitorTestCase):
+    def found(self):
+        # the main in 2001, an alt in 2002 (the Alliance) and one in 9999 (outside it)
+        characters = [character_row(1101), character_row(1102, corporation_id=2002), character_row(1103, corporation_id=9999)]
+        return report([corporation_row(2001, [account_row(11, 1101, characters)]), corporation_row(2002)])
+
+    def test_should_name_the_other_corporations_of_the_alliance_where_the_alts_count(self):
+        self.assertEqual(self.found().corporation(2001).accounts[0].alt_corporations, ["Corp 2002"])
+
+    def test_should_leave_the_visiting_copy_without_any(self):
+        self.assertEqual(self.found().corporation(2002).visiting[0].alt_corporations, [])
+
+    def test_should_name_none_for_a_main_whose_alts_are_all_at_home(self):
+        found = report([corporation_row(2001, [account_row(11, 1101, [character_row(1101), character_row(1102)])])])
+
+        self.assertEqual(found.corporation(2001).accounts[0].alt_corporations, [])
+
+
 class TestCorporationLists(MonitorTestCase):
     def corporation(self):
         return report(

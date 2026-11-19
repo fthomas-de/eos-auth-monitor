@@ -127,6 +127,17 @@ class TestRecord(MonitorTestCase):
 
         self.assertEqual(self.days(), {(self.linked.pk, day(14), True, False)})
 
+    def test_should_note_no_day_before_the_start_date_and_keep_the_older_ones_noted(self):
+        configure(activity_days=5, activity_start=day(14))
+        ActivityDay.objects.create(user=self.linked, day=day(12), eve_login=True)
+
+        self.record({self.linked.pk: (at(15, 20), at(15, 22))}, [(1101, at(13, 20), at(13, 21), at(16, 9))])
+
+        # day 13 is not noted, day 12 is hidden but stays
+        self.assertEqual(
+            self.days(), {(self.linked.pk, day(12), True, False), (self.linked.pk, day(15), False, True)}
+        )
+
     def test_should_do_nothing_without_a_snapshot(self):
         Snapshot.objects.all().delete()
 
@@ -155,7 +166,41 @@ class TestRates(MonitorTestCase):
         self.assertEqual(activity.rates(4), {user.pk: (2, 3)})
 
 
+    def test_should_count_no_day_before_the_start_date(self):
+        user = make_user("pilot")
+        today = timezone.now().date()
+        for days_ago in (1, 2, 3):
+            ActivityDay.objects.create(user=user, day=today - datetime.timedelta(days=days_ago), eve_login=True)
+        configure(activity_start=today - datetime.timedelta(days=2))
+
+        self.assertEqual(activity.rates(4), {user.pk: (0, 2)})
+
+    def test_should_ignore_a_start_date_older_than_the_window(self):
+        user = make_user("pilot")
+        today = timezone.now().date()
+        ActivityDay.objects.create(user=user, day=today - datetime.timedelta(days=3), eve_login=True)
+        configure(activity_start=today - datetime.timedelta(days=100))
+
+        self.assertEqual(activity.rates(2), {})
+        self.assertEqual(activity.rates(3), {user.pk: (0, 1)})
+
+
 class TestBreakdown(MonitorTestCase):
+    def test_should_end_at_the_start_date(self):
+        user = make_user("pilot")
+        today = timezone.now().date()
+        configure(activity_start=today - datetime.timedelta(days=1))
+
+        found = [row.day for row in activity.breakdown(user.pk, 5)]
+
+        self.assertEqual(found, [today, today - datetime.timedelta(days=1)])
+
+    def test_should_give_today_alone_for_a_start_date_in_the_future(self):
+        today = timezone.now().date()
+        configure(activity_start=today + datetime.timedelta(days=3))
+
+        self.assertEqual([row.day for row in activity.breakdown(make_user("pilot").pk, 5)], [today])
+
     def test_should_give_every_day_of_the_window_today_first(self):
         user = make_user("pilot")
         today = timezone.now().date()

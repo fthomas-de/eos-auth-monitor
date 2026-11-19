@@ -27,6 +27,11 @@
                     <div class="small text-body-secondary mb-1">
                         {% blocktranslate count counter=account.characters|length context "EVE jargon" %}{{ counter }} character{% plural %}{{ counter }} characters{% endblocktranslate %}
                     </div>
+                    {% if account.alt_corporations %}
+                        <div class="small text-body-secondary text-truncate mb-1 eos-auth-monitor-alt-corporations">
+                            <i class="fas fa-right-to-bracket fa-fw"></i> {% blocktranslate with corporations=account.alt_corporations|join:", " context "EVE jargon" %}Alts in {{ corporations }}{% endblocktranslate %}
+                        </div>
+                    {% endif %}
                 {% endif %}
                 <div class="d-flex flex-wrap gap-1">
                     {% for check in account.keywords %}

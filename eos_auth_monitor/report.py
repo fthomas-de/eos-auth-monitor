@@ -176,6 +176,8 @@ class Account:
     gm_shown: bool = True
     # a GM transaction anywhere in the whole account, alts elsewhere included (Report.add_gm_transactions)
     account_gm: bool = False
+    # other Corporations of the Alliance where the account's alts count; own mains only, display only
+    alt_corporations: list[str] = field(default_factory=list)
 
     @property
     def problem_characters(self) -> list[Character]:
@@ -936,7 +938,15 @@ class Report:
     def _corporation(self, row, names) -> Corporation:
         counted = self._counted.get(row["id"], {})
         accounts = [
-            replace(self._accounts[account["user_id"]], characters=counted.get(account["user_id"], []))
+            replace(
+                self._accounts[account["user_id"]],
+                characters=counted.get(account["user_id"], []),
+                alt_corporations=sorted(
+                    names[corporation_id]
+                    for corporation_id, by_user in self._counted.items()
+                    if corporation_id != row["id"] and account["user_id"] in by_user
+                ),
+            )
             for account in row["accounts"]
         ]
         visiting = sorted(

@@ -426,8 +426,8 @@ def settings(request):
 
     if request.method == "POST" and form.is_valid():
         form.save()
-        # the pages read the notice straight from the settings: it alone is no reason to spend ESI calls
-        if form.changed_data == ["member_notice"]:
+        # the pages read the notice and the Mumble start date straight from the settings: no reason to spend ESI calls
+        if form.changed_data and set(form.changed_data) <= {"member_notice", "activity_start"}:
             messages.success(request, _("Settings saved."))
         elif _start_rebuild():
             messages.success(request, _("Settings saved. The overview is being rebuilt."))

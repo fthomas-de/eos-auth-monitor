@@ -110,7 +110,7 @@
                 </div>
             {% endif %}
 
-            {% translate "A card per main with something open. A red border means a problem, a spy marker or a GM transaction; a warning alone stays open without counting as a problem. The crown marks a Director among the account's characters." as help_text %}
+            {% translate "A card per main with something open. A red border means a problem, a spy marker or a GM transaction; a warning alone stays open without counting as a problem. The crown marks a Director among the account's characters. 'Alts in' names the other Corporations of the Alliance where the main's alts are; it only shows, nothing is rated by it." as help_text %}
             <h6>{% translate "Mains of this Corporation" %} <span class="badge text-bg-secondary">{{ corporation.mains }}</span> {% include "eos_auth_monitor/partials/help.html" %}</h6>
             {% if corporation.card_accounts %}
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-3 mb-3">
@@ -134,7 +134,7 @@
                                 <div class="col d-flex align-items-center gap-2">
                                     <img src="{{ account.main_id|character_portrait_url:32 }}" width="24" height="24" class="rounded flex-shrink-0" alt="">
                                     <a href="{% url 'eos_auth_monitor:account' account.user_id %}" class="text-truncate">{{ account.main_name }}</a>
-                                    <span class="ms-auto text-nowrap">{% include "eos_auth_monitor/partials/director-icon.html" %} {% include "eos_auth_monitor/partials/service-icons.html" with inline=True %}</span>
+                                    <span class="ms-auto text-nowrap">{% if account.alt_corporations %}{% blocktranslate with corporations=account.alt_corporations|join:", " context "EVE jargon" asvar alts_text %}Alts in {{ corporations }}{% endblocktranslate %}<i class="fas fa-right-to-bracket text-body-secondary eos-auth-monitor-alt-corporations" title="{{ alts_text }}" data-bs-tooltip></i> {% endif %}{% include "eos_auth_monitor/partials/director-icon.html" %}{% include "eos_auth_monitor/partials/service-icons.html" with inline=True %}</span>
                                 </div>
                             {% endfor %}
                         </div>

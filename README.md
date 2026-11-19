@@ -57,7 +57,10 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   line per name with its problem. Then every
   member of the Corporation, reduced to mains: the own mains with problems (or
   with spy markers or GM transactions, see below) as
-  cards with keywords naming their problems, the
+  cards with keywords naming their problems - a card names the other
+  Corporations of the Alliance where the main's alts are ("Alts in ...", an
+  icon with the same text in the list below; display only, nothing is rated
+  by it) - the
   others as a compact list; then a section *Alts of mains in other
   Corporations* - a card per main elsewhere with its alts here, marked
   "Main in ...", red or yellow when an alt here has something open, the
@@ -277,7 +280,8 @@ Corporation.
 With the Mumble service and corptools installed, the app notes per main with
 Mumble linked and per day (EVE time) whether it played EVE and whether it was
 connected to Mumble. A main's share is its days with both out of its days in
-EVE, over the last *Mumble activity: days* whole days - today is left out. A
+EVE, over the last *Mumble activity: days* whole days - but no day before
+*Mumble activity: from*, if set - today is left out. A
 day in Mumble without EVE changes nothing; a main without Mumble linked or
 without a day in EVE has no share ("-").
 
@@ -475,6 +479,7 @@ put in `local.py`.
 | Fetch data from ESI | See [ESI](#esi); on by default |
 | Only characters in the Alliance | Leaves out every character of an account that is not in the Alliance - in the checks, the pages and the counts (see [How accounts are counted](#how-accounts-are-counted)); off by default |
 | Mumble activity: days | Over how many past days [Active in Mumble](#active-in-mumble) is worked out, and how long its days are kept; 30 by default |
+| Mumble activity: from | A date before which no day counts for [Active in Mumble](#active-in-mumble), on top of the days window; days noted earlier are hidden, not deleted. Empty: no limit. Saving it alone starts no rebuild |
 | Checks | One switch per check, grouped by app |
 | Services | One switch per service, to hide a service the Alliance does not use |
 | corptools: what the checks count | Four lists - Character Audit sections and scopes, Corporation Audit sections and scopes. Untick what the Alliance does not use, e.g. *Moon Observations* and `esi-industry.read_corporation_mining.v1` for an Alliance without moons; a section and its scope are separate entries |

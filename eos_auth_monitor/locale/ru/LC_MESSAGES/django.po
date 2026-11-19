@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-19 14:12+0000\n"
-"PO-Revision-Date: 2026-11-19 14:12+0000\n"
+"POT-Creation-Date: 2026-11-19 15:24+0000\n"
+"PO-Revision-Date: 2026-11-19 15:24+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: ru\n"
 "Language: ru\n"
@@ -447,7 +447,7 @@ msgstr ""
 "Проверяет, показывает и считает только тех Character аккаунта, которые "
 "состоят в Alliance; альты в других местах не учитываются."
 
-#: models.py:85 templates/eos_auth_monitor/settings.html:29
+#: models.py:85 templates/eos_auth_monitor/settings.html:30
 msgid "Notice to members"
 msgstr "Объявление для участников"
 
@@ -472,17 +472,26 @@ msgstr ""
 "Main играл в EVE, с днями, когда он при этом был подключён к Mumble. Более "
 "старые дни удаляются."
 
-#: models.py:100 models.py:103
+#: models.py:100
+msgid "Mumble activity: from"
+msgstr "Активность в Mumble: с"
+
+#: models.py:101
+msgid "Active in Mumble counts no day before this date. Empty: no limit."
+msgstr ""
+"Active in Mumble не учитывает дни до этой даты. Пусто: без ограничения."
+
+#: models.py:106 models.py:109
 msgid "Configuration"
 msgstr "Конфигурация"
 
-#: models.py:169
+#: models.py:175
 msgid "Pass accounts whose characters HAVE problems instead of those without."
 msgstr ""
 "Пропускать аккаунты, у Character которых ЕСТЬ проблемы, а не тех, у кого их "
 "нет."
 
-#: models.py:173
+#: models.py:179
 msgid "Smart Filter: Auth Monitor character problems"
 msgstr "Smart Filter: проблемы Character в Auth Monitor"
 
@@ -572,7 +581,7 @@ msgstr[0] "и ещё %(count)d"
 msgstr[1] "и ещё %(count)d"
 msgstr[2] "и ещё %(count)d"
 
-#: report.py:337 templates/eos_auth_monitor/corporation.html:187
+#: report.py:339 templates/eos_auth_monitor/corporation.html:187
 msgid ""
 "The member list of this Corporation could not be read: no member has a token"
 " with the membership scope."
@@ -580,43 +589,43 @@ msgstr ""
 "Не удалось прочитать список участников этой Corporation: ни у одного "
 "участника нет токена со скоупом членства."
 
-#: report.py:340 templates/eos_auth_monitor/corporation_service.html:20
+#: report.py:342 templates/eos_auth_monitor/corporation_service.html:20
 #: templates/eos_auth_monitor/service.html:22
 msgid "Active in Mumble"
 msgstr "Активен в Mumble"
 
-#: report.py:386
+#: report.py:388
 #, python-format
 msgid "%(check)s (warning)"
 msgstr "%(check)s (предупреждение)"
 
-#: report.py:678 templates/eos_auth_monitor/corporation.html:67
+#: report.py:680 templates/eos_auth_monitor/corporation.html:67
 #: templates/eos_auth_monitor/corporation.html:198
 #: templates/eos_auth_monitor/dashboard.corporation.html:33
 msgid "Not registered in Auth"
 msgstr "Не зарегистрированы в Auth"
 
-#: report.py:685 templates/eos_auth_monitor/account.html:131
+#: report.py:687 templates/eos_auth_monitor/account.html:131
 #: templates/eos_auth_monitor/account.html:133
 #: templates/eos_auth_monitor/corporation.html:98
 #: templates/eos_auth_monitor/corporation.html:173
 #: templates/eos_auth_monitor/partials/gm-tile.html:7
 #: templates/eos_auth_monitor/partials/gm-tile.html:9
-#: templates/eos_auth_monitor/partials/main-card.html:43
+#: templates/eos_auth_monitor/partials/main-card.html:48
 msgid "GM transactions"
 msgstr "GM-транзакции"
 
-#: report.py:736 report.py:748 views.py:325
+#: report.py:738 report.py:750 views.py:325
 msgid "Registered in Auth"
 msgstr "Зарегистрированы в Auth"
 
-#: report.py:760 templates/eos_auth_monitor/character_audit.html:8
+#: report.py:762 templates/eos_auth_monitor/character_audit.html:8
 #: templates/eos_auth_monitor/character_audit.html:20 views.py:337
 #: views.py:374
 msgid "Character Audit"
 msgstr "Аудит Character"
 
-#: report.py:768
+#: report.py:770
 msgid ""
 "Characters here with a complete Character Audit. Members not registered in "
 "Auth count as missing."
@@ -624,11 +633,11 @@ msgstr ""
 "Character здесь с полным аудитом Character. Участники, не зарегистрированные"
 " в Auth, считаются отсутствующими."
 
-#: report.py:1160
+#: report.py:1170
 msgid "Members registered"
 msgstr "Участники зарегистрированы"
 
-#: report.py:1167
+#: report.py:1177
 msgid ""
 "Members of the Alliance's Corporations whose character belongs to an account"
 " in Auth. Only Corporations whose member list could be read count."
@@ -637,11 +646,11 @@ msgstr ""
 "Auth. Учитываются только Corporation, чей список участников удалось "
 "прочитать."
 
-#: report.py:1177
+#: report.py:1187
 msgid "Character Audit complete"
 msgstr "Аудит Character завершён"
 
-#: report.py:1184
+#: report.py:1194
 msgid ""
 "Characters with a complete corptools Character Audit: present, all scopes "
 "granted, up to date. Members not registered in Auth count as missing."
@@ -649,7 +658,7 @@ msgstr ""
 "Character с полным аудитом Character в corptools: есть, все scope выданы, "
 "актуален. Участники, не зарегистрированные в Auth, считаются отсутствующими."
 
-#: report.py:1194
+#: report.py:1204
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s работает"
@@ -924,12 +933,15 @@ msgstr "GM перевёл ISK для Character этих Main."
 msgid ""
 "A card per main with something open. A red border means a problem, a spy "
 "marker or a GM transaction; a warning alone stays open without counting as a"
-" problem. The crown marks a Director among the account's characters."
+" problem. The crown marks a Director among the account's characters. 'Alts "
+"in' names the other Corporations of the Alliance where the main's alts are; "
+"it only shows, nothing is rated by it."
 msgstr ""
 "Карточка на каждый Main с незакрытыми пунктами. Красная рамка означает "
 "проблему, маркер шпиона или GM-транзакцию; одно предупреждение остаётся "
 "открытым, не считаясь проблемой. Корона отмечает Director среди Character "
-"аккаунта."
+"аккаунта. «Alts in» называет другие Corporation Alliance, где находятся "
+"альты Main; это только отображается и ничем не оценивается."
 
 #: templates/eos_auth_monitor/corporation.html:114
 msgid "Mains of this Corporation"
@@ -942,6 +954,13 @@ msgstr "Без проблем"
 #: templates/eos_auth_monitor/corporation.html:128
 msgid "Mains whose characters here have nothing open."
 msgstr "Main, у чьих Character здесь нет незакрытых пунктов."
+
+#: templates/eos_auth_monitor/corporation.html:137
+#: templates/eos_auth_monitor/partials/main-card.html:32
+#, python-format
+msgctxt "EVE jargon"
+msgid "Alts in %(corporations)s"
+msgstr "Альты в %(corporations)s"
 
 #: templates/eos_auth_monitor/corporation.html:144
 msgid "No main of this Corporation is registered in Auth."
@@ -1353,16 +1372,16 @@ msgstr "нет Main"
 msgid "%(part)s of %(total)s mains linked"
 msgstr "Привязано Main: %(part)s из %(total)s"
 
-#: templates/eos_auth_monitor/settings.html:56
+#: templates/eos_auth_monitor/settings.html:57
 msgctxt "eos-auth-monitor"
 msgid "Services"
 msgstr "Сервисы"
 
-#: templates/eos_auth_monitor/settings.html:71
+#: templates/eos_auth_monitor/settings.html:72
 msgid "corptools: what the checks count"
 msgstr "corptools: что учитывают проверки"
 
-#: templates/eos_auth_monitor/settings.html:75
+#: templates/eos_auth_monitor/settings.html:76
 msgid ""
 "Untick what the Alliance does not use, e.g. Moon Observations and the mining"
 " scope for an Alliance without moons. A section and its scope are separate "
@@ -1372,12 +1391,12 @@ msgstr ""
 "Observations и скоуп добычи для Alliance без лун. Раздел и его скоуп — "
 "отдельные пункты."
 
-#: templates/eos_auth_monitor/settings.html:93
+#: templates/eos_auth_monitor/settings.html:94
 msgid "None of the apps the checks and services read from is installed."
 msgstr ""
 "Ни одно из приложений, из которых читают проверки и сервисы, не установлено."
 
-#: templates/eos_auth_monitor/settings.html:97
+#: templates/eos_auth_monitor/settings.html:98
 msgctxt "eos-auth-monitor"
 msgid "Save"
 msgstr "Сохранить"

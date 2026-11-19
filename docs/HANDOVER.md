@@ -8,6 +8,34 @@ Last updated 2026-11-19 (0.0.38).
 
 ## Release
 
+- **Unreleased** (after 0.0.38, nothing committed): three changes, see
+  `CHANGELOG.md`.
+  - **Mumble activity: from**: `MonitorConfiguration.activity_start` (migration
+    `0012`, applied to `aa_dev`), form field with a date widget,
+    `activity.first_day()` used by `rates`, `breakdown` and `record` (which
+    notes no day before it but still deletes only by `activity_days`: the date
+    hides, it deletes nothing). Saving it alone (or with the notice) starts no
+    rebuild (`views.settings`).
+  - **Tests for `capital_contracts`** (no production code): a card tag, the
+    to-do group and the CSV group in `TestSpyNetwork`; one test in
+    `test_sources_other` that the installed eos-spy-network offers the kind.
+  - **Alts in ...**: `Account.alt_corporations` (own mains only, set in
+    `Report._corporation` from `_counted`: Corporations of the overview other
+    than the own where an account's characters count), a line on the main card
+    and an icon in *Without problems* (`eos-auth-monitor-alt-corporations`).
+    Display only.
+  - Tests: `test_activity` 29 -> 34, `test_views` 213 -> 217,
+    `test_report` 88 -> 91, `test_sources_other` 18 -> 19. 11 sabotages (5 in
+    `activity.py`, the settings condition, `alt_corporations`, its filter, both
+    templates, the test's kinds), all red, files restored; the guarded
+    `test_sources_other` test cannot be sabotaged from here.
+  - **New msgids for `/commit`** (glossary, de/ru/zh_Hans): "Mumble activity:
+    from" and its help text ("Active in Mumble counts no day before this date.
+    Empty: no limit."); "Alts in %(corporations)s" (context `EVE jargon`); the
+    extended card help text on the Corporation page (the old msgid "A card per
+    main with something open. ..." is replaced by one with the added sentence
+    about "Alts in").
+  - Not seen in a browser.
 - Version **0.0.38** of 2026-11-19: **GM transactions by whole accounts**
   (see `CHANGELOG.md` and the decisions of 2026-11-19 (GM by whole accounts)
   below). **Deploy together with or after eos-tax 0.4.30** (released and
@@ -441,7 +469,7 @@ Last updated 2026-11-19 (0.0.38).
 | Page | Permission | What |
 |---|---|---|
 | Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares; *Members registered* opens the unknown characters), then the Corporations, most accounts with problems first, as a table (the default since 0.0.11) or as tiles (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
-| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth and Character Audit linked to their lists, Corporation Audit and Structures, which name their failed checks, without a link; Character Audit counts the members without a main as failing) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), the own mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`), the others as a compact list; the section *Alts of mains in other Corporations*: a card per visiting main (`Corporation.visiting_cards`, marked "Main in ..." with its alts here, red/yellow/plain, linked and with its service icons and crown only for `view_all`), then the mains outside the Alliance from the member list (`unrated_other_mains`, named only, with spy tags where shown); members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
+| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth and Character Audit linked to their lists, Corporation Audit and Structures, which name their failed checks, without a link; Character Audit counts the members without a main as failing) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), the own mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`; a card's line "Alts in ..." and an icon in the compact list name the other Corporations of the Alliance where the main's alts count, `Account.alt_corporations`, display only), the others as a compact list; the section *Alts of mains in other Corporations*: a card per visiting main (`Corporation.visiting_cards`, marked "Main in ..." with its alts here, red/yellow/plain, linked and with its service icons and crown only for `view_all`), then the mains outside the Alliance from the member list (`unrated_other_mains`, named only, with spy tags where shown); members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Registered in Auth (`corporation_registered`), Character Audit (`corporation_character_audit`) | as Corporation | Behind the Corporation page's tiles: every member with its main and *registered*, *not in Auth* or *no main*, those without a main first (`Corporation.members`); every character the tile rates with its main and failed checks (warnings yellow, *No problems* green), the failing first, then the members without a main, then the rest (`Corporation.audited_characters`). Where the member list was unreadable (`member_list_unread`), the characters Auth knows in the Corporation, with the reason as a warning box. 404 with the ESI switch off / without character checks |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it; Mumble to `account_activity`, with the main's Active in Mumble below *linked*), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |

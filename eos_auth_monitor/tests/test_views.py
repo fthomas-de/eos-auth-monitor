@@ -1,4 +1,5 @@
 import csv
+import datetime
 import io
 import re
 from unittest import skipUnless
@@ -882,6 +883,14 @@ class TestSettings(ViewTestCase):
 
         task.delay.assert_called_once_with()
 
+    def test_should_store_the_mumble_start_date_without_a_rebuild(self):
+        response, task = self.post(self.unchanged(activity_start="2026-11-01"))
+
+        self.assertRedirects(response, reverse("eos_auth_monitor:settings"))
+        self.assertEqual(MonitorConfiguration.get_solo().activity_start, datetime.date(2026, 11, 1))
+        task.delay.assert_not_called()
+        self.assertContains(self.get(self.admin, "settings"), 'name="activity_start" value="2026-11-01"')
+
     def test_should_offer_and_store_the_scope_threshold(self):
         self.assertContains(self.get(self.admin, "settings"), 'name="critical_scope_count" value="5"')
 
@@ -1633,6 +1642,24 @@ class TestAltsInAnotherCorporation(ViewTestCase):
         self.assertContains(response, "Main in Corp 2001")
         self.assertContains(response, reverse("eos_auth_monitor:account", args=[11]))
 
+    def test_should_name_the_other_corporations_of_the_alts_on_the_mains_card(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["accounts"][0]["characters"][0]["problems"] = [AUDIT_MISSING]
+        snapshot.save()
+
+        content = self.get(self.leader, "corporation", 2001).content.decode()
+
+        card = main_cards(content)["Char 1101"]
+        self.assertRegex(card, r'eos-auth-monitor-alt-corporations">\s*<i class="[^"]*"></i> Alts in Corp 2002\s*</div>')
+        # the page of 2002 has no main with alts elsewhere: its own main's card has no such line
+        self.assertNotIn("eos-auth-monitor-alt-corporations", self.get(self.leader, "corporation", 2002).content.decode())
+
+    def test_should_mark_a_main_without_problems_with_a_tooltip_icon(self):
+        content = self.get(self.leader, "corporation", 2001).content.decode()
+        listed = content[content.index("eos-auth-monitor-problem-free"):]
+
+        self.assertRegex(listed, r'fa-right-to-bracket[^>]*eos-auth-monitor-alt-corporations" title="Alts in Corp 2002"')
+
     def test_should_keep_the_main_corporation_free_of_the_alts_problem(self):
         response = self.get(self.leader, "corporation", 2001)
 
@@ -2044,7 +2071,9 @@ class TestSpyNetwork(ViewTestCase):
         snapshot.data["corporations"][0]["accounts"][0]["characters"].append(character_row(1102, corporation_id=2002))
         snapshot.save()
         markers = patch.object(spy_network, "character_markers", return_value=SPY_MARKERS)
-        kinds = patch.object(spy_network, "kinds", return_value=("membership", "corp_changes", "wallet"))
+        kinds = patch.object(
+            spy_network, "kinds", return_value=("membership", "corp_changes", "wallet", "capital_contracts")
+        )
         self.markers = markers.start()
         kinds.start()
         self.addCleanup(markers.stop)
@@ -2112,6 +2141,22 @@ class TestSpyNetwork(ViewTestCase):
         self.assertIn('data-eos-auth-monitor-copy="Char 1102, Char 2201"', todos)
         url = reverse("eos_auth_monitor:corporation_export", args=[2002])
         self.assertIn(f'href="{url}?group=spy_wallet"', todos)
+
+    def test_should_show_the_capital_contracts_marker_like_any_other(self):
+        SPY_MARKERS[1101] = [
+            spy_network.SpyMarker("capital_contracts", "Capital in contract", "A capital ship in a contract.")
+        ]
+        self.addCleanup(SPY_MARKERS.pop, 1101)
+
+        content = self.get(self.spy_leader, "corporation", 2001).content.decode()
+        todos = content[content.index("eos-auth-monitor-todos"):content.index("Mains of this Corporation")]
+
+        self.assertIn("Capital in contract", main_cards(content)["Char 1101"])
+        self.assertEqual(todos.count("eos-auth-monitor-spy-todo"), 1)
+        self.assertIn('data-eos-auth-monitor-copy="Char 1101"', todos)
+        export = reverse("eos_auth_monitor:corporation_export", args=[2001])
+        response = self.client.get(f"{export}?group=spy_capital_contracts")
+        self.assertContains(response, "Char 1101")
 
     def test_should_show_the_todo_card_for_markers_alone(self):
         # 2001 has no problem and no unregistered member: only the marker opens the card

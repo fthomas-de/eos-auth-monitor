@@ -170,6 +170,11 @@ class TestSpyNetworkReader(SimpleTestCase):
         self.assertEqual(asked, [2002])
         self.assertEqual(found, {9001: [spy_network.SpyMarker("wallet", "Label wallet", "Description wallet")]})
 
+    @skipUnless(SPY_INSTALLED, "eos-spy-network is not installed")
+    def test_should_offer_the_capital_contracts_kind_of_the_installed_app(self):
+        # generic: the kinds come from the app, nothing here names them
+        self.assertIn("capital_contracts", spy_network.kinds())
+
     def test_should_read_nothing_without_the_app(self):
         with patch.object(spy_network, "is_installed", return_value=False), patch.object(
             spy_network, "_api", side_effect=AssertionError("imported")
