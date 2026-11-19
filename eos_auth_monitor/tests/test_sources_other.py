@@ -124,7 +124,6 @@ class TestServices(SimpleTestCase):
 
 SPY_INSTALLED = apps.is_installed("eos_spy_network")
 VIEW_SUSPECTS = "eos_spy_network.view_suspects"
-VIEW_EVIDENCE = "eos_spy_network.view_evidence"
 SPY_CEO = "eos_spy_network.view_own_corporation"
 
 
@@ -190,7 +189,7 @@ class TestSpyNetworkPermissions(MonitorTestCase):
     def test_should_give_the_ceo_role_the_own_corporation(self):
         self.assertEqual(spy_network.ceo_corporation_id(make_user("ceo", SPY_CEO, corporation_id=2002)), 2002)
         # the full view wins; no role, no Corporation
-        self.assertIsNone(spy_network.ceo_corporation_id(make_user("spy", VIEW_SUSPECTS, VIEW_EVIDENCE, SPY_CEO)))
+        self.assertIsNone(spy_network.ceo_corporation_id(make_user("spy", VIEW_SUSPECTS, SPY_CEO)))
         self.assertIsNone(spy_network.ceo_corporation_id(make_user("half", VIEW_SUSPECTS)))
 
     @skipUnless(SPY_INSTALLED, "eos-spy-network is not installed")
@@ -205,7 +204,7 @@ class TestSpyNetworkPermissions(MonitorTestCase):
 
         import eos_spy_network
 
-        user = make_user("both", VIEW_SUSPECTS, VIEW_EVIDENCE)
+        user = make_user("spy", VIEW_SUSPECTS)
         real = sys.modules.get("eos_spy_network.api")
         # before 0.0.10: no module at all - the import must fail, not reuse the loaded one
         with patch.dict(sys.modules, {"eos_spy_network.api": None}):
@@ -232,7 +231,8 @@ class TestSpyNetworkPermissions(MonitorTestCase):
         self.assertTrue(spy_network.can_view(user))
 
     @skipUnless(SPY_INSTALLED, "eos-spy-network is not installed")
-    def test_should_need_both_view_permissions(self):
-        self.assertTrue(spy_network.can_view(make_user("both", VIEW_SUSPECTS, VIEW_EVIDENCE)))
-        self.assertFalse(spy_network.can_view(make_user("suspects", VIEW_SUSPECTS)))
-        self.assertFalse(spy_network.can_view(make_user("evidence", VIEW_EVIDENCE)))
+    def test_should_need_view_suspects(self):
+        self.assertTrue(spy_network.can_view(make_user("suspects", VIEW_SUSPECTS)))
+        # the CEO role is no full view
+        self.assertFalse(spy_network.can_view(make_user("ceo", SPY_CEO)))
+        self.assertFalse(spy_network.can_view(make_user("nobody")))

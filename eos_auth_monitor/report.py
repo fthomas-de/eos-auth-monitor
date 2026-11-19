@@ -352,6 +352,13 @@ def _mean_activity(accounts) -> Row:
     )
 
 
+def _card_order(account: Account) -> tuple:
+    """Sort key of the Corporation page's cards: red, then yellow, then nothing open; within red and yellow
+    Directors first, then GM transactions. Sort `accounts_by_problems` with it: the sort is stable."""
+    colour = 0 if account.has_problems or account.has_markers else 1 if account.has_warnings else 2
+    return colour, colour < 2 and not account.directors, colour < 2 and not account.has_gm
+
+
 @dataclass
 class Todo:
     """A failed character check and the mains whose accounts fail it - whom to write to."""
@@ -451,6 +458,17 @@ class OtherMain:
     main_name: str
     main_corporation_name: str
     characters: list[dict]
+    # its characters here with eos-spy-network markers, set by Report.add_spy_markers where the viewer may see them
+    # here; only for a main the overview does not rate (outside the Alliance), whose alts are no Character otherwise
+    spy_alts: list[Character] = field(default_factory=list)
+
+    # no account page: the overview does not rate this account (the to-do leaves its alts unlinked)
+    unrated = True
+
+    @property
+    def spy_markers(self) -> list:
+        """The markers of its alts here, each kind once, as first met."""
+        return list({marker.kind: marker for character in self.spy_alts for marker in character.spy}.values())
 
 
 @dataclass
@@ -509,30 +527,26 @@ class Corporation:
 
     @property
     def spy_characters(self) -> list[Character]:
-        """The characters counted here with an eos-spy-network marker, by name."""
-        return sorted(
-            (
-                character
-                for account in self.evaluated_accounts
-                for character in account.characters
-                if character.spy
-            ),
-            key=lambda character: character.name.lower(),
-        )
+        """The characters counted here with an eos-spy-network marker, by name; alts of mains outside the Alliance
+        included."""
+        return [character for _account, character in self._spy_pairs()]
+
+    def _spy_pairs(self) -> list[tuple]:
+        """(account or OtherMain, character) of every marked character here, by the character's name."""
+        pairs = [
+            (account, character)
+            for account in self.evaluated_accounts
+            for character in account.characters
+            if character.spy
+        ]
+        pairs += [(other, character) for other in self.other_mains for character in other.spy_alts]
+        return sorted(pairs, key=lambda pair: pair[1].name.lower())
 
     @property
     def spy_todos(self) -> list[SpyTodo]:
         """Per eos-spy-network marker, in its order, the characters counted here that carry it."""
         by_kind: dict[str, SpyTodo] = {}
-        for account, character in sorted(
-            (
-                (account, character)
-                for account in self.evaluated_accounts
-                for character in account.characters
-                if character.spy
-            ),
-            key=lambda pair: pair[1].name.lower(),
-        ):
+        for account, character in self._spy_pairs():
             for marker in character.spy:
                 todo = by_kind.setdefault(marker.kind, SpyTodo(marker, []))
                 todo.characters.append(character)
@@ -572,23 +586,33 @@ class Corporation:
 
     @property
     def card_accounts(self) -> list[Account]:
-        """The Corporation page's cards: problems, warnings or markers.
-
-        Red borders before yellow; within each, Directors first, then GM transactions, then the rest.
-        """
+        """The cards of the own mains: problems, warnings or markers, in the cards' order (`_card_order`)."""
         return sorted(
             (
                 account
                 for account in self.accounts_by_problems
-                if account.has_problems or account.has_warnings or account.has_markers
+                if not account.visiting and (account.has_problems or account.has_warnings or account.has_markers)
             ),
-            # stable sort: within each step the order of `accounts_by_problems` stays
-            key=lambda account: (
-                not (account.has_problems or account.has_markers),
-                not account.directors,
-                not account.has_gm,
-            ),
+            key=_card_order,
         )
+
+    @property
+    def visiting_cards(self) -> list[Account]:
+        """Every main elsewhere with characters counted here, a card each: in the cards' order, nothing open last."""
+        return sorted((account for account in self.accounts_by_problems if account.visiting), key=_card_order)
+
+    @property
+    def unrated_other_mains(self) -> list[OtherMain]:
+        """The member list's mains elsewhere whose account the overview does not rate: mains outside the Alliance.
+
+        Those with eos-spy-network markers first, then by name as the member list has them.
+        """
+        rated = {account.user_id for account in self.visiting}
+        return sorted((other for other in self.other_mains if other.user_id not in rated), key=lambda o: not o.spy_alts)
+
+    @property
+    def other_main_count(self) -> int:
+        return len(self.visiting) + len(self.unrated_other_mains)
 
     @property
     def problem_free_accounts(self) -> list[Account]:
@@ -964,6 +988,23 @@ class Report:
             # the cards' tags: an alt of the CEO's mains counted elsewhere stays off that Corporation's page
             for account in corporation.evaluated_accounts:
                 account.spy_shown = shown
+            # alts of mains outside the Alliance: eos-spy-network checks them, this overview does not
+            for other in corporation.unrated_other_mains:
+                other.spy_alts = [
+                    Character(
+                        character["id"],
+                        character["name"],
+                        corporation.id,
+                        corporation.name,
+                        corporation.ticker,
+                        "",
+                        is_main=False,
+                        problems=[],
+                        spy=markers[character["id"]],
+                    )
+                    for character in other.characters
+                    if shown and markers.get(character["id"])
+                ]
         self.spy_shown = corporation_id is None
 
     def add_gm_transactions(self, character_ids: set[int], corporation_id: int | None = None) -> None:

@@ -15,8 +15,8 @@ from django.apps import apps
 from ..permissions import own_corporation_id
 
 APP = "eos_spy_network"
-# eos-spy-network shows the counterparts of mails, ISK and contracts only with both
-PERMISSIONS = ("eos_spy_network.view_suspects", "eos_spy_network.view_evidence")
+# eos-spy-network's full view: every Corporation (0.0.31 dropped view_evidence, which this needed too)
+PERMISSIONS = ("eos_spy_network.view_suspects",)
 # eos-spy-network's CEO role: suspects and evidence of the main's own Corporation
 CEO_PERMISSION = "eos_spy_network.view_own_corporation"
 

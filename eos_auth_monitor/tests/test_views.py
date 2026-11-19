@@ -1664,6 +1664,61 @@ class TestAltsInAnotherCorporation(ViewTestCase):
         self.assertIn("fa-discord", card)
         self.assertIn("eos-auth-monitor-director", card)
 
+    def section(self, user):
+        """2002's page cut into the grid of its own mains and the section of mains elsewhere."""
+        content = self.get(user, "corporation", 2002).content.decode()
+        start = content.index("eos-auth-monitor-other-mains")
+        return content[content.index("Mains of this Corporation"):start], content[start:]
+
+    def test_should_card_the_main_elsewhere_in_a_section_of_its_own(self):
+        grid, section = self.section(self.leader)
+
+        self.assertIn("Char 2201", grid)
+        self.assertNotIn("Char 1101", grid)
+        self.assertIn("Main in Corp 2001", section)
+        # the alts here, by name
+        self.assertRegex(section, r'eos-auth-monitor-visiting-alts">\s*Char 1102\s*</div>')
+        self.assertTrue(main_cards(grid + section)["Char 1101"].startswith('border-danger"'))
+
+    def test_should_card_a_main_elsewhere_with_nothing_open(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["accounts"][0]["characters"][-1]["problems"] = []
+        snapshot.save()
+
+        _grid, section = self.section(self.ceo_2002)
+
+        self.assertRegex(section, r'<div class="card h-100">\s*<div class="card-body position-relative')
+        self.assertIn("Main in Corp 2001", section)
+        self.assertIn("Char 1102", section)
+
+    def test_should_name_a_main_from_the_member_list_once(self):
+        snapshot = Snapshot.objects.get()
+        row = next(row for row in snapshot.data["corporations"] if row["id"] == 2002)
+        row["other_mains"] = [
+            {
+                "user_id": 11,
+                "main_id": 1101,
+                "main_name": "Char 1101",
+                "main_corporation_name": "Corp 2001",
+                "characters": [{"id": 1102, "name": "Char 1102"}],
+            },
+            {
+                "user_id": 99,
+                "main_id": 9900,
+                "main_name": "Visitor main",
+                "main_corporation_name": "Corp 5005",
+                "characters": [{"id": 9002, "name": "Visitor alt"}],
+            },
+        ]
+        snapshot.save()
+
+        grid, section = self.section(self.leader)
+
+        self.assertIn('Alts of mains in other Corporations <span class="badge text-bg-secondary">2</span>', grid)
+        self.assertEqual(section.count("Char 1102"), 1)
+        self.assertIn("Visitor main", section)
+        self.assertIn("Visitor alt", section)
+
 
 class TestDirectorIcon(ViewTestCase):
     """A crown on a main's card or line when a character of the account directs the main's Corporation."""
@@ -1981,7 +2036,7 @@ SPY_MARKERS = {
 
 @skipUnless(apps.is_installed("eos_spy_network"), "eos-spy-network is not installed")
 class TestSpyNetwork(ViewTestCase):
-    """eos-spy-network's markers for viewers with both of its view permissions; the reader is a stand-in."""
+    """eos-spy-network's markers for viewers with its view_suspects; the reader is a stand-in."""
 
     def setUp(self):
         super().setUp()
@@ -1994,10 +2049,9 @@ class TestSpyNetwork(ViewTestCase):
         kinds.start()
         self.addCleanup(markers.stop)
         self.addCleanup(kinds.stop)
-        spy = ("eos_spy_network.view_suspects", "eos_spy_network.view_evidence")
-        self.spy_leader = make_user("spyleader", VIEW_ALL, *spy, corporation_id=2001)
-        self.spy_ceo = make_user("spyceo", BASIC_ACCESS, *spy, corporation_id=2002)
-        self.half_spy = make_user("halfspy", VIEW_ALL, "eos_spy_network.view_suspects", corporation_id=2001)
+        spy = "eos_spy_network.view_suspects"
+        self.spy_leader = make_user("spyleader", VIEW_ALL, spy, corporation_id=2001)
+        self.spy_ceo = make_user("spyceo", BASIC_ACCESS, spy, corporation_id=2002)
 
     def test_should_add_the_column_to_the_overview_table(self):
         content = self.get(self.spy_leader, "index").content.decode()
@@ -2019,13 +2073,12 @@ class TestSpyNetwork(ViewTestCase):
             ),
         )
 
-    def test_should_hide_everything_without_both_spy_permissions(self):
-        for user in (self.leader, self.half_spy):
-            with self.subTest(user.username):
-                for page, args in (("index", ()), ("corporation", (2002,)), ("account", (22,))):
-                    response = self.get(user, page, *args)
-                    self.assertNotContains(response, "Spy network")
-                    self.assertNotContains(response, "ISK with hostiles")
+    def test_should_hide_everything_without_view_suspects(self):
+        for page, args in (("index", ()), ("corporation", (2002,)), ("account", (22,))):
+            with self.subTest(page):
+                response = self.get(self.leader, page, *args)
+                self.assertNotContains(response, "Spy network")
+                self.assertNotContains(response, "ISK with hostiles")
 
     def test_should_show_the_cockpit_tile_with_the_alliance_count(self):
         content = self.get(self.spy_leader, "index").content.decode()
@@ -2130,7 +2183,7 @@ class TestSpyNetwork(ViewTestCase):
         self.assertIn(f'href="{reverse("eos_spy_network:corporation", args=[2001])}"', table)
 
     def test_should_never_show_the_markers_on_my_account(self):
-        owner = make_user("owner", VIEW_OWN, "eos_spy_network.view_suspects", "eos_spy_network.view_evidence")
+        owner = make_user("owner", VIEW_OWN, "eos_spy_network.view_suspects")
         snapshot = Snapshot.objects.get()
         snapshot.data["corporations"][0]["accounts"].append(account_row(owner.pk, owner.profile.main_character.character_id))
         snapshot.save()
@@ -2166,6 +2219,53 @@ class TestSpyNetwork(ViewTestCase):
         self.assertNotContains(self.get(ceo, "corporation", 2002), "eos-auth-monitor-spy-")
         # the account page of 2001's main keeps the alt's marker, as eos-spy-network's own page does
         self.assertContains(self.get(ceo, "account", 11), "ISK with hostiles")
+
+    def outside_main(self):
+        """A main outside the Alliance (not rated here) with an alt in 2002 that eos-spy-network marked."""
+        snapshot = Snapshot.objects.get()
+        row = next(row for row in snapshot.data["corporations"] if row["id"] == 2002)
+        row["other_mains"] = [
+            {
+                "user_id": 99,
+                "main_id": 9900,
+                "main_name": "Outside main",
+                "main_corporation_name": "Corp 5005",
+                "characters": [{"id": 9002, "name": "Outside alt"}],
+            }
+        ]
+        snapshot.save()
+        SPY_MARKERS[9002] = SPY_MARKERS[1102]
+        self.addCleanup(SPY_MARKERS.pop, 9002)
+
+    def test_should_mark_the_alt_of_a_main_outside_the_alliance(self):
+        self.outside_main()
+        content = self.get(self.spy_leader, "corporation", 2002).content.decode()
+
+        card = content[content.index("eos-auth-monitor-other-mains"):]
+        card = card[card.rindex('<div class="card h-100', 0, card.index("Outside main")):].split('<div class="col">')[0]
+        self.assertTrue(card.startswith('<div class="card h-100 border-danger">'))
+        self.assertIn("eos-auth-monitor-spy-tag", card)
+        self.assertIn("ISK with hostiles", card)
+        # the to-do names the alt without a link: there is no account page for it
+        todos = content[content.index("eos-auth-monitor-todos"):content.index("Mains of this Corporation")]
+        self.assertIn("Outside alt", todos)
+        self.assertNotIn(reverse("eos_auth_monitor:account", args=[99]), content)
+        # 1102, 2201 and the alt
+        tile = content[content.index("eos-auth-monitor-spy-tile"):content.index("eos-auth-monitor-todos")]
+        self.assertRegex(tile, r'<div class="fs-3 fw-bold text-info-emphasis">3</div>')
+
+        url = reverse("eos_auth_monitor:corporation_export", args=[2002])
+        self.assertIn("Outside alt", self.client.get(url, {"group": "spy_wallet"}).content.decode("utf-8-sig"))
+
+    def test_should_show_the_alt_of_a_main_outside_the_alliance_only_to_its_viewers(self):
+        self.outside_main()
+        ceo_elsewhere = make_user("spyownoutside", VIEW_ALL, "eos_spy_network.view_own_corporation", corporation_id=2001)
+
+        for user in (self.leader, ceo_elsewhere):
+            with self.subTest(user.username):
+                response = self.get(user, "corporation", 2002)
+                self.assertContains(response, "Outside main")
+                self.assertNotContains(response, "eos-auth-monitor-spy-")
 
 
 class TestTileLists(ViewTestCase):

@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.37] - 2026-11-19
+
+### Changed
+
+- **Alts of mains in other Corporations in a section of their own** on the
+  Corporation page: a main elsewhere whose alts here have something open no
+  longer stands among the Corporation's own mains. The section, which
+  replaces *Members whose main is in another Corporation*, gives every main
+  elsewhere a card with its alts here - red or yellow as before, in the same
+  order as the own cards, those with nothing open last and plain. Mains the
+  overview does not rate (outside the Alliance) are named as before, and a
+  main is no longer listed twice. Without a member list (ESI off) the mains
+  elsewhere now show as well.
+- **eos-spy-network markers need `view_suspects` only**: eos-spy-network
+  0.0.31 dropped `view_evidence`, which the markers here needed as well.
+  Deploy together with eos-spy-network 0.0.31: with an older one, a holder
+  of `view_suspects` alone sees the markers here before eos-spy-network
+  shows them the evidence. With 0.0.31 the CEO role also brings the markers
+  of a visiting main's alts in the own Corporation (eos-spy-network's whole
+  visitor accounts); they show on its card in the new section.
+
+### Added
+
+- **eos-spy-network markers on alts of mains outside the Alliance**:
+  eos-spy-network 0.0.31 checks such accounts and shows them to the CEO of
+  the alt's Corporation; this app does not rate them. Their markers now show
+  for eos-spy-network's viewers on the Corporation page: spy tags and a red
+  border on the main's card in *Alts of mains in other Corporations* (those
+  first), the alts in the spy to-do (without a link - there is no account
+  page) and its CSV group, counted in the spy tile and the overview's
+  *Spies* column. Needs the Corporation's member list (or the characters
+  Auth knows there), which names these mains.
+
 ## [0.0.36] - 2026-11-18
 
 ### Changed

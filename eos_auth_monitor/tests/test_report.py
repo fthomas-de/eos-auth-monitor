@@ -806,6 +806,32 @@ class TestScopeWarnings(MonitorTestCase):
 
         self.assertEqual([account.user_id for account in found.corporation(2001).card_accounts], [32, 33, 31, 35, 34])
 
+    def test_should_card_the_mains_elsewhere_apart_red_then_yellow_then_the_rest(self):
+        def visitor(user_id, alt_problems):
+            # a main in 2002 with an alt in 2001
+            main_id = user_id * 100 + 1
+            characters = [character_row(main_id, [], 2002), character_row(main_id + 1, alt_problems)]
+            return account_row(user_id, main_id, characters, corporation_id=2002)
+
+        data = snapshot_data(
+            [
+                corporation_row(2001, [account_row(11, 1101, [character_row(1101, [AUDIT_MISSING])])]),
+                corporation_row(
+                    2002, [visitor(21, []), visitor(22, [self.TWO]), visitor(23, [AUDIT_MISSING]), visitor(24, [])]
+                ),
+            ],
+            checks=self.CHECKS,
+        )
+        data["critical_scope_count"] = 3
+        found = Report(store_snapshot(data))
+        found.add_gm_transactions({2402})
+        corporation = found.corporation(2001)
+
+        self.assertEqual([account.user_id for account in corporation.card_accounts], [11])
+        # red - GM transactions (24, without a problem) before the rest -, yellow, then the mains with nothing open
+        self.assertEqual([account.user_id for account in corporation.visiting_cards], [24, 23, 22, 21])
+        self.assertEqual(corporation.other_main_count, 4)
+
     def test_should_list_the_warnings_as_a_to_do_group_of_their_own(self):
         corporation = self.found().corporation(2001)
 

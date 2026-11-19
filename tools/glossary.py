@@ -287,10 +287,10 @@ TRANSLATIONS = {
         "Ни один Main этой Corporation не зарегистрирован в Auth.",
         "此 Corporation 没有任何 Main 在 Auth 中注册。",
     ),
-    "Members whose main is in another Corporation": (
-        "Mitglieder, deren Main in einer anderen Corporation ist",
-        "Участники, чей Main состоит в другой Corporation",
-        "其 Main 在另一个 Corporation 的成员",
+    "Alts of mains in other Corporations": (
+        "Alts von Mains anderer Corporations",
+        "Альты Main из других Corporation",
+        "其他 Corporation 的 Main 的小号",
     ),
     "The member list of this Corporation could not be read: no member has a token with the membership scope.": (
         "Die Mitgliederliste dieser Corporation konnte nicht gelesen werden: Kein Mitglied hat einen Token mit dem Membership-Scope.",
@@ -870,10 +870,10 @@ TRANSLATIONS = {
         "Main, у чьих Character здесь нет незакрытых пунктов.",
         "其在此处的 Character 没有待处理事项的 Main。",
     ),
-    "Characters of this Corporation on an account whose main is elsewhere. They count here; the rest of the account counts with the main's Corporation.": (
-        "Characters dieser Corporation auf einem Account, dessen Main woanders ist. Sie zählen hier; der Rest des Accounts zählt bei der Corporation des Mains.",
-        "Character этой Corporation на аккаунте, чей Main находится в другом месте. Они учитываются здесь; остальной аккаунт учитывается в Corporation его Main.",
-        "本 Corporation 中、其账号的 Main 在别处的 Character。它们计入此处；账号的其余部分计入 Main 所在的 Corporation。",
+    "Mains in another Corporation with alts among the members here. The alts count here, the rest of the account with the main's Corporation; a card is red or yellow when an alt here has something open. A main outside the Alliance is not checked and only named.": (
+        "Mains in einer anderen Corporation mit Alts unter den Mitgliedern hier. Die Alts zählen hier, der Rest des Accounts bei der Corporation des Mains; eine Karte ist rot oder gelb, wenn ein Alt hier etwas offen hat. Ein Main außerhalb der Alliance wird nicht geprüft und nur genannt.",
+        "Main из другой Corporation, чьи альты входят в число участников здесь. Альты учитываются здесь, остальной аккаунт — в Corporation его Main; карточка красная или жёлтая, если у альта здесь есть что-то открытое. Main вне Alliance не проверяется и только упоминается.",
+        "Main 在另一个 Corporation、其小号是此处成员。小号计入此处，账号的其余部分计入 Main 所在的 Corporation；此处的小号有未处理事项时，卡片为红色或黄色。Alliance 之外的 Main 不做检查，只列出名字。",
     ),
     "The member list could not be read: these are the characters Auth knows in this Corporation on an account without a main.": (
         "Die Mitgliederliste konnte nicht gelesen werden: das sind die Characters, die Auth in dieser Corporation auf einem Account ohne Main kennt.",

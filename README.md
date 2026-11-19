@@ -55,14 +55,17 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   each group with a button that copies the names for an EVE mail and one that
   downloads them as a CSV file; a further button downloads the whole list, a
   line per name with its problem. Then every
-  member of the Corporation, reduced to mains: the mains with problems (or
+  member of the Corporation, reduced to mains: the own mains with problems (or
   with spy markers or GM transactions, see below) as
-  cards with keywords naming their problems (a main elsewhere whose alts
-  here have problems too, marked "Main in ...", without that account's
-  service icons and Director crown for a viewer without `view_all`), the
-  others as a compact list,
-  members whose main is in another Corporation under that main, and members
-  unknown to Auth as a compact list. The tile *Registered in Auth* opens every
+  cards with keywords naming their problems, the
+  others as a compact list; then a section *Alts of mains in other
+  Corporations* - a card per main elsewhere with its alts here, marked
+  "Main in ...", red or yellow when an alt here has something open, the
+  same order as the own cards and those with nothing open last (without that
+  account's service icons and Director crown for a viewer without
+  `view_all`); mains outside the Alliance, which are not checked, only named,
+  with eos-spy-network's markers of their alts here where those show - and
+  members unknown to Auth as a compact list. The tile *Registered in Auth* opens every
   member with its main, those without a main first; the tile *Character
   Audit* opens every character it rates with its failed checks, failing ones
   first, then the members unknown to Auth, which count as failing - corptools
@@ -117,8 +120,7 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   corptools sections and scopes the checks count; the notice to members
 - **eos-spy-network markers** where
   [eos-spy-network](https://github.com/fthomas-de/eos-spy-network) 0.0.10 or
-  newer is installed, for viewers holding both its `view_suspects` and
-  `view_evidence`: a *Spy network* column in the overview table (characters
+  newer is installed, for viewers holding its `view_suspects`: a *Spy network* column in the overview table (characters
   with markers per Corporation), a tile with that number on the Corporation
   page opening the Corporation in eos-spy-network, a to-do entry per marker
   with the characters, a tag per marker on the main's card on the
@@ -440,9 +442,10 @@ The dashboard widget of the Corporation follows `basic_access` only:
 leadership with `view_all` alone sees no widget.
 
 eos-spy-network's markers (overview column, Corporation tile and to-dos,
-account page, their CSV export) need both of its permissions
-`eos_spy_network.view_suspects` and `eos_spy_network.view_evidence` on top
-of the page's own; without them nothing of eos-spy-network shows. Its CEO
+account page, their CSV export) need its permission
+`eos_spy_network.view_suspects` on top of the page's own (`view_evidence` is
+gone since eos-spy-network 0.0.31); without it nothing of eos-spy-network
+shows. Its CEO
 role `eos_spy_network.view_own_corporation` alone (eos-spy-network 0.0.30 or
 later) shows them for the Corporation of the viewer's main only - its tile,
 to-dos, card tags, CSV export and account pages, no cockpit tile or overview
@@ -506,7 +509,7 @@ Corporation); members do not see it. Without the periodic task
 
 eos-spy-network's markers are not stored here: each page reads them from
 eos-spy-network's own stored result while it is shown, and only for viewers
-holding both of its view permissions. eos-tax's GM transactions are read the
+holding its `view_suspects`. eos-tax's GM transactions are read the
 same way from eos-tax's last stored GM report.
 
 ## Languages

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-17 13:46+0000\n"
-"PO-Revision-Date: 2026-11-17 13:46+0000\n"
+"POT-Creation-Date: 2026-11-19 10:20+0000\n"
+"PO-Revision-Date: 2026-11-19 10:20+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: de\n"
 "Language: de\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: auth_hooks.py:16 templates/eos_auth_monitor/base.html:6
-#: templates/eos_auth_monitor/base.html:53
+#: templates/eos_auth_monitor/base.html:54
 msgid "Auth Monitor"
 msgstr "Auth Monitor"
 
@@ -487,12 +487,12 @@ msgstr ""
 msgid "Configuration"
 msgstr "Konfiguration"
 
-#: models.py:156
+#: models.py:169
 msgid "Pass accounts whose characters HAVE problems instead of those without."
 msgstr ""
 "Accounts durchlassen, deren Characters Probleme HABEN, statt solcher ohne."
 
-#: models.py:160
+#: models.py:173
 msgid "Smart Filter: Auth Monitor character problems"
 msgstr "Smart Filter: Auth-Monitor-Character-Probleme"
 
@@ -585,7 +585,7 @@ msgid_plural "and %(count)d more"
 msgstr[0] "und %(count)d weiterer"
 msgstr[1] "und %(count)d weitere"
 
-#: report.py:328 templates/eos_auth_monitor/corporation.html:214
+#: report.py:333 templates/eos_auth_monitor/corporation.html:184
 msgid ""
 "The member list of this Corporation could not be read: no member has a token"
 " with the membership scope."
@@ -593,42 +593,42 @@ msgstr ""
 "Die Mitgliederliste dieser Corporation konnte nicht gelesen werden: Kein "
 "Mitglied hat einen Token mit dem Membership-Scope."
 
-#: report.py:331 templates/eos_auth_monitor/corporation_service.html:20
+#: report.py:336 templates/eos_auth_monitor/corporation_service.html:20
 #: templates/eos_auth_monitor/service.html:22
 msgid "Active in Mumble"
 msgstr "Aktiv im Mumble"
 
-#: report.py:370
+#: report.py:382
 #, python-format
 msgid "%(check)s (warning)"
 msgstr "%(check)s (Warnung)"
 
-#: report.py:637 templates/eos_auth_monitor/corporation.html:67
-#: templates/eos_auth_monitor/corporation.html:225
+#: report.py:666 templates/eos_auth_monitor/corporation.html:67
+#: templates/eos_auth_monitor/corporation.html:195
 #: templates/eos_auth_monitor/dashboard.corporation.html:33
 msgid "Not registered in Auth"
 msgstr "Nicht in Auth registriert"
 
-#: report.py:644 templates/eos_auth_monitor/account.html:131
+#: report.py:673 templates/eos_auth_monitor/account.html:131
 #: templates/eos_auth_monitor/account.html:133
-#: templates/eos_auth_monitor/corporation.html:97
-#: templates/eos_auth_monitor/corporation.html:153
+#: templates/eos_auth_monitor/corporation.html:98
 #: templates/eos_auth_monitor/partials/gm-tile.html:7
 #: templates/eos_auth_monitor/partials/gm-tile.html:9
+#: templates/eos_auth_monitor/partials/main-card.html:43
 msgid "GM transactions"
 msgstr "GM-Transaktionen"
 
-#: report.py:695 report.py:707 views.py:324
+#: report.py:724 report.py:736 views.py:325
 msgid "Registered in Auth"
 msgstr "In Auth registriert"
 
-#: report.py:719 templates/eos_auth_monitor/character_audit.html:8
-#: templates/eos_auth_monitor/character_audit.html:20 views.py:336
-#: views.py:373
+#: report.py:748 templates/eos_auth_monitor/character_audit.html:8
+#: templates/eos_auth_monitor/character_audit.html:20 views.py:337
+#: views.py:374
 msgid "Character Audit"
 msgstr "Character-Audit"
 
-#: report.py:727
+#: report.py:756
 msgid ""
 "Characters here with a complete Character Audit. Members not registered in "
 "Auth count as missing."
@@ -636,11 +636,11 @@ msgstr ""
 "Characters hier mit vollständigem Character-Audit. Mitglieder, die nicht in "
 "Auth registriert sind, zählen als fehlend."
 
-#: report.py:1086
+#: report.py:1139
 msgid "Members registered"
 msgstr "Mitglieder registriert"
 
-#: report.py:1093
+#: report.py:1146
 msgid ""
 "Members of the Alliance's Corporations whose character belongs to an account"
 " in Auth. Only Corporations whose member list could be read count."
@@ -649,11 +649,11 @@ msgstr ""
 "in Auth gehört. Es zählen nur Corporations, deren Mitgliederliste gelesen "
 "werden konnte."
 
-#: report.py:1103
+#: report.py:1156
 msgid "Character Audit complete"
 msgstr "Character-Audit vollständig"
 
-#: report.py:1110
+#: report.py:1163
 msgid ""
 "Characters with a complete corptools Character Audit: present, all scopes "
 "granted, up to date. Members not registered in Auth count as missing."
@@ -662,7 +662,7 @@ msgstr ""
 "Scopes erteilt, aktuell. Mitglieder, die nicht in Auth registriert sind, "
 "zählen als fehlend."
 
-#: report.py:1120
+#: report.py:1173
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s funktioniert"
@@ -873,7 +873,7 @@ msgid "Mumble is not linked: without it, no day is noted."
 msgstr "Mumble ist nicht verknüpft: ohne Verknüpfung wird kein Tag erfasst."
 
 #: templates/eos_auth_monitor/base.html:12
-#: templates/eos_auth_monitor/dashboard.own.html:8 views.py:270
+#: templates/eos_auth_monitor/dashboard.own.html:8 views.py:271
 msgid "My account"
 msgstr "Mein Account"
 
@@ -890,7 +890,7 @@ msgstr "Alliance-Übersicht"
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: templates/eos_auth_monitor/base.html:42
+#: templates/eos_auth_monitor/base.html:43
 msgid "Help mode"
 msgstr "Hilfemodus"
 
@@ -931,11 +931,11 @@ msgstr ""
 msgid "List"
 msgstr "Liste"
 
-#: templates/eos_auth_monitor/corporation.html:99
+#: templates/eos_auth_monitor/corporation.html:100
 msgid "A GM moved ISK for a character of these mains."
 msgstr "Ein GM hat ISK für einen Character dieser Mains bewegt."
 
-#: templates/eos_auth_monitor/corporation.html:112
+#: templates/eos_auth_monitor/corporation.html:113
 msgid ""
 "A card per main with something open. A red border means a problem, a spy "
 "marker or a GM transaction; a warning alone stays open without counting as a"
@@ -946,51 +946,39 @@ msgstr ""
 "bleibt offen, ohne als Problem zu zählen. Die Krone markiert einen Director "
 "unter den Characters des Accounts."
 
-#: templates/eos_auth_monitor/corporation.html:113
+#: templates/eos_auth_monitor/corporation.html:114
 msgid "Mains of this Corporation"
 msgstr "Mains dieser Corporation"
 
-#: templates/eos_auth_monitor/corporation.html:135
-#, python-format
-msgctxt "EVE jargon"
-msgid "Main in %(corporation)s"
-msgstr "Main in %(corporation)s"
-
-#: templates/eos_auth_monitor/corporation.html:139
-#: templates/eos_auth_monitor/dashboard.own.html:23
-#: templates/eos_auth_monitor/dashboard.own.html:31
-#, python-format
-msgctxt "EVE jargon"
-msgid "%(counter)s character"
-msgid_plural "%(counter)s characters"
-msgstr[0] "%(counter)s Character"
-msgstr[1] "%(counter)s Characters"
-
-#: templates/eos_auth_monitor/corporation.html:168
+#: templates/eos_auth_monitor/corporation.html:126
 msgid "Without problems"
 msgstr "Ohne Probleme"
 
-#: templates/eos_auth_monitor/corporation.html:170
+#: templates/eos_auth_monitor/corporation.html:128
 msgid "Mains whose characters here have nothing open."
 msgstr "Mains, deren Characters hier nichts offen haben."
 
-#: templates/eos_auth_monitor/corporation.html:186
+#: templates/eos_auth_monitor/corporation.html:144
 msgid "No main of this Corporation is registered in Auth."
 msgstr "Kein Main dieser Corporation ist in Auth registriert."
 
-#: templates/eos_auth_monitor/corporation.html:190
+#: templates/eos_auth_monitor/corporation.html:148
 msgid ""
-"Characters of this Corporation on an account whose main is elsewhere. They "
-"count here; the rest of the account counts with the main's Corporation."
+"Mains in another Corporation with alts among the members here. The alts "
+"count here, the rest of the account with the main's Corporation; a card is "
+"red or yellow when an alt here has something open. A main outside the "
+"Alliance is not checked and only named."
 msgstr ""
-"Characters dieser Corporation auf einem Account, dessen Main woanders ist. "
-"Sie zählen hier; der Rest des Accounts zählt bei der Corporation des Mains."
+"Mains in einer anderen Corporation mit Alts unter den Mitgliedern hier. Die "
+"Alts zählen hier, der Rest des Accounts bei der Corporation des Mains; eine "
+"Karte ist rot oder gelb, wenn ein Alt hier etwas offen hat. Ein Main "
+"außerhalb der Alliance wird nicht geprüft und nur genannt."
+
+#: templates/eos_auth_monitor/corporation.html:149
+msgid "Alts of mains in other Corporations"
+msgstr "Alts von Mains anderer Corporations"
 
 #: templates/eos_auth_monitor/corporation.html:191
-msgid "Members whose main is in another Corporation"
-msgstr "Mitglieder, deren Main in einer anderen Corporation ist"
-
-#: templates/eos_auth_monitor/corporation.html:221
 msgid ""
 "The member list could not be read: these are the characters Auth knows in "
 "this Corporation on an account without a main."
@@ -998,7 +986,7 @@ msgstr ""
 "Die Mitgliederliste konnte nicht gelesen werden: das sind die Characters, "
 "die Auth in dieser Corporation auf einem Account ohne Main kennt."
 
-#: templates/eos_auth_monitor/corporation.html:223
+#: templates/eos_auth_monitor/corporation.html:193
 msgid ""
 "Members from the EVE member list without an account in Auth. They register "
 "and add their characters."
@@ -1042,6 +1030,16 @@ msgstr "Nichts zu tun."
 #: templates/eos_auth_monitor/dashboard.own.html:45
 msgid "View details"
 msgstr "Details anzeigen"
+
+#: templates/eos_auth_monitor/dashboard.own.html:23
+#: templates/eos_auth_monitor/dashboard.own.html:31
+#: templates/eos_auth_monitor/partials/main-card.html:28
+#, python-format
+msgctxt "EVE jargon"
+msgid "%(counter)s character"
+msgid_plural "%(counter)s characters"
+msgstr[0] "%(counter)s Character"
+msgstr[1] "%(counter)s Characters"
 
 #: templates/eos_auth_monitor/directors.html:8
 msgid ""
@@ -1228,6 +1226,12 @@ msgstr ""
 msgid "Help"
 msgstr "Hilfe"
 
+#: templates/eos_auth_monitor/partials/main-card.html:21
+#, python-format
+msgctxt "EVE jargon"
+msgid "Main in %(corporation)s"
+msgstr "Main in %(corporation)s"
+
 #: templates/eos_auth_monitor/partials/metrics.html:8
 #, python-format
 msgid "Last rebuild %(seconds)s s, %(queries)s queries (%(query_seconds)s s)"
@@ -1407,7 +1411,7 @@ msgstr[1] ""
 "Die Mitgliederlisten von %(counter)s Corporations konnten nicht gelesen "
 "werden; deren unbekannte Characters fehlen hier."
 
-#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:414
+#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:415
 msgid "Unknown characters"
 msgstr "Unbekannte Characters"
 
@@ -1439,24 +1443,24 @@ msgstr "Corporation-Details"
 msgid "Main details"
 msgstr "Main-Details"
 
-#: views.py:183
+#: views.py:184
 msgctxt "eos-auth-monitor"
 msgid "Name"
 msgstr "Name"
 
-#: views.py:188
+#: views.py:189
 msgid "Problem"
 msgstr "Problem"
 
-#: views.py:430
+#: views.py:431
 msgid "Settings saved."
 msgstr "Einstellungen gespeichert."
 
-#: views.py:432
+#: views.py:433
 msgid "Settings saved. The overview is being rebuilt."
 msgstr "Einstellungen gespeichert. Die Übersicht wird neu aufgebaut."
 
-#: views.py:436
+#: views.py:437
 msgid ""
 "Settings saved, but the task queue is not reachable: the overview is rebuilt"
 " once it is back."
@@ -1464,11 +1468,11 @@ msgstr ""
 "Einstellungen gespeichert, aber die Task-Warteschlange ist nicht erreichbar:"
 " Die Übersicht wird neu aufgebaut, sobald sie wieder da ist."
 
-#: views.py:460
+#: views.py:461
 msgid "The overview is being rebuilt."
 msgstr "Die Übersicht wird neu aufgebaut."
 
-#: views.py:462
+#: views.py:463
 msgid "The rebuild could not be started: the task queue is not reachable."
 msgstr ""
 "Der Neuaufbau konnte nicht gestartet werden: Die Task-Warteschlange ist "
