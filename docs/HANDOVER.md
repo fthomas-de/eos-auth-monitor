@@ -4,10 +4,41 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-19 (0.0.36).
+Last updated 2026-11-19 (0.0.37).
 
 ## Release
 
+- Version **0.0.37** of 2026-11-19: **alts of mains in other Corporations
+  apart, spy markers for mains outside the Alliance, `view_evidence`
+  dropped** (see `CHANGELOG.md` and the decisions of 2026-11-19 below).
+  **Deploy together with eos-spy-network 0.0.31** (released the same day,
+  tag `v0.0.31`), never before it.
+  - Corporation page: `Corporation.card_accounts` holds the own mains only;
+    the section *Alts of mains in other Corporations* (replaces *Members
+    whose main is in another Corporation*) shows `Corporation.visiting_cards`
+    (every visiting account, also with nothing open, plain card) and then
+    `unrated_other_mains` (the member list's mains the overview does not
+    rate: outside the Alliance), count `other_main_count`. One sort key for
+    both card lists, `report._card_order` (red, yellow, nothing open; within
+    red and yellow Directors, then GM). The card is the new partial
+    `partials/main-card.html`; a visiting card names its alts here
+    (`eos-auth-monitor-visiting-alts`) instead of the character count.
+  - Spy markers of alts whose main is outside the Alliance:
+    `OtherMain.spy_alts` (`Character` objects made by
+    `Report.add_spy_markers`, only where the Corporation shows markers to the
+    viewer) and `OtherMain.spy_markers`; `Corporation._spy_pairs` feeds
+    `spy_characters` (tile, overview column) and `spy_todos` (to-do, CSV).
+    Such a card turns red with cyan tags and sorts first among the unrated;
+    in the to-do the alt is unlinked (`OtherMain.unrated`). Needs the member
+    list or Auth's characters in the Corporation: with ESI off there are no
+    `other_mains`, so no such markers.
+  - `sources.spy_network.PERMISSIONS` is `view_suspects` alone.
+  - Tests: 6 new (`test_report` 1, `test_views` 5); `TestSpyNetwork` and
+    `test_sources_other` without `view_evidence`; 517 in the suite. 11
+    sabotages, all red (one test expectation was wrong first - GM before
+    the rest within red - and was corrected, not the code). Two new
+    messages, translated (the two of the old section dropped). No
+    migration, no static file. Not seen in a browser.
 - Version **0.0.36** of 2026-11-18: **fixes from the permission review**
   (see `CHANGELOG.md` and the decisions of 2026-11-18 (permission review)
   below).
@@ -308,7 +339,8 @@ Last updated 2026-11-19 (0.0.36).
 - New in 0.0.16: a **Spy network cockpit tile** on the
   overview (see `CHANGELOG.md` and the decisions of 2026-11-06 below) - the
   sum of the *Spies* column, linked to eos-spy-network's Corporations page,
-  for viewers with both of its view permissions; the Corporation page's spy
+  for viewers with its view permissions (`view_suspects` alone since
+  0.0.37); the Corporation page's spy
   tile now comes from the same `partials/spy-tile.html`. No migration, no
   static file, no new message. Not seen in a browser.
 - New in 0.0.15: **eos-tax GM transactions** (see
@@ -361,7 +393,7 @@ Last updated 2026-11-19 (0.0.36).
   `CharacterProblemsFilter`; 0006 adds `alliance_characters_only`; 0005
   dropped the empty old smart filter table - no filter rows, no securegroups
   bindings - and added `view_own`).
-- 511 tests without the translation tests, 3 translation tests, all green;
+- 517 tests without the translation tests, 3 translation tests, all green;
   `test_should_find_the_page_of_the_installed_charlink` runs only with
   aa-charlink installed, `TestSpyNetwork` and the spy permission tests only
   with eos-spy-network installed, the source and view tests of
@@ -378,7 +410,7 @@ Last updated 2026-11-19 (0.0.36).
   against the old `report.py`; 0.0.24 8 for 8; 0.0.25 not sabotaged; 0.0.26
   18 of 19, the green one strengthened; 0.0.27 13 for 13; 0.0.28 20 for 20
   after one fix: a marker class was part of another attribute; 0.0.30 6 for
-  6 after one fix: the tile's count itself was not asserted; 0.0.31 4 for 4; 0.0.32 4 for 4; 0.0.33 12 for 12; 0.0.36 16 for 16, tests first against the old code).
+  6 after one fix: the tile's count itself was not asserted; 0.0.31 4 for 4; 0.0.32 4 for 4; 0.0.33 12 for 12; 0.0.36 16 for 16, tests first against the old code; 0.0.37 11 for 11).
 - Translated into de, ru and zh_Hans, machine-generated and marked so in the
   `.po` header; see `## Translations` in `CLAUDE.md`. The catalogues are only
   brought up to date at `/commit`.
@@ -388,11 +420,11 @@ Last updated 2026-11-19 (0.0.36).
 | Page | Permission | What |
 |---|---|---|
 | Overview (`index`) | `view_all` | Cockpit (service shares, a Connections tile, audit shares; *Members registered* opens the unknown characters), then the Corporations, most accounts with problems first, as a table (the default since 0.0.11) or as tiles (`view.js`, remembered in `localStorage`), with a filter box and an *Only with problems* switch that act on both; each tile shows the number of accounts with problems, mains, characters, and each app with its share. `basic_access` alone is sent to its own Corporation, `manage_settings` alone to the settings |
-| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth and Character Audit linked to their lists, Corporation Audit and Structures, which name their failed checks, without a link; Character Audit counts the members without a main as failing) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`; a visiting main marked "Main in ...", linked and with its service icons and crown only for `view_all`), the others as a compact list, members whose main is elsewhere, members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
+| Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth and Character Audit linked to their lists, Corporation Audit and Structures, which name their failed checks, without a link; Character Audit counts the members without a main as failing) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), the own mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`), the others as a compact list; the section *Alts of mains in other Corporations*: a card per visiting main (`Corporation.visiting_cards`, marked "Main in ..." with its alts here, red/yellow/plain, linked and with its service icons and crown only for `view_all`), then the mains outside the Alliance from the member list (`unrated_other_mains`, named only, with spy tags where shown); members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Registered in Auth (`corporation_registered`), Character Audit (`corporation_character_audit`) | as Corporation | Behind the Corporation page's tiles: every member with its main and *registered*, *not in Auth* or *no main*, those without a main first (`Corporation.members`); every character the tile rates with its main and failed checks (warnings yellow, *No problems* green), the failing first, then the members without a main, then the rest (`Corporation.audited_characters`). Where the member list was unreadable (`member_list_unread`), the characters Auth knows in the Corporation, with the reason as a warning box. 404 with the ESI switch off / without character checks |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
 | Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it; Mumble to `account_activity`, with the main's Active in Mumble below *linked*), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
-| eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` and `view_evidence` (`sources.spy_network.can_view`) | Overview cockpit tile (`partials/spy-tile.html`, `Report.spy_characters`: the column's sum, linked to `eos_spy_network:corporations`, since 0.0.16); overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link), one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV) and a cyan tag per kind on the main cards (`Account.spy_markers`, red border); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
+| eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` (`sources.spy_network.can_view`; `view_evidence` too until 0.0.36), or its CEO role `view_own_corporation` for the own main's Corporation | Overview cockpit tile (`partials/spy-tile.html`, `Report.spy_characters`: the column's sum, linked to `eos_spy_network:corporations`, since 0.0.16); overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link), one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV) and a cyan tag per kind on the main cards (`Account.spy_markers`, red border); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
 | eos-tax GM transactions (on Overview, Corporation, export, Account) | the page's own plus `eos_tax.admin_view` or `eos_tax.gm_bots_access` (`sources.gm_transactions.can_view`) | Cockpit tile (Alliance count) and Corporation tile (`partials/gm-tile.html`), both linked to `eos_tax:gm_transactions`; overview table column *GM* (count, no link); pink to-do with the mains (`Corporation.gm_accounts`, group `gm_transactions` in the CSV); a pink tag on the main cards (`Account.has_gm`, red border); pink marker per character with an eos-tax link on the account page (searched for the main's name, `?search="<main>"`). Read per page view by `views._report(user)` -> `Report.add_gm_transactions`; never on *My account*, the dashboard widgets or the smart filter |
 | Active in Mumble of a main (`account_activity`) | as Account | Behind the account page's Mumble tile: the main's share in the card header, then every day of `activity_days` plus today, today first with a grey *today* badge (`activity.breakdown`, unnoted days as unsaved `ActivityDay`); *yes* green for EVE and Mumble, a red *no* for a whole day in EVE without Mumble, "-" otherwise. A notice without Mumble linked; 404 without the Mumble service |
 | Corporation service | as Corporation | One row per main of the Corporation, linked yes/no, no problems; for Mumble a column *Active in Mumble* |
@@ -1045,7 +1077,7 @@ The hints of each check live in `checks.py`: `Check.hint` with `Check.fix_url`
   character, so eos-spy-network 0.0.30 (released 2026-11-17, tag `v0.0.30`)
   added `api.character_markers(*, corporation_id=None)`: the mains of that
   Corporation with all their characters, as its Corporation page. Here
-  `view_own_corporation` without `view_suspects` + `view_evidence` gives
+  `view_own_corporation` without the full view gives
   `sources.spy_network.ceo_corporation_id`; `character_markers(corporation_id)`
   and `Report.add_spy_markers(..., corporation_id)` work as for GM (only
   that Corporation's `spy_kinds`, `Report.spy_shown` off). An API without
@@ -1102,6 +1134,21 @@ coordination session merges them):
   "not in the overview" (404) from "another Corporation" (403) by user ID,
   and the CEO's live main Corporation is compared with the snapshot's (up to
   one rebuild late).
+
+2026-11-19 (0.0.37, after eos-spy-network's own decisions of the same day):
+
+- **`view_evidence` is gone** from eos-spy-network (its 0.0.31); the full
+  spy view here is `view_suspects` alone. Released together with it.
+- **Alts of mains in other Corporations as a section of their own** ("alts
+  von mains anderer corps als extra abschnitt umsetzen"). The user's
+  answers: **merged** with the member list's section (one section, every
+  main elsewhere a card; mains outside the Alliance stay named only);
+  **after the own mains**; **sorted like the cards**, nothing open last.
+- **Spy markers for alts of mains outside the Alliance** ("ein ceo kann im
+  spy network die info dann doch auch sehen ... sinnvoll, wenn er eine info
+  im monitor bekommt"): eos-spy-network 0.0.31 checks such accounts and
+  shows them to the CEO of the alt's Corporation. The user chose **card,
+  to-do and tile** (also CSV and the overview column), not the card alone.
 
 ## Pitfalls found
 
@@ -1274,6 +1321,14 @@ coordination session merges them):
   at Corporation 2001 from a CEO of 2002, where no marked character counts,
   and stayed green while 2002's alts leaked onto other pages. 0.0.36 tests
   the other direction.
+- eos-spy-network is installed editable: an uncommitted change in its
+  working tree (another session's) is what this suite runs against. On
+  2026-11-19 its removed `view_evidence` made 13 spy tests here error (the
+  fresh test database has no such permission) - look at
+  `git status` in `~/aa-dev/working/eos-spy-network` before suspecting this
+  app's code.
+- A sabotage that drops a sort key over dataclasses errors (`Account` has no
+  `<`) instead of failing an assertion: break it with `key=lambda account: 0`.
 
 ## Open points / next steps
 
@@ -1282,6 +1337,13 @@ coordination session merges them):
   login (eos-spy-network's `permissions.any_permission_required` is a copy
   of this app's old one); the user chose 403 everywhere - in their own
   sessions. Production needs 0.0.36 deployed for the change here.
+- **Deploy 0.0.37 together with eos-spy-network 0.0.31** (and its
+  recalculation): with an older eos-spy-network a holder of `view_suspects`
+  alone would see markers here that eos-spy-network still holds back.
+- **The new section not seen in a browser** (0.0.37): check a Corporation
+  with visiting mains (red, yellow and plain cards, the alts line) and, with
+  eos-spy-network 0.0.31's visitors, an unrated main's red card and its
+  unlinked alt in the spy to-do. The dev snapshot has no visiting main.
 
 - **Help mode (0.0.34)**: look at *My account* and an account page in the
   browser (service tiles' corner icon, the question mark in the folded
@@ -1326,8 +1388,8 @@ coordination session merges them):
 - **eos-spy-network markers not seen in a browser**: covered by tests of the
   rendered HTML only. In the dev instance they show only after
   eos-spy-network's own snapshot was rebuilt with 0.0.10 (its button or
-  `snapshot.update()`), and only for a user holding both of its view
-  permissions. Their colour (cyan, 0.0.20) is the user's choice of
+  `snapshot.update()`), and only for a user holding its `view_suspects`
+  (or the CEO role for the own Corporation). Their colour (cyan, 0.0.20) is the user's choice of
   2026-11-10; check in a browser, light and dark theme, that the cyan badges
   and the `text-info-emphasis` counts read well. eos-spy-network 0.0.21 uses
   the same colour; its "Mains with markers" count is to move from
@@ -1451,7 +1513,7 @@ coordination session merges them):
   again after the `help.js` change of 0.0.35. All migrations up to 0011
   (`HelpMode`) are applied to `aa_dev`; the user's own `HelpMode` row is on.
 - eos-spy-network is installed editable from `~/aa-dev/working/eos-spy-network`
-  (0.0.30 on 2026-11-17, `character_markers(corporation_id=...)`), so the spy
+  (0.0.31 on 2026-11-19: no `view_evidence`, visitors in `character_markers`), so the spy
   tests run here; eos-tax likewise (0.4.27, `get_gm_page(corporation_id=...)`).
 - `eos-test` takes one test label per run; several modules need a loop.
 - Installed: allianceauth 5.3.1, allianceauth-corptools 3.5.0, django-solo
