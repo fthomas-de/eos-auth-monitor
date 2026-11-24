@@ -91,7 +91,7 @@
                                     <td data-order="{{ character.name }}">
                                         {% include "eos_auth_monitor/partials/character-cell.html" %}
                                     </td>
-                                    <td class="text-break">{{ character.corporation_name }} [{{ character.corporation_ticker }}]</td>
+                                    <td class="text-break">{% include "eos_auth_monitor/partials/character-corporation.html" %}</td>
                                     <td class="d-none d-md-table-cell text-break">{{ character.alliance_name }}</td>
                                     <td data-order="{{ character.problems|length }}">
                                         {% for problem in character.problems %}
@@ -165,7 +165,7 @@
                                     {% include "eos_auth_monitor/partials/character-name.html" %}
                                     {% if character.is_main %}<span class="badge text-bg-primary">{% translate "Main" context "EVE jargon" %}</span>{% endif %}
                                     {% if character.is_director %}{% translate "Director" context "EVE jargon" as director_label %}<i class="fas fa-crown text-warning eos-auth-monitor-character-director" role="img" title="{{ director_label }}" aria-label="{{ director_label }}"></i>{% endif %}
-                                    <span class="text-body-secondary text-break">{{ character.corporation_name }} [{{ character.corporation_ticker }}]</span>
+                                    <span class="text-body-secondary text-break">{% include "eos_auth_monitor/partials/character-corporation.html" %}</span>
                                 </div>
                             {% endfor %}{% endwith %}
                         </div>

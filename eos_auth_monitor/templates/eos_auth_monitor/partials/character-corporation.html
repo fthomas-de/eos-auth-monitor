@@ -1,0 +1,2 @@
+{# A character's Corporation; an alt's Corporation of the Alliance links to its page where the viewer may open it. #}
+{% if character.corporation_id in linkable_corporations %}<a href="{% url 'eos_auth_monitor:corporation' character.corporation_id %}" class="eos-auth-monitor-corporation-link">{{ character.corporation_name }} [{{ character.corporation_ticker }}]</a>{% else %}{{ character.corporation_name }} [{{ character.corporation_ticker }}]{% endif %}

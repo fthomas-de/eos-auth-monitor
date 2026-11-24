@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.40] - 2026-11-24
+
+### Added
+
+- **Alts' Corporations link to their page** on *Main details* and *My
+  account*: in the Corporation column of the table and of the folded list, every
+  Corporation of the Alliance other than the main's links to its Corporation
+  page, for viewers with *view_all*. Corporations outside the Alliance and
+  everyone without *view_all* keep plain text.
+
 ## [0.0.39] - 2026-11-19
 
 ### Added

@@ -207,6 +207,16 @@ def _visible_account(request, user_id):
     return report, corporation, account
 
 
+def _linkable_corporations(user, report, account) -> set[int]:
+    """The Corporations of the Alliance, other than the main's, whose page the viewer may open.
+
+    Only ``view_all`` opens another Corporation's page; ``basic_access`` has the main's own, which needs no link.
+    """
+    if not (report and account) or not user.has_perm(VIEW_ALL):
+        return set()
+    return {c.id for c in report.corporations if c.id != account.corporation_id}
+
+
 @any_permission_required(BASIC_ACCESS, VIEW_ALL)
 def account(request, user_id):
     report, corporation, account = _visible_account(request, user_id)
@@ -218,6 +228,7 @@ def account(request, user_id):
             "corporation": corporation,
             "account": account,
             "own": False,
+            "linkable_corporations": _linkable_corporations(request.user, report, account),
         },
         _corporation_nav(request.user, corporation.id),
     )
@@ -268,6 +279,7 @@ def own_account(request):
             "corporation": corporation,
             "account": account,
             "own": True,
+            "linkable_corporations": _linkable_corporations(request.user, report, account),
             "location": _("My account"),
         },
         NAV_OWN,

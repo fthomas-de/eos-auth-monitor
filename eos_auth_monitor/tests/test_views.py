@@ -1654,6 +1654,45 @@ class TestAltsInAnotherCorporation(ViewTestCase):
         # the page of 2002 has no main with alts elsewhere: its own main's card has no such line
         self.assertNotIn("eos-auth-monitor-alt-corporations", self.get(self.leader, "corporation", 2002).content.decode())
 
+    def link(self, corporation_id):
+        url = reverse("eos_auth_monitor:corporation", args=[corporation_id])
+        return f'<a href="{url}" class="eos-auth-monitor-corporation-link">Corp {corporation_id} [C{corporation_id}]</a>'
+
+    def test_should_link_the_alts_corporation_in_the_table_and_not_the_mains(self):
+        content = self.get(self.leader, "account", 11).content.decode()
+
+        table = content[content.index("<tbody>"):content.index("</tbody>")]
+        self.assertIn(self.link(2002), table)
+        self.assertEqual(content.count("eos-auth-monitor-corporation-link"), 1)
+
+    def test_should_link_the_alts_corporation_in_the_folded_list_and_on_my_account(self):
+        viewer = make_user("viewer", VIEW_ALL, VIEW_OWN, corporation_id=2001)
+        main_id = viewer.profile.main_character.character_id
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["accounts"].append(
+            account_row(viewer.pk, main_id, [character_row(main_id), character_row(9901, corporation_id=2002)], {})
+        )
+        snapshot.save()
+
+        for content in (
+            self.get(self.leader, "account", viewer.pk).content.decode(),
+            self.get(viewer, "own_account").content.decode(),
+        ):
+            folded = content[content.index("eos-auth-monitor-problem-free"):content.index("</details>")]
+            self.assertIn(self.link(2002), folded)
+            self.assertNotIn("Corp 2001 [C2001]</a>", folded)
+
+    def test_should_not_link_a_corporation_the_viewer_may_not_open(self):
+        # a CEO has the own Corporation's page only; a member without view_all none
+        self.assertNotIn("eos-auth-monitor-corporation-link", self.get(self.ceo, "account", 11).content.decode())
+
+    def test_should_not_link_a_corporation_outside_the_overview(self):
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["accounts"][0]["characters"][1]["corporation_id"] = 3001
+        snapshot.save()
+
+        self.assertNotIn("eos-auth-monitor-corporation-link", self.get(self.leader, "account", 11).content.decode())
+
     def test_should_mark_a_main_without_problems_with_a_tooltip_icon(self):
         content = self.get(self.leader, "corporation", 2001).content.decode()
         listed = content[content.index("eos-auth-monitor-problem-free"):]
