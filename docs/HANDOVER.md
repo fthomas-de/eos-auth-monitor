@@ -4,9 +4,30 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-19 (0.0.39).
+Last updated 2026-11-24 (0.0.40).
 
 ## Release
+
+- Version **0.0.40** of 2026-11-24: **alts' Corporations link to their page**
+  (see `CHANGELOG.md`). On Main details and My account the Corporation column
+  of the problem table and the folded list links every Corporation of the
+  Alliance other than the main's to `eos_auth_monitor:corporation`.
+  - `views._linkable_corporations(user, report, account)`: the ids of the
+    overview's Corporations except the main's, and only for `view_all` (a
+    `basic_access` viewer has the main's own page, which needs no link; a
+    member without either gets none). Passed as `linkable_corporations` by
+    `account` and `own_account`; the Corporations outside the Alliance are not
+    in the snapshot, so they stay text.
+  - New partial `partials/character-corporation.html` (class
+    `eos-auth-monitor-corporation-link`), used in both places of
+    `account.html`. Display only; no migration, no new message, no static file.
+  - Tests: 4 new in `TestAltsInAnotherCorporation` (`test_views`), 541 in the
+    suite; 3 sabotages in `views.py` (main's Corporation not excluded, no
+    `view_all` check, ids outside the overview), all red, file restored. Not
+    seen in a browser.
+  - Trap: a `--fresh` run on the shared `test_aa_dev` failed building the test
+    database (`eos_sig_checker_signature` missing), probably another session's
+    run at the same time; `EOS_TEST_DB=eos_auth_monitor` fixed it.
 
 - Version **0.0.39** of 2026-11-19: **Mumble start date, "Alts in ...", capital-contract tests** (see
   `CHANGELOG.md`).
@@ -472,7 +493,7 @@ Last updated 2026-11-19 (0.0.39).
 | Corporation | `view_all`, or `basic_access` for the own main's Corporation | Tiles of the apps whose checks ran (`Corporation.check_rows`: Registered in Auth and Character Audit linked to their lists, Corporation Audit and Structures, which name their failed checks, without a link; Character Audit counts the members without a main as failing) and the service tiles, the header without rows (`hide_rows`), a to-do list (per failed character check the mains concerned - also mains elsewhere whose alts here fail it - with the check's hint, CharLink's where installed, plus the unregistered members; each with a copy button for an EVE mail and a CSV button, one more CSV button for the whole list), the own mains with problems, warnings, spy markers or GM transactions as cards (`Corporation.card_accounts`; a card's line "Alts in ..." and an icon in the compact list name the other Corporations of the Alliance where the main's alts count, `Account.alt_corporations`, display only), the others as a compact list; the section *Alts of mains in other Corporations*: a card per visiting main (`Corporation.visiting_cards`, marked "Main in ..." with its alts here, red/yellow/plain, linked and with its service icons and crown only for `view_all`), then the mains outside the Alliance from the member list (`unrated_other_mains`, named only, with spy tags where shown); members not registered in Auth as a compact list. The header gives each Corporation problem its hint |
 | Registered in Auth (`corporation_registered`), Character Audit (`corporation_character_audit`) | as Corporation | Behind the Corporation page's tiles: every member with its main and *registered*, *not in Auth* or *no main*, those without a main first (`Corporation.members`); every character the tile rates with its main and failed checks (warnings yellow, *No problems* green), the failing first, then the members without a main, then the rest (`Corporation.audited_characters`). Where the member list was unreadable (`member_list_unread`), the characters Auth knows in the Corporation, with the reason as a warning box. 404 with the ESI switch off / without character checks |
 | Corporation export (`corporation_export`) | as Corporation | CSV of `Corporation.todo_rows`: `?group=<check key>` or `?group=unregistered` one column Name, without `group` Problem and Name. UTF-8 with BOM, formula-like cells prefixed with `'`; 404 for an empty or unknown group |
-| Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it; Mumble to `account_activity`, with the main's Active in Mumble below *linked*), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance* |
+| Account | as Corporation, by the account's main | One green/red tile per service (links to the Corporation's list of it; Mumble to `account_activity`, with the main's Active in Mumble below *linked*), the characters with problems (each problem with description, detail, hint and a link to aa-charlink, the check's app without it; the Corporation header's problems link to aa-charlink as well), the others folded away in a `<details>`, and the number of characters left out by *Only characters in the Alliance*; an alt's Corporation of the Alliance other than the main's links to its page for `view_all` (`views._linkable_corporations`, since 0.0.40) |
 | eos-spy-network markers (on Overview, Corporation, export, Account) | the page's own plus `eos_spy_network.view_suspects` (`sources.spy_network.can_view`; `view_evidence` too until 0.0.36), or its CEO role `view_own_corporation` for the own main's Corporation | Overview cockpit tile (`partials/spy-tile.html`, `Report.spy_characters`: the column's sum, linked to `eos_spy_network:corporations`, since 0.0.16); overview table column *Spy network* (characters with markers per Corporation, linked to `eos_spy_network:corporation`); Corporation page count tile (same link), one to-do entry per marker kind (`Corporation.spy_todos`, group `spy_<kind>` in the CSV) and a cyan tag per kind on the main cards (`Account.spy_markers`, red border); account page markers per character (`Account.listed_characters`). Read per page view by `views._report(user)` -> `Report.add_spy_markers`; never on *My account*, the dashboard widgets or the smart filter |
 | eos-tax GM transactions (on Overview, Corporation, export, Account) | the page's own plus `eos_tax.admin_view` or `eos_tax.gm_bots_access` (`sources.gm_transactions.can_view`) | Counted by mains whose whole account has one (since 0.0.38): Corporation tile (`partials/gm-tile.html`) and overview column *GM* count `Corporation.gm_accounts`, the cockpit tile sums them (`Report.gm_count`), tiles linked to `eos_tax:gm_transactions`, the column without link; pink to-do with the mains (`Corporation.gm_accounts`, unrated mains outside the Alliance unlinked; group `gm_transactions` in the CSV); a pink tag on the main cards, own, visiting and unrated (`Account.has_gm` = whole account, `OtherMain.has_gm`; red border); pink marker per character with an eos-tax link on the account page (searched for the main's name, `?search="<main>"`). Read per page view by `views._report(user)` -> `Report.add_gm_transactions`; never on *My account*, the dashboard widgets or the smart filter |
 | Active in Mumble of a main (`account_activity`) | as Account | Behind the account page's Mumble tile: the main's share in the card header, then every day of `activity_days` plus today, today first with a grey *today* badge (`activity.breakdown`, unnoted days as unsaved `ActivityDay`); *yes* green for EVE and Mumble, a red *no* for a whole day in EVE without Mumble, "-" otherwise. A notice without Mumble linked; 404 without the Mumble service |
