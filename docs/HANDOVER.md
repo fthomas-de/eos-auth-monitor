@@ -4,9 +4,32 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-24 (0.0.40).
+Last updated 2026-11-26 (0.0.41).
 
 ## Release
+
+- Version **0.0.41** of 2026-11-26: **Active in Mumble weighted by days, Auth
+  groups on Main details** (see `CHANGELOG.md`).
+  - `report._mean_activity` pools the days: the sum of the mains' days with
+    Mumble over the sum of their days in EVE (one point per day), instead of
+    the mean of their shares. A main's own share is unchanged; `Row.average`
+    is gone. The Corporation row, the Mumble tile and the cockpit use it; the
+    help text already said "of the days".
+  - `views._group_names(user_id)`: the account's Auth groups without the
+    groups a state hands out (`authgroup__states=None`), sorted; passed as
+    `auth_groups` by `account` and `own_account` and shown in brackets after
+    the main's name in the table title of `account.html`
+    (`eos-auth-monitor-groups`), for all three views (`view_all`,
+    `basic_access`, `view_own`). Read per request, not in the snapshot.
+  - No migration, no new message, no static file. Tests: `TestAccountGroups`
+    (4) in `test_views`, `test_activity` adapted (4 of 7 days = 57 %), 545 in
+    the suite; 4 sabotages (state filter, sorting, the brackets, the day sum),
+    all red, files restored. Not seen in a browser.
+  - Open: `docs/AUDIT.md` is deleted in the working tree, uncommitted and not
+    by this session; the handover below says the report stays in the repo
+    (the user's choice at 0.0.24). Decide: restore it or commit the deletion.
+  - Trap: `eos-test` takes one test label per call; several labels end in an
+    argparse error.
 
 - Version **0.0.40** of 2026-11-24: **alts' Corporations link to their page**
   (see `CHANGELOG.md`). On Main details and My account the Corporation column
