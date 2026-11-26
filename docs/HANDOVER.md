@@ -11,21 +11,21 @@ one section), not at session start.
 
 ## State
 
-- Version: `0.0.42`, 2026-11-26 (Auth groups on Main details include the
-  groups a state hands out).
-- Not deployed yet: none - production runs 0.0.42 (the user, 2026-11-26).
-- Uncommitted, for the next `/commit` (0.1.0): the `[Unreleased]` entries in
-  `CHANGELOG.md` (foreign apps guarded, eos-tax read API, yellow to-do card,
-  spy and GM on the overview tiles, `Corporation.problem_count` removed), the
-  docs split (`DECISIONS.md`, `AUDIT.md` deleted). Two new messages in
-  `views.py` still need the glossary.
+- Version: `0.1.0`, 2026-11-26 (eos-spy-network and eos-tax guarded, GM
+  transactions through eos-tax's read API, yellow to-do card for warnings
+  only, spy and GM numbers on the overview tiles).
+- Not deployed yet: `0.1.0` - production runs 0.0.42. Prod steps: install,
+  restart the Celery workers and the web server; no migration, no
+  `collectstatic` (no new static file), no rebuild needed. Works with the
+  released eos-tax (falls back to its GM page) as with one that has
+  `eos_tax.api`.
 - What the app does today: it shows the problem accounts and Corporations of
   one Alliance - incomplete corptools audits, missing corptools and
   aa-structures tokens, Directors without a full Corporation token, linked
   Discord, Mumble, QQ and Telegram, Active in Mumble - read out of other apps'
   models into a snapshot built by a Celery task. On top it shows eos-spy-network
   markers and eos-tax GM transactions per page view, to viewers with those
-  apps' permissions.
+  apps' permissions; a failure there leaves that part out with a notice.
 
 ## Pages
 
@@ -62,7 +62,7 @@ calls), `snapshot.py` (builds the JSON, `tasks.update_snapshot`),
   `permission_required` without `raise_exception`. In their own sessions;
   eos-tax has it in its working tree since (Unreleased, not committed).
 - **eos-tax fallback**: `sources.gm_transactions` reads
-  `eos_tax.api.gm_x_character_ids` (Unreleased here) and falls back on
+  `eos_tax.api.gm_x_character_ids` (since 0.1.0) and falls back on
   `ImportError` to the old `get_gm_page` path, because eos-tax's API is in its
   working tree only (2026-11-26). Once production runs an eos-tax with
   `eos_tax.api`, drop the fallback, `_api()`'s `None` branch and the
