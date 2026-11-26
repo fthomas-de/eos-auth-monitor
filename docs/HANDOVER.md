@@ -4,9 +4,25 @@ Where the work stands and what is still open. `CLAUDE.md` holds the durable
 rules for working on this app; this file holds the moment, and goes stale on
 purpose - if a statement here contradicts the code, the code is right.
 
-Last updated 2026-11-26 (0.0.41).
+Last updated 2026-11-26 (0.0.42).
 
 ## Release
+
+- Version **0.0.42** of 2026-11-26: **Auth groups on Main details include the
+  groups a state hands out** (see `CHANGELOG.md`).
+  - `views._group_names` filters by the user only; the `authgroup__states=None`
+    filter of 0.0.41 is gone. The user's decision: show all groups. Reason: an
+    account whose groups all come from a state showed no brackets in
+    production.
+  - Tests: `TestAccountGroups` expects `(Beta, Handed out, Logistics)` (the
+    state group included) for `view_all` and the CEO; 545 in the suite.
+  - Open: whether production runs 0.0.41 at all was not confirmed; the user saw
+    no groups there. Not seen in a browser with a group: in `aa_dev` no account
+    has any group (read-only check), and assigning one writes to the dev DB.
+  - Open: `docs/AUDIT.md` is still deleted in the working tree, uncommitted and
+    not by this work (see 0.0.41 below).
+  - Trap: the dev server answers `localhost:8000` with `DisallowedHost`
+    (`ALLOWED_HOSTS` is `127.0.0.1` only); open `http://127.0.0.1:8000/`.
 
 - Version **0.0.41** of 2026-11-26: **Active in Mumble weighted by days, Auth
   groups on Main details** (see `CHANGELOG.md`).
@@ -15,8 +31,8 @@ Last updated 2026-11-26 (0.0.41).
     the mean of their shares. A main's own share is unchanged; `Row.average`
     is gone. The Corporation row, the Mumble tile and the cockpit use it; the
     help text already said "of the days".
-  - `views._group_names(user_id)`: the account's Auth groups without the
-    groups a state hands out (`authgroup__states=None`), sorted; passed as
+  - `views._group_names(user_id)`: the account's Auth groups (0.0.41 left out
+    the groups a state hands out; 0.0.42 shows them), sorted; passed as
     `auth_groups` by `account` and `own_account` and shown in brackets after
     the main's name in the table title of `account.html`
     (`eos-auth-monitor-groups`), for all three views (`view_all`,
