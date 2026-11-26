@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.42] - 2026-11-26
+
+### Changed
+
+- **Auth groups on *Main details* and *My account* include the groups a state
+  hands out.** They were left out, so an account whose groups all come from a
+  state showed none.
+
 ## [0.0.41] - 2026-11-26
 
 ### Added

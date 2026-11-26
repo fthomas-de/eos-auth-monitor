@@ -1804,16 +1804,15 @@ class TestAccountGroups(ViewTestCase):
             self.target.groups.add(Group.objects.create(name=name))
         Group.objects.get(name="Handed out").authgroup.states.add(state)
 
-    def test_should_list_the_groups_sorted_without_the_states_groups_for_view_all(self):
+    def test_should_list_all_groups_sorted_with_the_states_groups_for_view_all(self):
         content = self.get(self.leader, "account", self.target.pk).content.decode()
 
-        self.assertIn('eos-auth-monitor-groups">(Beta, Logistics)</span>', content)
-        self.assertNotIn("Handed out", content)
+        self.assertIn('eos-auth-monitor-groups">(Beta, Handed out, Logistics)</span>', content)
 
     def test_should_list_the_groups_for_the_corporations_ceo(self):
         response = self.get(self.ceo, "account", self.target.pk)
 
-        self.assertContains(response, 'eos-auth-monitor-groups">(Beta, Logistics)</span>')
+        self.assertContains(response, 'eos-auth-monitor-groups">(Beta, Handed out, Logistics)</span>')
 
     def test_should_list_the_own_groups_for_a_member(self):
         member = make_user("member2", VIEW_OWN, corporation_id=2001)

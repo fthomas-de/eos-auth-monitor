@@ -219,10 +219,8 @@ def _linkable_corporations(user, report, account) -> set[int]:
 
 
 def _group_names(user_id) -> list[str]:
-    """The names of the account's Auth groups, without the groups a state hands out."""
-    return list(
-        Group.objects.filter(user__pk=user_id, authgroup__states=None).order_by("name").values_list("name", flat=True)
-    )
+    """The names of all the account's Auth groups, the ones a state hands out included."""
+    return list(Group.objects.filter(user__pk=user_id).order_by("name").values_list("name", flat=True))
 
 
 @any_permission_required(BASIC_ACCESS, VIEW_ALL)
