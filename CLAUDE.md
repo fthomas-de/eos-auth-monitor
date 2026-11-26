@@ -4,8 +4,9 @@ Alliance Auth app that shows the problem accounts and Corporations of one
 Alliance - incomplete corptools audits, missing corptools and aa-structures
 tokens, linked Discord, Mumble, QQ and Telegram - read out of other apps'
 models. `README.md` says what it does; this file says how to work on it;
-`docs/HANDOVER.md` says where the work currently stands, which decisions the
-user made and what is open. Read both before changing anything.
+`docs/HANDOVER.md` says where the work currently stands and what is open. Read
+both before changing anything. The user's lasting decisions are in
+`docs/DECISIONS.md`: look up the topic there when a task touches it.
 
 ## Where things are
 
@@ -117,7 +118,9 @@ is no binary log and there are no dumps.
   one exception is `charlink_hook.py`: a box on aa-charlink's page, CharLink's
   corptools *Corporation Audit* plus the sovereignty scope, registered through
   the `charlink` hook (user's yes of 2026-11-16). It reuses CharLink's own
-  `LoginImport`; check it after every aa-charlink upgrade, and drop it once
+  `LoginImport`; check it after every aa-charlink upgrade (the box still
+  shows as *Corporation Audit (Full)*, and a CharLink admin setting for it,
+  keyed by `unique_id` `sovereignty`, still applies), and drop it once
   `corptools.views.CORP_REQUIRED_SCOPES` carries the scope. Its
   ESI calls are the Corporation member list and the Corporation roles
   (`sources/members.py`), with tokens corptools already holds; nothing else
@@ -153,12 +156,113 @@ is no binary log and there are no dumps.
 - Test users come from `tests.base.make_user`: it gives them a main and its
   ownership, which Alliance Auth's `main_character_required` and the
   snapshot need.
-- aa-structures, aa-qqbot and the Telegram bridge are not installed here;
-  their readers are tested with fakes (`tests/test_sources_other.py`).
+- The readers of aa-structures, aa-qqbot and the Telegram bridge are tested
+  with fakes (`tests/test_sources_other.py`).
 - Every new test gets checked against the broken code: break it, see it go
   red, restore the file.
 - Compare the test count after every test change; an indentation slip drops
   a whole module silently.
+
+## Traps
+
+Dev instance and shell:
+
+- A new file under `static/` needs `collectstatic` before the tests: the
+  manifest storage of `sri_static` raises "Missing staticfiles manifest
+  entry" and almost every view test errors. A new partial does not.
+- The Celery worker (`-P solo`) does not reload code: restart it after any
+  change, or *Rebuild now* builds with the old code.
+- A snapshot is a stored result: after installing an app or changing a check
+  the pages show the old one until it is rebuilt.
+- `pkill -f`/`pgrep -f` inside `bash -lc '...'` match their own command
+  line: the worker restart kills its own shell. Stop and start the worker
+  from a script file.
+- `eos-test` takes one test label per call ("unrecognized arguments"
+  otherwise), and it is a login-shell function: a script calling it runs
+  under `bash -l`. Grep its output for `^(Ran|OK|FAILED)`, not `tail`.
+- `test_aa_dev` is shared by every app's runs: use `EOS_TEST_DB=<own name>`
+  while other sessions may test, and check that a red run failed in a test,
+  not in building the database.
+- eos-spy-network and eos-tax are installed editable: another session's
+  uncommitted change there is what this suite runs against. Look at their
+  `git status` before suspecting this app.
+- From Git Bash, `wsl.exe ... /mnt/c/...` needs `MSYS_NO_PATHCONV=1`; `sed`
+  there turns a `\n` in the replacement into a line break.
+- The Edit tool writes `"﻿"` as the character itself: a BOM in Python
+  source goes in through a patch script.
+- The dev server answers `localhost:8000` with `DisallowedHost`; open
+  `http://127.0.0.1:8000/`. The Claude app's browser pane has no session
+  there (the EVE SSO did not arrive): use Chrome.
+- `/commit` and `/push` are typed by the user; Claude cannot start them.
+
+Foreign apps:
+
+- corptools 3.5.0 has two `CORP_REQUIRED_SCOPES`: `corptools.views` (*add_corp*
+  and CharLink's box; no `esi-structures.read_corporation.v1`) and
+  `corptools.app_settings` (read by `sources.corptools.corporation_scopes()`;
+  with it). `add_corp_section` grows `_corp_scopes_base` in place with `+=`.
+  Neither is reported upstream.
+- django-esi's `Token.created` is overwritten on every refresh.
+- `MumbleUser.objects.create()` is Auth's manager (takes a user, sets a
+  password): a test row goes in with `MumbleUser(...).save()`.
+- `AuthUtils.add_main_character_2` creates no `CharacterOwnership`; deleting
+  a main's ownership makes Auth clear the main.
+
+Templates:
+
+- `{% url ... as var %}` inside `{% for %}` keeps `var` across iterations:
+  clear it in an `{% else %}` (`{% firstof "" as var %}`). An unresolvable
+  `{% url %}` sets `var` to "" - that is how an uninstalled app's link
+  disappears.
+- DataTables 2 right-aligns any column with a numeric `data-order` (hence
+  `dt-left` in `tables.js`) and measures a hidden table as zero wide (hence
+  `autoWidth: false`).
+- `{% translate "..." as var %}` gives a safe string: an apostrophe renders
+  as `'`, not `&#x27;`.
+
+Tests:
+
+- The view tests read tiles with regexes (`TestPages.gauge`,
+  `TestOwnAccountServices.tile_colours`) that expect the bare label right
+  after the icon: anything new on a tile goes at the end of its card body.
+- Header buttons and tiles carry the same URL and percentage: a loose
+  `assertContains` stays green when the tile is gone. Assert specifically.
+- A test that cuts a page into parts ends each part at a marker that is on
+  that page. Assert on a hint's own sentence: tooltips and descriptions repeat
+  words like "corptools" or an old hint.
+- A marker class must not be a substring of another attribute
+  (`eos-auth-monitor-failed` is part of `data-eos-auth-monitor-failed`).
+- `tests.test_views.main_cards`: the last card runs to the page's end, where
+  the unregistered card is `border-danger` too - assert with
+  `startswith('border-danger"')`.
+- `assertRegex(text, pattern, re.DOTALL)` passes the flag as the message:
+  compile the pattern.
+- MySQL does not reset the auto-increment on rollback, and `--keepdb` lets
+  pks grow: never fixed user IDs (`make_user(...).pk`), sort both sides of a
+  list comparison.
+- A fixture's `character_row` defaults to Corporation 2001: a character on
+  another Corporation's account needs its `corporation_id`.
+- A settings test posts the whole form (`TestSettings.unchanged`) and asserts
+  the redirect: `changed_data` compares with the initial values, and a
+  missing required field leaves the form invalid and the test green.
+- django-esi's exceptions need their fields:
+  `HTTPClientError(status_code=403, headers={}, data=None)`, likewise
+  `HTTPServerError`.
+- A test that patches `snapshot.build` calls the real one through a
+  reference taken before the patch.
+- Faking an uninstalled, already imported module: `sys.modules[name] = None`
+  and remove the package attribute too, then put both back.
+- A CEO-role test opens a page where that CEO's characters count, and also
+  checks the other direction (nothing leaks onto other pages).
+
+Sabotage rounds:
+
+- Run them as a script in the background, scoped to the test class, never two
+  runs at once; restore from a `cp` made just before.
+- A sabotage pattern must be unique in its file: the script asserts a single
+  match.
+- Break what a test can see: an attribute no test looks at proves nothing.
+  To drop a sort key over dataclasses use `key=lambda account: 0` (no `<`).
 
 ## Committing
 

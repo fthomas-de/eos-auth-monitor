@@ -108,6 +108,23 @@
                                 {% for row in corporation.rows %}
                                     {% include "eos_auth_monitor/partials/tile-row.html" %}
                                 {% endfor %}
+                                {# the table's Spies and GM columns; the tile links to the Corporation page, so no link of their own #}
+                                {% if report.spy_shown %}
+                                    {% with spy_count=corporation.spy_characters|length %}
+                                        <li class="d-flex justify-content-between gap-2 eos-auth-monitor-spy-row" title="{% translate 'Characters with markers in eos-spy-network' %}">
+                                            <span><i class="fas fa-user-secret fa-fw"></i> {% translate "Spies" %}</span>
+                                            <span class="fw-semibold {% if spy_count %}text-info-emphasis{% else %}text-success{% endif %}">{{ spy_count }}</span>
+                                        </li>
+                                    {% endwith %}
+                                {% endif %}
+                                {% if report.gm_shown %}
+                                    {% with gm_count=corporation.gm_accounts|length %}
+                                        <li class="d-flex justify-content-between gap-2 eos-auth-monitor-gm-row" title="{% translate 'Mains with GM transactions in eos-tax in the account' %}">
+                                            <span><i class="fas fa-sack-dollar fa-fw"></i> GM</span>
+                                            <span class="fw-semibold{% if not gm_count %} text-success{% endif %}"{% if gm_count %} style="color: var(--bs-pink)"{% endif %}>{{ gm_count }}</span>
+                                        </li>
+                                    {% endwith %}
+                                {% endif %}
                             </ul>
                         </div>
                     </div>

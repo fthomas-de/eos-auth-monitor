@@ -685,11 +685,6 @@ class Corporation:
         return rows
 
     @property
-    def problem_count(self) -> int:
-        """Problems of the Corporation itself plus those of every character counted here."""
-        return len(self.problems) + sum(account.problem_count for account in self.evaluated_accounts)
-
-    @property
     def registered(self) -> int | None:
         if self.member_count is None:
             # without the list: the characters Auth knows here that have a main

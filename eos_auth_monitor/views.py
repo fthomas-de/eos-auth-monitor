@@ -15,6 +15,8 @@ from django.views.decorators.http import require_POST
 
 from kombu.exceptions import OperationalError
 
+from allianceauth.services.hooks import get_extension_logger
+
 from . import __version__, activity, progress
 from . import snapshot as snapshots
 from .forms import MonitorConfigurationForm
@@ -33,6 +35,7 @@ from .report import ACTIVITY_LABEL, CORPORATION_GROUP_LABELS, MUMBLE, PHASE_LABE
 from .sources import gm_transactions, spy_network
 from .tasks import update_snapshot
 
+logger = get_extension_logger(__name__)
 
 # which page of the app this is, shown under its name; a service list is
 # named after its service instead
@@ -79,23 +82,39 @@ def _corporation_nav(user, corporation_id) -> str:
     return NAV_CORPORATION if corporation_id == own_corporation_id(user) else NAV_ALLIANCE
 
 
-def _report(user=None) -> Report | None:
-    """The stored snapshot; with ``user``, eos-spy-network's markers and eos-tax's GM transactions added where
-    that viewer may see them."""
+def _report(request=None) -> Report | None:
+    """The stored snapshot; with ``request``, eos-spy-network's markers and eos-tax's GM transactions added
+    where its viewer may see them.
+
+    Those two are read from the other apps on every page view: an exception
+    there leaves their part out of this page, with a log entry and a notice,
+    instead of failing it.
+    """
     snapshot = snapshots.current()
     if not snapshot:
         return None
     report = Report(snapshot)
     # read per page view, not stored in the snapshot: the days fill in every 15 minutes
     report.add_activity(activity.rates(MonitorConfiguration.get_solo().activity_days))
-    if user is not None and spy_network.can_view(user):
-        report.add_spy_markers(spy_network.character_markers(), spy_network.kinds())
-    elif user is not None and (corporation_id := spy_network.ceo_corporation_id(user)):
-        report.add_spy_markers(spy_network.character_markers(corporation_id), spy_network.kinds(), corporation_id)
-    if user is not None and gm_transactions.can_view(user):
-        report.add_gm_transactions(gm_transactions.character_ids())
-    elif user is not None and (corporation_id := gm_transactions.ceo_corporation_id(user)):
-        report.add_gm_transactions(gm_transactions.character_ids(corporation_id), corporation_id)
+    if request is None:
+        return report
+    user = request.user
+    try:
+        if spy_network.can_view(user):
+            report.add_spy_markers(spy_network.character_markers(), spy_network.kinds())
+        elif corporation_id := spy_network.ceo_corporation_id(user):
+            report.add_spy_markers(spy_network.character_markers(corporation_id), spy_network.kinds(), corporation_id)
+    except Exception:
+        logger.exception("eos-spy-network failed; its markers are left out of this page")
+        messages.warning(request, _("eos-spy-network could not be read: its markers are missing on this page."))
+    try:
+        if gm_transactions.can_view(user):
+            report.add_gm_transactions(gm_transactions.character_ids())
+        elif corporation_id := gm_transactions.ceo_corporation_id(user):
+            report.add_gm_transactions(gm_transactions.character_ids(corporation_id), corporation_id)
+    except Exception:
+        logger.exception("eos-tax failed; its GM transactions are left out of this page")
+        messages.warning(request, _("eos-tax could not be read: its GM transactions are missing on this page."))
     return report
 
 
@@ -133,7 +152,7 @@ def index(request):
             return redirect("eos_auth_monitor:own_account")
         return redirect("eos_auth_monitor:settings")
 
-    report = _report(user)
+    report = _report(request)
     table_columns, table_lines = report.overview_table() if report else ([], [])
     return _render(
         request,
@@ -149,7 +168,7 @@ def index(request):
 
 @any_permission_required(BASIC_ACCESS, VIEW_ALL)
 def corporation(request, corporation_id):
-    report = _report(request.user)
+    report = _report(request)
     context = _state(report)
     context["corporation"] = _visible_corporation(request, report, corporation_id)
     # the cards and to-dos of mains elsewhere link to their account only for those who may see it
@@ -166,7 +185,7 @@ def corporation_export(request, corporation_id):
     For a spreadsheet or a mail merge, where the copy button's comma list does
     not fit. Only what the Corporation page shows, to the same viewers.
     """
-    report = _report(request.user)
+    report = _report(request)
     corporation = _visible_corporation(request, report, corporation_id)
     if corporation is None:
         raise Http404
@@ -199,7 +218,7 @@ def _csv_cell(value: str) -> str:
 
 def _visible_account(request, user_id):
     """The report, the account's Corporation and the account; 404 or 403 where the viewer may not see it."""
-    report = _report(request.user)
+    report = _report(request)
     corporation, account = report.account(user_id) if report else (None, None)
     if account is None:
         raise Http404

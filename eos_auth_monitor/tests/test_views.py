@@ -2,6 +2,7 @@ import csv
 import datetime
 import io
 import re
+from contextlib import ExitStack
 from unittest import skipUnless
 from unittest.mock import patch
 
@@ -22,7 +23,7 @@ from eos_auth_monitor.checks import is_app_installed
 from eos_auth_monitor.forms import MonitorConfigurationForm
 from eos_auth_monitor.models import HelpMode, MonitorConfiguration, Snapshot
 from eos_auth_monitor.permissions import APP_PERMISSIONS, BASIC_ACCESS, MANAGE_SETTINGS, VIEW_ALL, VIEW_OWN
-from eos_auth_monitor.sources import spy_network
+from eos_auth_monitor.sources import gm_transactions, spy_network
 from eos_auth_monitor.templatetags.eos_auth_monitor import abbreviate
 
 from .base import (
@@ -978,6 +979,7 @@ class TestScopeWarnings(ViewTestCase):
     """Account 11 of 2001 lacks two scopes, below the threshold of 3: a warning, not a problem."""
 
     WARNING_CARD = "border-warning eos-auth-monitor-warning-card"
+    TODO_CARD = 'class="card border-{} mb-4 eos-auth-monitor-todos"'
 
     def setUp(self):
         super().setUp()
@@ -1011,6 +1013,38 @@ class TestScopeWarnings(ViewTestCase):
         self.assertRegex(
             response.content.decode(), re.compile(r'border-danger">(?:(?!class="col").)*Char 1101', re.DOTALL)
         )
+
+    def test_should_colour_the_todo_card_yellow_with_warnings_only(self):
+        self.assertContains(self.get(self.leader, "corporation", 2001), self.TODO_CARD.format("warning"))
+
+    def test_should_keep_the_todo_card_red_beside_the_warning(self):
+        corporation = self.snapshot.data["corporations"][0]
+        characters = [*corporation["accounts"][0]["characters"], character_row(1102, [AUDIT_MISSING])]
+        marker = spy_network.SpyMarker("wallet", "ISK with hostiles", "Wallet entries with hostiles.")
+        # the warned main 1101 plus one other kind of entry; the snapshot is saved per case
+        others = {
+            "problem": [patch.dict(corporation["accounts"][0], characters=characters)],
+            "unregistered": [patch.dict(corporation, unregistered=[{"id": 7777, "name": "Stranger"}])],
+            "spy": [
+                patch.object(spy_network, "can_view", return_value=True),
+                patch.object(spy_network, "character_markers", return_value={1101: [marker]}),
+                patch.object(spy_network, "kinds", return_value=("wallet",)),
+            ],
+            "gm": [
+                patch.object(gm_transactions, "can_view", return_value=True),
+                patch.object(gm_transactions, "character_ids", return_value={1101}),
+            ],
+        }
+        for other, patches in others.items():
+            with self.subTest(other), ExitStack() as stack:
+                for each in patches:
+                    stack.enter_context(each)
+                self.snapshot.save()
+
+                response = self.get(self.leader, "corporation", 2001)
+
+                self.assertContains(response, self.TODO_CARD.format("danger"))
+                self.assertNotContains(response, self.TODO_CARD.format("warning"))
 
     def test_should_not_count_the_warning_on_the_overview(self):
         response = self.get(self.leader, "index")
@@ -2188,6 +2222,28 @@ class TestSpyNetwork(ViewTestCase):
                 ]
             ),
         )
+
+    def test_should_add_the_row_to_the_overview_tiles(self):
+        content = self.get(self.spy_leader, "index").content.decode()
+        tiles = content[content.index('view-pane="tiles"'):content.index('view-pane="table"')]
+
+        counts = re.findall(
+            r'eos-auth-monitor-spy-row"[^>]*>\s*<span>.*?</span>\s*<span class="fw-semibold (text-[\w-]+)">(\d+)</span>',
+            tiles,
+        )
+        # the table's numbers and colours, one row per tile
+        self.assertEqual(sorted(counts), [("text-info-emphasis", "2"), ("text-success", "0")])
+        self.assertNotContains(self.get(self.leader, "index"), "eos-auth-monitor-spy-row")
+
+    def test_should_leave_the_markers_out_when_eos_spy_network_fails(self):
+        self.markers.side_effect = RuntimeError("eos-spy-network broke")
+        for page, args in (("index", ()), ("corporation", (2002,)), ("account", (22,))):
+            with self.subTest(page), self.assertLogs("extensions.eos_auth_monitor.views", "ERROR"):
+                response = self.get(self.spy_leader, page, *args)
+
+                self.assertContains(response, "eos-spy-network could not be read")
+                self.assertNotContains(response, "eos-auth-monitor-spy-")
+                self.assertNotContains(response, "ISK with hostiles")
 
     def test_should_hide_everything_without_view_suspects(self):
         for page, args in (("index", ()), ("corporation", (2002,)), ("account", (22,))):

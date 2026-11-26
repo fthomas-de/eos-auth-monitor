@@ -571,6 +571,17 @@ TRANSLATIONS = {
         'Не удалось запустить пересборку: очередь задач недоступна.',
         '无法启动重建：任务队列无法访问。',
     ),
+    # a foreign app failed on this page view: its part is left out
+    'eos-spy-network could not be read: its markers are missing on this page.': (
+        'eos-spy-network konnte nicht gelesen werden: Seine Marker fehlen auf dieser Seite.',
+        'Не удалось прочитать eos-spy-network: его маркеры на этой странице отсутствуют.',
+        '无法读取 eos-spy-network：本页缺少其标记。',
+    ),
+    'eos-tax could not be read: its GM transactions are missing on this page.': (
+        'eos-tax konnte nicht gelesen werden: Seine GM-Transaktionen fehlen auf dieser Seite.',
+        'Не удалось прочитать eos-tax: его GM-транзакции на этой странице отсутствуют.',
+        '无法读取 eos-tax：本页缺少其 GM 交易。',
+    ),
     "My Corporation": ("Meine Corporation", "Моя Corporation", "我的 Corporation"),
     "Alliance overview": ("Alliance-Übersicht", "Обзор Alliance", "Alliance 概览"),
     "View details": ("Details anzeigen", "Подробнее", "查看详情"),

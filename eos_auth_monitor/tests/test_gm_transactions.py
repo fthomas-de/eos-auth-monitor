@@ -128,7 +128,6 @@ class TestReport(MonitorTestCase):
         plain = found().corporation(2001)
         marked = found({1101, 1102}).corporation(2001)
 
-        self.assertEqual(marked.problem_count, plain.problem_count)
         self.assertEqual(len(marked.problem_accounts), len(plain.problem_accounts))
 
     def test_should_list_a_marked_character_on_the_account_page(self):
@@ -166,13 +165,23 @@ class TestSource(MonitorTestCase):
             "description": f"GM [16519715] issued transaction between Someone {character_id} and {other}",
         }
 
+    def paths(self):
+        """eos-tax's read API, then the fallback for an eos-tax older than it."""
+        yield "api"
+        with patch.object(gm_transactions, "_api", return_value=None):
+            yield "page"
+
     def test_should_take_only_transactions_against_gm_x(self):
         self.store([self.row(9001, 1, "GM X"), self.row(9002, 2, "EVE Central Bank")])
 
-        self.assertEqual(gm_transactions.character_ids(), {9001})
+        for path in self.paths():
+            with self.subTest(path):
+                self.assertEqual(gm_transactions.character_ids(), {9001})
 
     def test_should_find_nothing_before_the_first_run(self):
-        self.assertEqual(gm_transactions.character_ids(), set())
+        for path in self.paths():
+            with self.subTest(path):
+                self.assertEqual(gm_transactions.character_ids(), set())
 
     def test_should_need_one_of_the_tabs_permissions(self):
         self.assertTrue(gm_transactions.can_view(make_user("gm", GM_ACCESS)))
@@ -192,15 +201,41 @@ class TestSource(MonitorTestCase):
         self.assertIsNone(gm_transactions.ceo_corporation_id(make_user("member", BASIC_ACCESS)))
 
     def test_should_give_no_ceo_view_with_an_eos_tax_that_cannot_filter(self):
+        ceo = make_user("ceo", CEO_ACCESS, corporation_id=2002)
         with patch("eos_tax.db.gm_transactions.get_gm_page", lambda stored: {"rows": []}):
-            self.assertIsNone(gm_transactions.ceo_corporation_id(make_user("ceo", CEO_ACCESS)))
+            with patch.object(gm_transactions, "_api", return_value=None):
+                self.assertIsNone(gm_transactions.ceo_corporation_id(ceo))
+            # the read API filters by Corporation from its first release on
+            self.assertEqual(gm_transactions.ceo_corporation_id(ceo), 2002)
 
-    def test_should_ask_eos_tax_for_the_ceos_rows(self):
+    def test_should_ask_the_api_for_the_ceos_characters(self):
+        with patch("eos_tax.api.gm_x_character_ids", return_value={9001}) as api:
+            self.assertEqual(gm_transactions.character_ids(2002), {9001})
+
+        self.assertEqual(api.call_args.kwargs, {"corporation_id": 2002})
+
+    def test_should_ask_an_eos_tax_without_the_api_for_the_ceos_rows(self):
         self.store([self.row(9001, 1, "GM X")])
-        with patch("eos_tax.db.gm_transactions.get_gm_page", return_value={"rows": []}) as page:
+        with (
+            patch.object(gm_transactions, "_api", return_value=None),
+            patch("eos_tax.db.gm_transactions.get_gm_page", return_value={"rows": []}) as page,
+        ):
             gm_transactions.character_ids(2002)
 
         self.assertEqual(page.call_args.kwargs, {"corporation_id": 2002})
+
+    def test_should_fall_back_without_the_api(self):
+        import eos_tax
+
+        api = gm_transactions._api()
+        self.assertIsNotNone(api)
+        # an imported module stays reachable as the package's attribute
+        del eos_tax.api
+        try:
+            with patch.dict("sys.modules", {"eos_tax.api": None}):
+                self.assertIsNone(gm_transactions._api())
+        finally:
+            eos_tax.api = api
 
 
 @skipUnless(TAX_INSTALLED, "eos-tax is not installed")
@@ -236,6 +271,30 @@ class TestViews(ViewTestCase):
         # no link: the cockpit tile above opens eos-tax
         self.assertEqual(sorted(counts), [("1", "1"), ("2", "2")])
         self.assertNotIn(self.gm_page, table[:table.index("</table>")])
+
+    def gm_rows(self, user):
+        content = self.get(user, "index").content.decode()
+        tiles = content[content.index('view-pane="tiles"'):content.index('view-pane="table"')]
+        return sorted(re.findall(r'eos-auth-monitor-gm-row"[^>]*>\s*<span>.*?</span>\s*(<span[^>]*>\d+)</span>', tiles))
+
+    def test_should_add_the_row_to_the_overview_tiles(self):
+        pink = '<span class="fw-semibold" style="color: var(--bs-pink)">'
+        # the table's numbers: 2001's account by 1101's alt 1102; 2002 by that alt and by 2201
+        self.assertEqual(self.gm_rows(self.gm_leader), [pink + "1", pink + "2"])
+
+        self.reader.return_value = {2201}
+        self.assertIn('<span class="fw-semibold text-success">0', self.gm_rows(self.gm_leader))
+        self.assertNotContains(self.get(self.leader, "index"), "eos-auth-monitor-gm-row")
+
+    def test_should_leave_the_transactions_out_when_eos_tax_fails(self):
+        self.reader.side_effect = RuntimeError("eos-tax broke")
+        for page, args in (("index", ()), ("corporation", (2002,)), ("account", (11,))):
+            with self.subTest(page), self.assertLogs("extensions.eos_auth_monitor.views", "ERROR"):
+                response = self.get(self.gm_leader, page, *args)
+
+                self.assertContains(response, "eos-tax could not be read")
+                self.assertNotContains(response, "eos-auth-monitor-gm-")
+                self.assertNotContains(response, self.gm_page)
 
     def test_should_hide_everything_without_the_permission(self):
         for page, args in (("index", ()), ("corporation", (2002,)), ("account", (11,))):

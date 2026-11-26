@@ -95,7 +95,7 @@ class TestAltsInAnotherCorporation(MonitorTestCase):
         found = self.found()
         main_corporation, alt_corporation = found.corporation(2001), found.corporation(2002)
 
-        self.assertEqual(alt_corporation.problem_count, 1)
+        self.assertEqual([account.user_id for account in alt_corporation.problem_accounts], [11])
         self.assertEqual([todo.check.key for todo in alt_corporation.todos], ["char_audit_missing"])
         self.assertEqual([todo.check.key for todo in main_corporation.todos], ["char_scopes_missing"])
         rows = {str(row.label): (row.part, row.total) for row in alt_corporation.check_rows}
@@ -703,7 +703,6 @@ class TestSpyMarkers(MonitorTestCase):
         plain = self.found().corporation(2001)
         marked = self.found({1101: [WALLET], 1102: [WALLET]}).corporation(2001)
 
-        self.assertEqual(marked.problem_count, plain.problem_count)
         self.assertEqual(len(marked.problem_accounts), len(plain.problem_accounts))
         self.assertEqual([todo.check.key for todo in marked.todos], [todo.check.key for todo in plain.todos])
 
@@ -778,8 +777,8 @@ class TestScopeWarnings(MonitorTestCase):
         warned_only = found.corporation(2002)
 
         self.assertFalse(warned_only.has_problems)
-        self.assertEqual(warned_only.problem_count, 0)
-        self.assertEqual(found.corporation(2001).problem_count, 2)
+        self.assertEqual(warned_only.problem_accounts, [])
+        self.assertEqual(sorted(account.user_id for account in found.corporation(2001).problem_accounts), [12, 13])
         # the warned character counts as complete in the Character Audit share, on the tile and in the cockpit
         self.assertEqual(warned_only.check_rows[0].percent, 100)
         audit = next(row for row in found.cockpit() if row.url_name == "eos_auth_monitor:character_audit")

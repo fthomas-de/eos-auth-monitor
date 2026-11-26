@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-26
+
+### Added
+
+- **The overview's Corporation tiles show the spy and GM numbers**, like the
+  table's *Spies* and *GM* columns, to viewers with eos-spy-network's or
+  eos-tax's permissions.
+
+### Changed
+
+- **A failing eos-spy-network or eos-tax no longer fails the page.** Their
+  markers and GM transactions are read on every page view; an exception there
+  now leaves that part out of the page, logs it with its traceback and shows a
+  notice, instead of an error page.
+- **GM transactions come from eos-tax's read API** (`eos_tax.api`) instead of
+  building eos-tax's whole GM Transactions page on every page view. An eos-tax
+  older than that API still works through the old path.
+- **The Corporation page's to-do card is yellow when it holds only
+  warnings**, like the main cards. A problem, unregistered members, a spy
+  marker or a GM transaction keep it red.
+
+### Removed
+
+- `Corporation.problem_count`: no page used it; the pages count the accounts
+  with problems.
+
 ## [0.0.42] - 2026-11-26
 
 ### Changed

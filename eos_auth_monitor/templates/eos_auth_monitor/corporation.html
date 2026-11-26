@@ -36,8 +36,8 @@
             {% endif %}
 
             {% if corporation.listed_todos or corporation.unregistered or corporation.spy_todos or corporation.gm_accounts %}
-                {# what the leadership can chase, grouped so that one EVE mail reaches everyone concerned #}
-                <div class="card border-danger mb-4 eos-auth-monitor-todos">
+                {# what the leadership can chase, grouped so that one EVE mail reaches everyone concerned; yellow with warnings only #}
+                <div class="card {% if corporation.todos or corporation.unregistered or corporation.spy_todos or corporation.gm_accounts %}border-danger{% else %}border-warning{% endif %} mb-4 eos-auth-monitor-todos">
                     <div class="card-header d-flex flex-wrap align-items-center gap-2">
                         {% translate "Everything to chase, grouped by problem. Copy a group's names for one EVE mail, or download the list as CSV." as help_text %}
                         <div class="card-title mb-0 me-auto"><i class="fas fa-list-check"></i> {% translate "To do" %} {% include "eos_auth_monitor/partials/help.html" %}</div>

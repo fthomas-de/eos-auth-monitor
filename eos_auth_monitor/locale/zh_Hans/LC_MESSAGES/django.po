@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: eos-auth-monitor\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-19 15:24+0000\n"
-"PO-Revision-Date: 2026-11-19 15:24+0000\n"
+"POT-Creation-Date: 2026-11-26 21:34+0000\n"
+"PO-Revision-Date: 2026-11-26 21:34+0000\n"
 "Last-Translator: eos-auth-monitor\n"
 "Language-Team: zh_Hans\n"
 "Language: zh_Hans\n"
@@ -515,29 +515,29 @@ msgid "and %(count)d more"
 msgid_plural "and %(count)d more"
 msgstr[0] "等另外 %(count)d 个"
 
-#: report.py:339 templates/eos_auth_monitor/corporation.html:187
+#: report.py:335 templates/eos_auth_monitor/corporation.html:187
 msgid ""
 "The member list of this Corporation could not be read: no member has a token"
 " with the membership scope."
 msgstr "无法读取此 Corporation 的成员列表：没有任何成员拥有带成员资格 Scope 的令牌。"
 
-#: report.py:342 templates/eos_auth_monitor/corporation_service.html:20
+#: report.py:338 templates/eos_auth_monitor/corporation_service.html:20
 #: templates/eos_auth_monitor/service.html:22
 msgid "Active in Mumble"
 msgstr "Mumble 活跃度"
 
-#: report.py:388
+#: report.py:385
 #, python-format
 msgid "%(check)s (warning)"
 msgstr "%(check)s（警告）"
 
-#: report.py:680 templates/eos_auth_monitor/corporation.html:67
+#: report.py:677 templates/eos_auth_monitor/corporation.html:67
 #: templates/eos_auth_monitor/corporation.html:198
 #: templates/eos_auth_monitor/dashboard.corporation.html:33
 msgid "Not registered in Auth"
 msgstr "未在 Auth 注册"
 
-#: report.py:687 templates/eos_auth_monitor/account.html:131
+#: report.py:684 templates/eos_auth_monitor/account.html:131
 #: templates/eos_auth_monitor/account.html:133
 #: templates/eos_auth_monitor/corporation.html:98
 #: templates/eos_auth_monitor/corporation.html:173
@@ -547,27 +547,27 @@ msgstr "未在 Auth 注册"
 msgid "GM transactions"
 msgstr "GM 交易"
 
-#: report.py:738 report.py:750 views.py:325
+#: report.py:730 report.py:742 views.py:364
 msgid "Registered in Auth"
 msgstr "已在 Auth 注册"
 
-#: report.py:762 templates/eos_auth_monitor/character_audit.html:8
-#: templates/eos_auth_monitor/character_audit.html:20 views.py:337
-#: views.py:374
+#: report.py:754 templates/eos_auth_monitor/character_audit.html:8
+#: templates/eos_auth_monitor/character_audit.html:20 views.py:376
+#: views.py:413
 msgid "Character Audit"
 msgstr "Character 审计"
 
-#: report.py:770
+#: report.py:762
 msgid ""
 "Characters here with a complete Character Audit. Members not registered in "
 "Auth count as missing."
 msgstr "此处拥有完整 Character 审计的 Character。未在 Auth 注册的成员计为缺失。"
 
-#: report.py:1170
+#: report.py:1162
 msgid "Members registered"
 msgstr "已注册成员"
 
-#: report.py:1177
+#: report.py:1169
 msgid ""
 "Members of the Alliance's Corporations whose character belongs to an account"
 " in Auth. Only Corporations whose member list could be read count."
@@ -575,11 +575,11 @@ msgstr ""
 "Alliance 各 Corporation 中其 Character 属于 Auth 中某个账号的成员。只计入成员列表可读取的 "
 "Corporation。"
 
-#: report.py:1187
+#: report.py:1179
 msgid "Character Audit complete"
 msgstr "Character 审计完整"
 
-#: report.py:1194
+#: report.py:1186
 msgid ""
 "Characters with a complete corptools Character Audit: present, all scopes "
 "granted, up to date. Members not registered in Auth count as missing."
@@ -587,7 +587,7 @@ msgstr ""
 "拥有完整 corptools Character 审计的 Character：已存在、已授予所有 scope、为最新。未在 Auth "
 "注册的成员计为缺失。"
 
-#: report.py:1204
+#: report.py:1196
 #, python-format
 msgid "%(app)s working"
 msgstr "%(app)s 正常运行"
@@ -657,7 +657,7 @@ msgstr "Character"
 #: templates/eos_auth_monitor/account.html:81
 #: templates/eos_auth_monitor/character_audit.html:19
 #: templates/eos_auth_monitor/directors.html:29
-#: templates/eos_auth_monitor/index.html:128
+#: templates/eos_auth_monitor/index.html:145
 #: templates/eos_auth_monitor/service.html:20
 #: templates/eos_auth_monitor/unknown_characters.html:26
 msgctxt "EVE jargon"
@@ -665,7 +665,7 @@ msgid "Corporation"
 msgstr "Corporation"
 
 #: templates/eos_auth_monitor/account.html:83
-#: templates/eos_auth_monitor/index.html:132
+#: templates/eos_auth_monitor/index.html:149
 #: templates/eos_auth_monitor/partials/problem-marker.html:3
 msgid "Problems"
 msgstr "问题"
@@ -775,7 +775,7 @@ msgid "Mumble is not linked: without it, no day is noted."
 msgstr "未关联 Mumble：不关联就不会记录任何一天。"
 
 #: templates/eos_auth_monitor/base.html:12
-#: templates/eos_auth_monitor/dashboard.own.html:8 views.py:271
+#: templates/eos_auth_monitor/dashboard.own.html:8 views.py:310
 msgid "My account"
 msgstr "我的账号"
 
@@ -788,7 +788,7 @@ msgstr "我的 Corporation"
 msgid "Alliance overview"
 msgstr "Alliance 概览"
 
-#: templates/eos_auth_monitor/base.html:30 views.py:43
+#: templates/eos_auth_monitor/base.html:30 views.py:47
 msgid "Settings"
 msgstr "设置"
 
@@ -908,7 +908,7 @@ msgstr "已注册"
 
 #: templates/eos_auth_monitor/dashboard.corporation.html:28
 #: templates/eos_auth_monitor/index.html:99
-#: templates/eos_auth_monitor/index.html:133
+#: templates/eos_auth_monitor/index.html:150
 #: templates/eos_auth_monitor/partials/corporation-header.html:16
 msgctxt "EVE jargon"
 msgid "Mains"
@@ -916,7 +916,7 @@ msgstr "Main"
 
 #: templates/eos_auth_monitor/dashboard.corporation.html:34
 #: templates/eos_auth_monitor/index.html:104
-#: templates/eos_auth_monitor/index.html:129
+#: templates/eos_auth_monitor/index.html:146
 #: templates/eos_auth_monitor/partials/corporation-header.html:19
 msgctxt "EVE jargon"
 msgid "Characters"
@@ -1051,28 +1051,31 @@ msgstr "表格"
 msgid "Two views of the same Corporations; this browser remembers the choice."
 msgstr "同一批 Corporation 的两种视图；此浏览器会记住你的选择。"
 
-#: templates/eos_auth_monitor/index.html:116
+#: templates/eos_auth_monitor/index.html:114
+#: templates/eos_auth_monitor/index.html:156
+msgid "Characters with markers in eos-spy-network"
+msgstr "在 eos-spy-network 中有标记的 Character"
+
+#: templates/eos_auth_monitor/index.html:115
+#: templates/eos_auth_monitor/index.html:156
+msgid "Spies"
+msgstr "间谍"
+
+#: templates/eos_auth_monitor/index.html:122
+#: templates/eos_auth_monitor/index.html:159
+msgid "Mains with GM transactions in eos-tax in the account"
+msgstr "账号中在 eos-tax 有 GM 交易的 Main"
+
+#: templates/eos_auth_monitor/index.html:133
 msgid "No Corporation of the Alliance is known to Auth."
 msgstr "Auth 中没有该 Alliance 的任何 Corporation。"
 
-#: templates/eos_auth_monitor/index.html:132
+#: templates/eos_auth_monitor/index.html:149
 #: templates/eos_auth_monitor/partials/corporation-header.html:17
 msgid "Accounts with problems"
 msgstr "有问题的账号"
 
-#: templates/eos_auth_monitor/index.html:139
-msgid "Characters with markers in eos-spy-network"
-msgstr "在 eos-spy-network 中有标记的 Character"
-
-#: templates/eos_auth_monitor/index.html:139
-msgid "Spies"
-msgstr "间谍"
-
-#: templates/eos_auth_monitor/index.html:142
-msgid "Mains with GM transactions in eos-tax in the account"
-msgstr "账号中在 eos-tax 有 GM 交易的 Main"
-
-#: templates/eos_auth_monitor/index.html:200
+#: templates/eos_auth_monitor/index.html:217
 msgid "No Corporation matches the filter."
 msgstr "没有 Corporation 符合筛选条件。"
 
@@ -1275,7 +1278,7 @@ msgid_plural ""
 "unknown characters are missing here."
 msgstr[0] "无法读取 %(counter)s 个 Corporation 的成员列表，因此这里缺少其中的未知 Character。"
 
-#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:415
+#: templates/eos_auth_monitor/unknown_characters.html:14 views.py:454
 msgid "Unknown characters"
 msgstr "未知 Character"
 
@@ -1294,45 +1297,55 @@ msgstr "状态"
 msgid "Every member has a main in Auth."
 msgstr "每个成员在 Auth 中都有 Main。"
 
-#: views.py:39
+#: views.py:43
 msgid "Corporation overview"
 msgstr "Corporation 概览"
 
-#: views.py:40
+#: views.py:44
 msgid "Corporation details"
 msgstr "Corporation 详情"
 
-#: views.py:41
+#: views.py:45
 msgid "Main details"
 msgstr "Main 详情"
 
-#: views.py:184
+#: views.py:109
+msgid ""
+"eos-spy-network could not be read: its markers are missing on this page."
+msgstr "无法读取 eos-spy-network：本页缺少其标记。"
+
+#: views.py:117
+msgid ""
+"eos-tax could not be read: its GM transactions are missing on this page."
+msgstr "无法读取 eos-tax：本页缺少其 GM 交易。"
+
+#: views.py:204
 msgctxt "eos-auth-monitor"
 msgid "Name"
 msgstr "名称"
 
-#: views.py:189
+#: views.py:209
 msgid "Problem"
 msgstr "问题"
 
-#: views.py:431
+#: views.py:470
 msgid "Settings saved."
 msgstr "设置已保存。"
 
-#: views.py:433
+#: views.py:472
 msgid "Settings saved. The overview is being rebuilt."
 msgstr "设置已保存。概览正在重建。"
 
-#: views.py:437
+#: views.py:476
 msgid ""
 "Settings saved, but the task queue is not reachable: the overview is rebuilt"
 " once it is back."
 msgstr "设置已保存，但任务队列无法访问：待其恢复后将重建概览。"
 
-#: views.py:461
+#: views.py:500
 msgid "The overview is being rebuilt."
 msgstr "概览正在重建。"
 
-#: views.py:463
+#: views.py:502
 msgid "The rebuild could not be started: the task queue is not reachable."
 msgstr "无法启动重建：任务队列无法访问。"
