@@ -1,6 +1,7 @@
 import csv
 
 from django.contrib import messages
+from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -217,6 +218,13 @@ def _linkable_corporations(user, report, account) -> set[int]:
     return {c.id for c in report.corporations if c.id != account.corporation_id}
 
 
+def _group_names(user_id) -> list[str]:
+    """The names of the account's Auth groups, without the groups a state hands out."""
+    return list(
+        Group.objects.filter(user__pk=user_id, authgroup__states=None).order_by("name").values_list("name", flat=True)
+    )
+
+
 @any_permission_required(BASIC_ACCESS, VIEW_ALL)
 def account(request, user_id):
     report, corporation, account = _visible_account(request, user_id)
@@ -227,6 +235,7 @@ def account(request, user_id):
             **_state(report),
             "corporation": corporation,
             "account": account,
+            "auth_groups": _group_names(user_id),
             "own": False,
             "linkable_corporations": _linkable_corporations(request.user, report, account),
         },
@@ -278,6 +287,7 @@ def own_account(request):
             **_state(report),
             "corporation": corporation,
             "account": account,
+            "auth_groups": _group_names(request.user.pk),
             "own": True,
             "linkable_corporations": _linkable_corporations(request.user, report, account),
             "location": _("My account"),

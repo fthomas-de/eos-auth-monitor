@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.41] - 2026-11-26
+
+### Added
+
+- **Auth groups on *Main details* and *My account***: the account's groups, in
+  brackets after the main's name in the title of the table. Groups a state
+  hands out are left out. Display only.
+
+### Changed
+
+- **Active in Mumble is weighted by days**: on the Corporation tiles, the
+  overview and the cockpit it is now the days in Mumble of all mains' days in
+  EVE, one point per day, so a main with more days weighs more. It was the
+  mean of the mains' shares, each main once. A main's own share is unchanged.
+
 ## [0.0.40] - 2026-11-24
 
 ### Added

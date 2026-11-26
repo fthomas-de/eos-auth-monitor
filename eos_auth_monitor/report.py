@@ -305,8 +305,6 @@ class Row:
     # the list behind a tile that is not a service's: a URL name and its arguments
     url_name: str | None = None
     url_args: tuple = ()
-    # a percentage that is no share of a count: the mean of the mains' Active in Mumble
-    average: int | None = None
     # on the Mumble tile: Active in Mumble, shown below the linked share
     activity: "Row | None" = None
     # a count without a total, and why: shown instead of a share
@@ -316,8 +314,6 @@ class Row:
 
     @property
     def percent(self) -> int | None:
-        if self.average is not None:
-            return self.average
         if self.problems is not None:
             return 0 if self.problems else 100
         return percent(self.part or 0, self.total or 0)
@@ -344,16 +340,17 @@ ACTIVITY_ICON = "fas fa-microphone-lines"
 
 
 def _mean_activity(accounts) -> Row:
-    """Active in Mumble of several mains: the mean of their shares, each main counting once.
+    """Active in Mumble of several mains, weighted by days: every day a main played EVE is one point, every day
+    it was in Mumble too one hit, so a main with more days weighs more.
 
-    A main without Mumble linked or without a day in EVE has no share and stays out.
+    A main without Mumble linked has no row and stays out; one without a day in EVE adds no point.
     """
-    shares = [account.activity.percent for account in accounts if account.activity]
-    shares = [share for share in shares if share is not None]
+    rows = [account.activity for account in accounts if account.activity]
     return Row(
         ACTIVITY_LABEL,
         ACTIVITY_ICON,
-        average=round(sum(shares) / len(shares)) if shares else None,
+        sum(row.part for row in rows),
+        sum(row.total for row in rows),
         help=ACTIVITY_HELP,
     )
 

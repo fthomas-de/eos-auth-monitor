@@ -8,9 +8,12 @@ from unittest.mock import patch
 from kombu.exceptions import OperationalError
 
 from django.apps import apps
+from django.contrib.auth.models import Group
 from django.test import RequestFactory
 from django.urls import reverse
 from django.utils.html import escape
+
+from allianceauth.authentication.models import State
 
 import eos_auth_monitor
 from eos_auth_monitor import progress
@@ -1784,6 +1787,52 @@ class TestAltsInAnotherCorporation(ViewTestCase):
         self.assertEqual(section.count("Char 1102"), 1)
         self.assertIn("Visitor main", section)
         self.assertIn("Visitor alt", section)
+
+
+class TestAccountGroups(ViewTestCase):
+    """The account's Auth groups, in brackets after the main's name in the title of the table."""
+
+    def setUp(self):
+        super().setUp()
+        self.target = make_user("target", corporation_id=2001)
+        main_id = self.target.profile.main_character.character_id
+        snapshot = Snapshot.objects.get()
+        snapshot.data["corporations"][0]["accounts"].append(account_row(self.target.pk, main_id, services={}))
+        snapshot.save()
+        state = State.objects.create(name="Group state", priority=9999)
+        for name in ("Logistics", "Beta", "Handed out"):
+            self.target.groups.add(Group.objects.create(name=name))
+        Group.objects.get(name="Handed out").authgroup.states.add(state)
+
+    def test_should_list_the_groups_sorted_without_the_states_groups_for_view_all(self):
+        content = self.get(self.leader, "account", self.target.pk).content.decode()
+
+        self.assertIn('eos-auth-monitor-groups">(Beta, Logistics)</span>', content)
+        self.assertNotIn("Handed out", content)
+
+    def test_should_list_the_groups_for_the_corporations_ceo(self):
+        response = self.get(self.ceo, "account", self.target.pk)
+
+        self.assertContains(response, 'eos-auth-monitor-groups">(Beta, Logistics)</span>')
+
+    def test_should_list_the_own_groups_for_a_member(self):
+        member = make_user("member2", VIEW_OWN, corporation_id=2001)
+        member.groups.add(Group.objects.get(name="Beta"))
+        snapshot = Snapshot.objects.get()
+        main_id = member.profile.main_character.character_id
+        snapshot.data["corporations"][0]["accounts"].append(account_row(member.pk, main_id, services={}))
+        snapshot.save()
+
+        response = self.get(member, "own_account")
+
+        self.assertContains(response, 'eos-auth-monitor-groups">(Beta)</span>')
+
+    def test_should_show_no_brackets_for_an_account_without_groups(self):
+        self.target.groups.clear()
+
+        response = self.get(self.leader, "account", self.target.pk)
+
+        self.assertNotContains(response, "eos-auth-monitor-groups")
 
 
 class TestDirectorIcon(ViewTestCase):

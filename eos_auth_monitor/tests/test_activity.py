@@ -259,7 +259,7 @@ class TestReport(MonitorTestCase):
             account_row(14, 1401),
         ]
 
-    def test_should_give_each_linked_main_its_share_and_the_tiles_their_mean(self):
+    def test_should_give_each_linked_main_its_share_and_the_tiles_their_days(self):
         found = report(self.accounts())
 
         # 11: 1 of 4 days; 12: every day; 13: never in EVE; 14: no Mumble
@@ -269,12 +269,13 @@ class TestReport(MonitorTestCase):
         shares = {account.user_id: account.activity and account.activity.percent for account in corporation.accounts}
         self.assertEqual(shares, {11: 25, 12: 100, 13: None, 14: None})
         self.assertEqual((found.account(11)[1].activity.part, found.account(11)[1].activity.total), (1, 4))
-        # the mean of 25 and 100, each main once - not 4 of 7 days
-        self.assertEqual(corporation.activity.percent, 62)
+        # every day in EVE is a point: 4 of 7 days, not the mean 62 of 25 and 100
+        self.assertEqual((corporation.activity.part, corporation.activity.total), (4, 7))
+        self.assertEqual(corporation.activity.percent, 57)
         mumble = next(row for row in corporation.service_counts if row.service.key == "mumble")
-        self.assertEqual(mumble.activity.percent, 62)
+        self.assertEqual(mumble.activity.percent, 57)
         self.assertEqual(mumble.percent, 75)
-        self.assertEqual(found.cockpit()[0].activity.percent, 62)
+        self.assertEqual(found.cockpit()[0].activity.percent, 57)
         self.assertEqual([str(row.label) for row in corporation.rows], ["Mumble", "Active in Mumble"])
 
     def test_should_show_no_share_where_nobody_played(self):

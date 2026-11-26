@@ -67,7 +67,7 @@
             {% else %}
                 {% translate "The account's characters in the Alliance with their problems and what to do about them." as help_text %}
             {% endif %}
-            <div class="card-title mb-0 me-auto text-break">{{ account.main_name }} {% include "eos_auth_monitor/partials/help.html" %}</div>
+            <div class="card-title mb-0 me-auto text-break">{{ account.main_name }}{% if auth_groups %} <span class="fw-normal text-body-secondary eos-auth-monitor-groups">({{ auth_groups|join:", " }})</span>{% endif %} {% include "eos_auth_monitor/partials/help.html" %}</div>
         </div>
 
         <div class="card-body">
