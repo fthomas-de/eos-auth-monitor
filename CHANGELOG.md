@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-28
+
+### Changed
+
+- **GM transactions need eos-tax 0.4.31 or newer.** The fallback to building
+  eos-tax's GM Transactions page, for an eos-tax without its read API, is gone.
+  With an older eos-tax, the page shows the notice that eos-tax could not be
+  read.
+- **Markers need eos-spy-network 0.1.10 or newer.** The checks for older
+  releases (without the read API, or without the Corporation filter of the
+  CEO role) are gone. With an older release, the page shows the notice that
+  eos-spy-network could not be read.
+
 ## [0.1.0] - 2026-11-26
 
 ### Added

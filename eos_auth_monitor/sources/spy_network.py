@@ -7,7 +7,6 @@ permissions could reach it. The pages only show them - they are no problems
 here and change no count, order or colour of the checks.
 """
 
-import inspect
 from dataclasses import dataclass
 
 from django.apps import apps
@@ -29,8 +28,7 @@ class SpyMarker:
 
 
 def is_installed() -> bool:
-    """Installed and new enough: the read API came with eos-spy-network 0.0.10."""
-    return apps.is_installed(APP) and _api() is not None
+    return apps.is_installed(APP)
 
 
 def can_view(user) -> bool:
@@ -38,27 +36,16 @@ def can_view(user) -> bool:
 
 
 def ceo_corporation_id(user) -> int | None:
-    """The Corporation eos-spy-network's CEO role shows this viewer; None with the full view, without the role
-    or with an eos-spy-network before 0.0.30, whose API cannot filter by Corporation."""
+    """The Corporation eos-spy-network's CEO role shows this viewer; None with the full view or without the role."""
     if can_view(user) or not (is_installed() and user.has_perm(CEO_PERMISSION)):
-        return None
-    if "corporation_id" not in inspect.signature(_api().character_markers).parameters:
         return None
     return own_corporation_id(user)
 
 
 def _api():
-    """eos-spy-network's read API, or None where it is older than the API or lacks a part of it.
+    """eos-spy-network's read API; an older release raises ImportError, which the views show as a notice."""
+    from eos_spy_network import api
 
-    Checked by what it offers, not by its version number: an older release
-    then shows nothing instead of failing the pages of its viewers.
-    """
-    try:
-        from eos_spy_network import api
-    except ImportError:
-        return None
-    if not all(hasattr(api, name) for name in ("KINDS", "character_markers", "label", "description")):
-        return None
     return api
 
 
@@ -78,9 +65,7 @@ def character_markers(corporation_id: int | None = None) -> dict[int, list[SpyMa
         return {}
     api = _api()
     markers = {kind: SpyMarker(kind, api.label(kind), api.description(kind)) for kind in api.KINDS}
-    # an older API lacks corporation_id; ceo_corporation_id() never hands one out then
-    found = api.character_markers(corporation_id=corporation_id) if corporation_id else api.character_markers()
     return {
         character_id: [markers[kind] for kind in kinds if kind in markers]
-        for character_id, kinds in found.items()
+        for character_id, kinds in api.character_markers(corporation_id=corporation_id).items()
     }

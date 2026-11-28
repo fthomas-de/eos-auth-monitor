@@ -132,7 +132,7 @@ def fake_spy_api(found):
         KINDS=("membership", "mails", "wallet"),
         label=lambda kind: f"Label {kind}",
         description=lambda kind: f"Description {kind}",
-        character_markers=lambda: found,
+        character_markers=lambda corporation_id=None: found,
     )
 
 
@@ -196,44 +196,6 @@ class TestSpyNetworkPermissions(MonitorTestCase):
         # the full view wins; no role, no Corporation
         self.assertIsNone(spy_network.ceo_corporation_id(make_user("spy", VIEW_SUSPECTS, SPY_CEO)))
         self.assertIsNone(spy_network.ceo_corporation_id(make_user("half", VIEW_SUSPECTS)))
-
-    @skipUnless(SPY_INSTALLED, "eos-spy-network is not installed")
-    def test_should_give_no_ceo_view_with_an_api_that_cannot_filter(self):
-        # before 0.0.30: character_markers() without corporation_id
-        with patch.object(spy_network, "_api", return_value=fake_spy_api({})):
-            self.assertIsNone(spy_network.ceo_corporation_id(make_user("ceo", SPY_CEO)))
-
-    @skipUnless(SPY_INSTALLED, "eos-spy-network is not installed")
-    def test_should_ignore_a_release_without_the_read_api(self):
-        import sys
-
-        import eos_spy_network
-
-        user = make_user("spy", VIEW_SUSPECTS)
-        real = sys.modules.get("eos_spy_network.api")
-        # before 0.0.10: no module at all - the import must fail, not reuse the loaded one
-        with patch.dict(sys.modules, {"eos_spy_network.api": None}):
-            had = hasattr(eos_spy_network, "api")
-            if had:
-                delattr(eos_spy_network, "api")
-            try:
-                self.assertFalse(spy_network.is_installed())
-                self.assertFalse(spy_network.can_view(user))
-                self.assertEqual(spy_network.character_markers(), {})
-            finally:
-                if had:
-                    eos_spy_network.api = real
-        # a module that lacks a part of the contract counts as missing as well
-        with patch.dict(sys.modules, {"eos_spy_network.api": SimpleNamespace(KINDS=())}):
-            had = hasattr(eos_spy_network, "api")
-            if had:
-                delattr(eos_spy_network, "api")
-            try:
-                self.assertFalse(spy_network.can_view(user))
-            finally:
-                if had:
-                    eos_spy_network.api = real
-        self.assertTrue(spy_network.can_view(user))
 
     @skipUnless(SPY_INSTALLED, "eos-spy-network is not installed")
     def test_should_need_view_suspects(self):

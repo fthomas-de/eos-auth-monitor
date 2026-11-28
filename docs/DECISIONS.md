@@ -230,6 +230,7 @@ section.
 - Read from its API on every page view, nothing in the snapshot. An exception
   there leaves the markers out of that page, logged with its traceback and
   with a notice to the viewer (2026-11-26); likewise for eos-tax.
+  eos-spy-network 0.1.10 or newer; no fallback for older releases (2026-11-28).
 - Alts of mains outside the Alliance with markers: card, to-do, tile, CSV and
   overview column (eos-spy-network shows them to the CEO of the alt's
   Corporation).
@@ -240,8 +241,8 @@ section.
 
 - A finding is a row of eos-tax's stored GM report with counterparty
   `FLAGGED_PARTY` ("GM X"), read on every page view through
-  `eos_tax.api.gm_x_character_ids`; an eos-tax without that API falls back to
-  building its GM page (`get_gm_page`). Visible with `eos_tax.admin_view` or
+  `eos_tax.api.gm_x_character_ids` (eos-tax 0.4.31 or newer; no fallback for
+  older releases, 2026-11-28). Visible with `eos_tax.admin_view` or
   `gm_bots_access`, eos-tax's own rule for the tab - the API checks none.
 - A GM transaction marks the whole account (any character, also outside the
   Alliance), for every viewer, on own and visiting cards and on cards of mains

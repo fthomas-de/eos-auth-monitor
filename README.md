@@ -122,7 +122,7 @@ installed app stores (see [ESI](#esi)). Every check can be switched off.
   switch for every check, grouped by app, and for every service; which
   corptools sections and scopes the checks count; the notice to members
 - **eos-spy-network markers** where
-  [eos-spy-network](https://github.com/fthomas-de/eos-spy-network) 0.0.10 or
+  [eos-spy-network](https://github.com/fthomas-de/eos-spy-network) 0.1.10 or
   newer is installed, for viewers holding its `view_suspects`: a *Spy network* column in the overview table (characters
   with markers per Corporation), a tile with that number on the Corporation
   page opening the Corporation in eos-spy-network, a to-do entry per marker
@@ -370,7 +370,7 @@ it does nothing. The pages read the days when they are shown.
 |---|---|
 | Alliance Auth | 5.1.4 or newer, below 6 (the migrations need `eveonline` 0025, first in 5.1.4) |
 | Python | 3.10 or newer |
-| Optional | allianceauth-corptools, aa-structures, aa-qqbot, aa-discord-telegram-bridge, eos-spy-network (0.0.10 or newer), eos-tax, the Discord and Mumble services of Alliance Auth |
+| Optional | allianceauth-corptools, aa-structures, aa-qqbot, aa-discord-telegram-bridge, eos-spy-network (0.1.10 or newer), eos-tax (0.4.31 or newer), the Discord and Mumble services of Alliance Auth |
 
 None of the optional apps is a dependency of the package. `pip install` will
 not pull them in, nor upgrade the ones you have.
@@ -454,8 +454,7 @@ account page, their CSV export) need its permission
 `eos_spy_network.view_suspects` on top of the page's own (`view_evidence` is
 gone since eos-spy-network 0.0.31); without it nothing of eos-spy-network
 shows. Its CEO
-role `eos_spy_network.view_own_corporation` alone (eos-spy-network 0.0.30 or
-later) shows them for the Corporation of the viewer's main only - its tile,
+role `eos_spy_network.view_own_corporation` alone shows them for the Corporation of the viewer's main only - its tile,
 to-dos, card tags, CSV export and account pages, no cockpit tile or overview
 column - and only the markers eos-spy-network's own page shows that CEO.
 

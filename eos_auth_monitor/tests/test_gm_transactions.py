@@ -165,23 +165,13 @@ class TestSource(MonitorTestCase):
             "description": f"GM [16519715] issued transaction between Someone {character_id} and {other}",
         }
 
-    def paths(self):
-        """eos-tax's read API, then the fallback for an eos-tax older than it."""
-        yield "api"
-        with patch.object(gm_transactions, "_api", return_value=None):
-            yield "page"
-
     def test_should_take_only_transactions_against_gm_x(self):
         self.store([self.row(9001, 1, "GM X"), self.row(9002, 2, "EVE Central Bank")])
 
-        for path in self.paths():
-            with self.subTest(path):
-                self.assertEqual(gm_transactions.character_ids(), {9001})
+        self.assertEqual(gm_transactions.character_ids(), {9001})
 
     def test_should_find_nothing_before_the_first_run(self):
-        for path in self.paths():
-            with self.subTest(path):
-                self.assertEqual(gm_transactions.character_ids(), set())
+        self.assertEqual(gm_transactions.character_ids(), set())
 
     def test_should_need_one_of_the_tabs_permissions(self):
         self.assertTrue(gm_transactions.can_view(make_user("gm", GM_ACCESS)))
@@ -200,42 +190,11 @@ class TestSource(MonitorTestCase):
         self.assertIsNone(gm_transactions.ceo_corporation_id(make_user("gm", GM_ACCESS, CEO_ACCESS)))
         self.assertIsNone(gm_transactions.ceo_corporation_id(make_user("member", BASIC_ACCESS)))
 
-    def test_should_give_no_ceo_view_with_an_eos_tax_that_cannot_filter(self):
-        ceo = make_user("ceo", CEO_ACCESS, corporation_id=2002)
-        with patch("eos_tax.db.gm_transactions.get_gm_page", lambda stored: {"rows": []}):
-            with patch.object(gm_transactions, "_api", return_value=None):
-                self.assertIsNone(gm_transactions.ceo_corporation_id(ceo))
-            # the read API filters by Corporation from its first release on
-            self.assertEqual(gm_transactions.ceo_corporation_id(ceo), 2002)
-
     def test_should_ask_the_api_for_the_ceos_characters(self):
         with patch("eos_tax.api.gm_x_character_ids", return_value={9001}) as api:
             self.assertEqual(gm_transactions.character_ids(2002), {9001})
 
         self.assertEqual(api.call_args.kwargs, {"corporation_id": 2002})
-
-    def test_should_ask_an_eos_tax_without_the_api_for_the_ceos_rows(self):
-        self.store([self.row(9001, 1, "GM X")])
-        with (
-            patch.object(gm_transactions, "_api", return_value=None),
-            patch("eos_tax.db.gm_transactions.get_gm_page", return_value={"rows": []}) as page,
-        ):
-            gm_transactions.character_ids(2002)
-
-        self.assertEqual(page.call_args.kwargs, {"corporation_id": 2002})
-
-    def test_should_fall_back_without_the_api(self):
-        import eos_tax
-
-        api = gm_transactions._api()
-        self.assertIsNotNone(api)
-        # an imported module stays reachable as the package's attribute
-        del eos_tax.api
-        try:
-            with patch.dict("sys.modules", {"eos_tax.api": None}):
-                self.assertIsNone(gm_transactions._api())
-        finally:
-            eos_tax.api = api
 
 
 @skipUnless(TAX_INSTALLED, "eos-tax is not installed")

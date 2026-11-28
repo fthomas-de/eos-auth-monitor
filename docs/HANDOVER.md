@@ -14,11 +14,11 @@ one section), not at session start.
 - Version: `0.1.0`, 2026-11-26 (eos-spy-network and eos-tax guarded, GM
   transactions through eos-tax's read API, yellow to-do card for warnings
   only, spy and GM numbers on the overview tiles).
-- Not deployed yet: `0.1.0` - production runs 0.0.42. Prod steps: install,
-  restart the Celery workers and the web server; no migration, no
-  `collectstatic` (no new static file), no rebuild needed. Works with the
-  released eos-tax (falls back to its GM page) as with one that has
-  `eos_tax.api`.
+- Deployed: `0.1.0` runs in production (the user, 2026-11-28), next to eos-tax
+  0.4.31 (with `eos_tax.api`). Production counts as up to date.
+- Unreleased: the GM fallback to eos-tax's GM page is gone; GM transactions
+  need eos-tax 0.4.31 or newer (CHANGELOG, README). Likewise the checks for
+  older eos-spy-network releases: it needs 0.1.10 or newer.
 - What the app does today: it shows the problem accounts and Corporations of
   one Alliance - incomplete corptools audits, missing corptools and
   aa-structures tokens, Directors without a full Corporation token, linked
@@ -55,19 +55,6 @@ calls), `snapshot.py` (builds the JSON, `tasks.update_snapshot`),
 
 ## Open
 
-- **403 in the other eos apps**: the user chose 403 everywhere; checked
-  2026-11-26, none has it yet - eos-spy-network's `permissions._required`
-  uses `user_passes_test`, eos-tax's `any_permission_required` defaults to
-  `raise_exception=False`, eos-sig-checker and eos-invoices use Django's
-  `permission_required` without `raise_exception`. In their own sessions;
-  eos-tax has it in its working tree since (Unreleased, not committed).
-- **eos-tax fallback**: `sources.gm_transactions` reads
-  `eos_tax.api.gm_x_character_ids` (since 0.1.0) and falls back on
-  `ImportError` to the old `get_gm_page` path, because eos-tax's API is in its
-  working tree only (2026-11-26). Once production runs an eos-tax with
-  `eos_tax.api`, drop the fallback, `_api()`'s `None` branch and the
-  `inspect.signature` check in `ceo_corporation_id()` with their tests
-  (`TestSource.paths`, `..._without_the_api...`).
 - **Active in Mumble**: runs in production with plausible shares (the user,
   2026-11-26). Ideas offered, not asked for: the number of mains behind a
   tile's share as tooltip; a minimum of days in EVE before a main counts; the
@@ -83,7 +70,7 @@ calls), `snapshot.py` (builds the JSON, `tasks.update_snapshot`),
 - Installed (2026-11-26): allianceauth 5.5.0, corptools 3.5.0, aa-structures
   4.1.0, securegroups 0.10.2, aa-qqbot 1.0.0, aa-discord-telegram-bridge
   1.7.6, aa-charlink 1.14.0, django-esi 10.0.0, django-solo 2.5.1;
-  eos-spy-network and eos-tax editable from their working trees.
+  eos-spy-network and eos-tax (0.4.31) editable from their working trees.
 - Migrations 0001-0012 applied in `aa_dev`.
 - `MonitorConfiguration`: Alliance 99003995 (Invidia Gloriae Comes), nothing
   switched off, ESI on, *Only characters in the Alliance* off, the notice
