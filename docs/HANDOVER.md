@@ -11,14 +11,14 @@ one section), not at session start.
 
 ## State
 
-- Version: `0.1.0`, 2026-11-26 (eos-spy-network and eos-tax guarded, GM
-  transactions through eos-tax's read API, yellow to-do card for warnings
-  only, spy and GM numbers on the overview tiles).
+- Version: `0.1.1`, 2026-11-28 (the fallbacks for older releases are gone:
+  GM transactions need eos-tax 0.4.31 or newer, the spy markers
+  eos-spy-network 0.1.10 or newer; an older one shows the "could not be read"
+  notice).
 - Deployed: `0.1.0` runs in production (the user, 2026-11-28), next to eos-tax
-  0.4.31 (with `eos_tax.api`). Production counts as up to date.
-- Unreleased: the GM fallback to eos-tax's GM page is gone; GM transactions
-  need eos-tax 0.4.31 or newer (CHANGELOG, README). Likewise the checks for
-  older eos-spy-network releases: it needs 0.1.10 or newer.
+  0.4.31 (with `eos_tax.api`). Production counts as up to date. `0.1.1` is not
+  deployed yet; it needs no migration, no `collectstatic` and no snapshot
+  rebuild.
 - What the app does today: it shows the problem accounts and Corporations of
   one Alliance - incomplete corptools audits, missing corptools and
   aa-structures tokens, Directors without a full Corporation token, linked
